@@ -24,7 +24,6 @@
  */
 package com.sparqline.parsers;
 
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Stack;
 
@@ -33,6 +32,7 @@ import org.eclipse.jdt.annotation.NonNull;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.google.common.collect.Lists;
 import com.sparqline.codetree.node.FileNode;
 import com.sparqline.codetree.node.MethodNode;
 import com.sparqline.codetree.node.TypeNode;
@@ -62,7 +62,7 @@ public class JavaCodeTreeBuilder extends Java8BaseListener {
     /**
      * Method parameter list
      */
-    private List<String>          params = new ArrayList<>();
+    private List<String>          params = Lists.newArrayList();
     /**
      * Stack used for creating types
      */
@@ -106,7 +106,7 @@ public class JavaCodeTreeBuilder extends Java8BaseListener {
             name = ctx.enumDeclaration().Identifier().getText();
 
         final String fullName = packageName == null ? name : packageName + "." + name;
-        final TypeNode node = new TypeNode.Builder(fullName, name).range(start, end).create();
+        final TypeNode node = TypeNode.builder(fullName, name).range(start, end).create();
         classes.add(node);
         file.addType(node);
 
@@ -135,7 +135,7 @@ public class JavaCodeTreeBuilder extends Java8BaseListener {
 
         final String name = ctx.Identifier().getText();
         final String fullName = packageName == null ? name : packageName + "." + name;
-        final TypeNode node = new TypeNode.Builder(fullName, name).range(start, end).create();
+        final TypeNode node = TypeNode.builder(fullName, name).range(start, end).create();
         classes.add(node);
         file.addType(node);
 
@@ -155,7 +155,7 @@ public class JavaCodeTreeBuilder extends Java8BaseListener {
         final String name = nidx.Identifier().getText();
         final String fullName = packageName == null ? name : packageName + "." + name;
 
-        final TypeNode node = new TypeNode.Builder(fullName, name).range(start, end).create();
+        final TypeNode node = TypeNode.builder(fullName, name).range(start, end).create();
         classes.push(node);
         file.addType(node);
 
@@ -248,7 +248,7 @@ public class JavaCodeTreeBuilder extends Java8BaseListener {
         methodName.append(")");
         name = methodName.toString();
         final String fullName = classes.peek().getQIdentifier() + "#" + name;
-        final MethodNode node = new MethodNode.Builder(fullName, name).constructor().range(start, end).create();
+        final MethodNode node = MethodNode.builder(fullName, name).constructor().range(start, end).create();
         classes.peek().addMethod(node);
 
         super.exitConstructorDeclaration(ctx);
@@ -304,7 +304,7 @@ public class JavaCodeTreeBuilder extends Java8BaseListener {
         methodName.append(")");
         name = methodName.toString();
         final String fullName = classes.peek().getQIdentifier() + "#" + name;
-        final MethodNode node = new MethodNode.Builder(fullName, name).range(start, end).create();
+        final MethodNode node = MethodNode.builder(fullName, name).range(start, end).create();
         classes.peek().addMethod(node);
 
         super.exitMethodDeclarator(ctx);

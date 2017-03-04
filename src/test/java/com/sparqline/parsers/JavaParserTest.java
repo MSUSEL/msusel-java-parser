@@ -29,7 +29,6 @@ import java.nio.file.DirectoryStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Stack;
 
@@ -40,6 +39,7 @@ import org.antlr.v4.runtime.tree.ParseTreeWalker;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.google.common.collect.Lists;
 import com.sparqline.codetree.CodeTree;
 import com.sparqline.codetree.node.FileNode;
 import com.sparqline.parsers.java8.Java8Lexer;
@@ -71,7 +71,7 @@ public class JavaParserTest {
 
     public static List<String> fileList(final String root)
     {
-        final List<String> fileNames = new ArrayList<>();
+        final List<String> fileNames = Lists.newArrayList();
         final Stack<String> directories = new Stack<>();
         directories.push(root);
 
@@ -117,7 +117,7 @@ public class JavaParserTest {
         //
         // final ExecutorService executor = Executors
         // .newFixedThreadPool(Runtime.getRuntime().availableProcessors());
-        // final List<Future<?>> futures = new ArrayList<>();
+        // final List<Future<?>> futures = Lists.newArrayList();
         // for (final String file : fileNames) {
         // futures.add(executor.submit(() -> {
         for (int i = 0; i < 10; i++)
@@ -125,7 +125,7 @@ public class JavaParserTest {
             final CodeTree tree = new CodeTree();
 
             final long start = System.currentTimeMillis();
-            fileNames.parallelStream().forEach((file) -> {
+            fileNames.forEach((file) -> {
                 try
                 {
                     System.out.println("Parsing: " + file);
@@ -181,13 +181,13 @@ public class JavaParserTest {
         try
         {
             // TODO Make this code specific to subclasses
-            final FileNode node = new FileNode(file);
-            tree.addFile(node);
+            final FileNode node = FileNode.builder(file).create();
+            tree.getProject().addFile(node);
 
             final Java8Parser parser = JavaParserTest.loadFile(file);
             final CompilationUnitContext cuContext = parser.compilationUnit();
             final ParseTreeWalker walker = new ParseTreeWalker();
-            tree.addFile(node);
+            tree.getProject().addFile(node);
             final JavaCodeTreeBuilder listener = new JavaCodeTreeBuilder(node);
             walker.walk(listener, cuContext);
             walker.walk(listener, cuContext);
