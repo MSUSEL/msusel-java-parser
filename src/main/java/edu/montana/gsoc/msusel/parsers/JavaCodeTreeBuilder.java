@@ -1,8 +1,9 @@
 /**
  * The MIT License (MIT)
  *
- * SparQLine Java Parser
- * Copyright (c) 2015-2017 Isaac Griffith, SparQLine Analytics, LLC
+ * MSUSEL Java Parser
+ * Copyright (c) 2015-2017 Montana State University, Gianforte School of Computing,
+ * Software Engineering Laboratory
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -22,7 +23,7 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
  */
-package com.sparqline.parsers;
+package edu.montana.gsoc.msusel.parsers;
 
 import java.util.List;
 import java.util.Stack;
@@ -33,25 +34,26 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.google.common.collect.Lists;
-import com.sparqline.codetree.node.FileNode;
-import com.sparqline.codetree.node.MethodNode;
-import com.sparqline.codetree.node.TypeNode;
-import com.sparqline.parsers.java8.Java8BaseListener;
-import com.sparqline.parsers.java8.Java8Parser.ClassDeclarationContext;
-import com.sparqline.parsers.java8.Java8Parser.ConstructorDeclarationContext;
-import com.sparqline.parsers.java8.Java8Parser.EnumDeclarationContext;
-import com.sparqline.parsers.java8.Java8Parser.InterfaceDeclarationContext;
-import com.sparqline.parsers.java8.Java8Parser.MethodDeclaratorContext;
-import com.sparqline.parsers.java8.Java8Parser.NormalInterfaceDeclarationContext;
-import com.sparqline.parsers.java8.Java8Parser.PackageDeclarationContext;
-import com.sparqline.parsers.java8.Java8Parser.UnannTypeContext;
+
+import edu.montana.gsoc.msusel.node.FileNode;
+import edu.montana.gsoc.msusel.node.MethodNode;
+import edu.montana.gsoc.msusel.node.TypeNode;
+import edu.montana.gsoc.msusel.parsers.java8.Java8BaseListener;
+import edu.montana.gsoc.msusel.parsers.java8.Java8Parser.ClassDeclarationContext;
+import edu.montana.gsoc.msusel.parsers.java8.Java8Parser.ConstructorDeclarationContext;
+import edu.montana.gsoc.msusel.parsers.java8.Java8Parser.EnumDeclarationContext;
+import edu.montana.gsoc.msusel.parsers.java8.Java8Parser.InterfaceDeclarationContext;
+import edu.montana.gsoc.msusel.parsers.java8.Java8Parser.MethodDeclaratorContext;
+import edu.montana.gsoc.msusel.parsers.java8.Java8Parser.NormalInterfaceDeclarationContext;
+import edu.montana.gsoc.msusel.parsers.java8.Java8Parser.PackageDeclarationContext;
+import edu.montana.gsoc.msusel.parsers.java8.Java8Parser.UnannTypeContext;
 
 /**
  * Using the parser, this class incrementally builds a CodeTree one file at a
  * time.
  *
  * @author Isaac Griffith
- * @version 1.1.0
+ * @version 1.1.1
  */
 public class JavaCodeTreeBuilder extends Java8BaseListener {
 
