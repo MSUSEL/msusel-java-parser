@@ -23,30 +23,22 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
  */
-package edu.montana.gsoc.msusel.parsers;
+package edu.montana.gsoc.msusel.codetree.parsers;
 
 import java.util.List;
 import java.util.Stack;
 
+import edu.montana.gsoc.msusel.codetree.node.FileNode;
+import edu.montana.gsoc.msusel.codetree.node.MethodNode;
+import edu.montana.gsoc.msusel.codetree.node.TypeNode;
+import edu.montana.gsoc.msusel.codetree.parsers.java8.Java8BaseListener;
+import edu.montana.gsoc.msusel.codetree.parsers.java8.Java8Parser;
 import org.antlr.v4.runtime.tree.TerminalNode;
 import org.eclipse.jdt.annotation.NonNull;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.google.common.collect.Lists;
-
-import edu.montana.gsoc.msusel.node.FileNode;
-import edu.montana.gsoc.msusel.node.MethodNode;
-import edu.montana.gsoc.msusel.node.TypeNode;
-import edu.montana.gsoc.msusel.parsers.java8.Java8BaseListener;
-import edu.montana.gsoc.msusel.parsers.java8.Java8Parser.ClassDeclarationContext;
-import edu.montana.gsoc.msusel.parsers.java8.Java8Parser.ConstructorDeclarationContext;
-import edu.montana.gsoc.msusel.parsers.java8.Java8Parser.EnumDeclarationContext;
-import edu.montana.gsoc.msusel.parsers.java8.Java8Parser.InterfaceDeclarationContext;
-import edu.montana.gsoc.msusel.parsers.java8.Java8Parser.MethodDeclaratorContext;
-import edu.montana.gsoc.msusel.parsers.java8.Java8Parser.NormalInterfaceDeclarationContext;
-import edu.montana.gsoc.msusel.parsers.java8.Java8Parser.PackageDeclarationContext;
-import edu.montana.gsoc.msusel.parsers.java8.Java8Parser.UnannTypeContext;
 
 /**
  * Using the parser, this class incrementally builds a CodeTree one file at a
@@ -76,7 +68,7 @@ public class JavaCodeTreeBuilder extends Java8BaseListener {
     /**
      * FileNode whose contents will be added as the file is parsed.
      */
-    private final FileNode        file;
+    private final FileNode file;
 
     /**
      * Construct a new JavaCodeTreeBuilder for the provided FileNode
@@ -96,7 +88,7 @@ public class JavaCodeTreeBuilder extends Java8BaseListener {
      * {@inheritDoc}
      */
     @Override
-    public void enterClassDeclaration(final ClassDeclarationContext ctx)
+    public void enterClassDeclaration(final Java8Parser.ClassDeclarationContext ctx)
     {
         final int start = ctx.getStart().getLine();
         final int end = ctx.getStop().getLine();
@@ -119,7 +111,7 @@ public class JavaCodeTreeBuilder extends Java8BaseListener {
      * {@inheritDoc}
      */
     @Override
-    public void enterConstructorDeclaration(final ConstructorDeclarationContext ctx)
+    public void enterConstructorDeclaration(final Java8Parser.ConstructorDeclarationContext ctx)
     {
         params.clear();
 
@@ -130,7 +122,7 @@ public class JavaCodeTreeBuilder extends Java8BaseListener {
      * {@inheritDoc}
      */
     @Override
-    public void enterEnumDeclaration(final EnumDeclarationContext ctx)
+    public void enterEnumDeclaration(final Java8Parser.EnumDeclarationContext ctx)
     {
         final int start = ctx.getStart().getLine();
         final int end = ctx.getStop().getLine();
@@ -148,12 +140,12 @@ public class JavaCodeTreeBuilder extends Java8BaseListener {
      * {@inheritDoc}
      */
     @Override
-    public void enterInterfaceDeclaration(final InterfaceDeclarationContext ctx)
+    public void enterInterfaceDeclaration(final Java8Parser.InterfaceDeclarationContext ctx)
     {
         final int start = ctx.getStart().getLine();
         final int end = ctx.getStop().getLine();
 
-        final NormalInterfaceDeclarationContext nidx = ctx.normalInterfaceDeclaration();
+        final Java8Parser.NormalInterfaceDeclarationContext nidx = ctx.normalInterfaceDeclaration();
         final String name = nidx.Identifier().getText();
         final String fullName = packageName == null ? name : packageName + "." + name;
 
@@ -168,7 +160,7 @@ public class JavaCodeTreeBuilder extends Java8BaseListener {
      * {@inheritDoc}
      */
     @Override
-    public void enterMethodDeclarator(final MethodDeclaratorContext ctx)
+    public void enterMethodDeclarator(final Java8Parser.MethodDeclaratorContext ctx)
     {
         params.clear();
 
@@ -179,7 +171,7 @@ public class JavaCodeTreeBuilder extends Java8BaseListener {
      * {@inheritDoc}
      */
     @Override
-    public void enterPackageDeclaration(final PackageDeclarationContext ctx)
+    public void enterPackageDeclaration(final Java8Parser.PackageDeclarationContext ctx)
     {
         final List<TerminalNode> idx = ctx.Identifier();
 
@@ -204,7 +196,7 @@ public class JavaCodeTreeBuilder extends Java8BaseListener {
      * {@inheritDoc}
      */
     @Override
-    public void enterUnannType(final UnannTypeContext ctx)
+    public void enterUnannType(final Java8Parser.UnannTypeContext ctx)
     {
         params.add(ctx.getText());
         super.enterUnannType(ctx);
@@ -214,7 +206,7 @@ public class JavaCodeTreeBuilder extends Java8BaseListener {
      * {@inheritDoc}
      */
     @Override
-    public void exitClassDeclaration(final ClassDeclarationContext ctx)
+    public void exitClassDeclaration(final Java8Parser.ClassDeclarationContext ctx)
     {
         classes.pop();
 
@@ -225,7 +217,7 @@ public class JavaCodeTreeBuilder extends Java8BaseListener {
      * {@inheritDoc}
      */
     @Override
-    public void exitConstructorDeclaration(final ConstructorDeclarationContext ctx)
+    public void exitConstructorDeclaration(final Java8Parser.ConstructorDeclarationContext ctx)
     {
         final int start = ctx.getStart().getLine();
         final int end = ctx.getStart().getLine();
@@ -260,7 +252,7 @@ public class JavaCodeTreeBuilder extends Java8BaseListener {
      * {@inheritDoc}
      */
     @Override
-    public void exitEnumDeclaration(final EnumDeclarationContext ctx)
+    public void exitEnumDeclaration(final Java8Parser.EnumDeclarationContext ctx)
     {
         classes.pop();
 
@@ -271,7 +263,7 @@ public class JavaCodeTreeBuilder extends Java8BaseListener {
      * {@inheritDoc}
      */
     @Override
-    public void exitInterfaceDeclaration(final InterfaceDeclarationContext ctx)
+    public void exitInterfaceDeclaration(final Java8Parser.InterfaceDeclarationContext ctx)
     {
         classes.pop();
 
@@ -282,7 +274,7 @@ public class JavaCodeTreeBuilder extends Java8BaseListener {
      * {@inheritDoc}
      */
     @Override
-    public void exitMethodDeclarator(final MethodDeclaratorContext ctx)
+    public void exitMethodDeclarator(final Java8Parser.MethodDeclaratorContext ctx)
     {
         final int start = ctx.getStart().getLine();
         final int end = ctx.getStop().getLine();

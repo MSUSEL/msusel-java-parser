@@ -23,7 +23,7 @@
  * SOFTWARE.
  */
 // Generated from Java8.g4 by ANTLR 4.5.1
-package edu.montana.gsoc.msusel.parsers.java8;
+package edu.montana.gsoc.msusel.codetree.parsers.java8;
 
 import java.util.List;
 

@@ -23,7 +23,7 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
  */
-package edu.montana.gsoc.msusel.parsers;
+package edu.montana.gsoc.msusel.codetree.parsers;
 
 import java.io.IOException;
 import java.nio.file.DirectoryStream;
@@ -33,6 +33,9 @@ import java.nio.file.Paths;
 import java.util.List;
 import java.util.Stack;
 
+import edu.montana.gsoc.msusel.codetree.CodeTree;
+import edu.montana.gsoc.msusel.codetree.node.FileNode;
+import edu.montana.gsoc.msusel.codetree.parsers.java8.Java8Parser;
 import org.antlr.v4.runtime.ANTLRFileStream;
 import org.antlr.v4.runtime.CommonTokenStream;
 import org.antlr.v4.runtime.RecognitionException;
@@ -42,12 +45,7 @@ import org.slf4j.LoggerFactory;
 
 import com.google.common.collect.Lists;
 
-import edu.montana.gsoc.msusel.CodeTree;
-import edu.montana.gsoc.msusel.node.FileNode;
-import edu.montana.gsoc.msusel.parsers.JavaCodeTreeBuilder;
-import edu.montana.gsoc.msusel.parsers.java8.Java8Lexer;
-import edu.montana.gsoc.msusel.parsers.java8.Java8Parser;
-import edu.montana.gsoc.msusel.parsers.java8.Java8Parser.CompilationUnitContext;
+import edu.montana.gsoc.msusel.codetree.parsers.java8.Java8Lexer;
 
 /**
  * ParserTest -
@@ -110,7 +108,7 @@ public class JavaParserTest {
     public static void main(final String[] args)
     {
         final List<String> fileNames = JavaParserTest
-                .fileList("/home/git/research/TrueRefactor/src/main/java/truerefactor");
+                .fileList("/home/git/research/TrueRefactor/source/main/java/truerefactor");
 
         long time[] = new long[10];
         long avg[] = new long[10];
@@ -188,7 +186,7 @@ public class JavaParserTest {
             tree.getProject().addFile(node);
 
             final Java8Parser parser = JavaParserTest.loadFile(file);
-            final CompilationUnitContext cuContext = parser.compilationUnit();
+            final Java8Parser.CompilationUnitContext cuContext = parser.compilationUnit();
             final ParseTreeWalker walker = new ParseTreeWalker();
             tree.getProject().addFile(node);
             final JavaCodeTreeBuilder listener = new JavaCodeTreeBuilder(node);

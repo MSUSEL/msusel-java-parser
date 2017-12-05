@@ -23,7 +23,7 @@
  * SOFTWARE.
  */
 // Generated from java/Java.g4 by ANTLR 4.5.2
-package edu.montana.gsoc.msusel.parsers.java;
+package edu.montana.gsoc.msusel.codetree.parsers.java;
 
 import org.antlr.v4.runtime.tree.AbstractParseTreeVisitor;
 
