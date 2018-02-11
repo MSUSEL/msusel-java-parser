@@ -25,16 +25,10 @@
  */
 package edu.montana.gsoc.msusel.codetree.parsers;
 
-import java.io.IOException;
-import java.nio.file.DirectoryStream;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.Paths;
-import java.util.List;
-import java.util.Stack;
-
-import edu.montana.gsoc.msusel.codetree.CodeTree;
-import edu.montana.gsoc.msusel.codetree.node.FileNode;
+import codetree.CodeTree;
+import codetree.node.structural.FileNode;
+import com.google.common.collect.Lists;
+import edu.montana.gsoc.msusel.codetree.parsers.java8.Java8Lexer;
 import edu.montana.gsoc.msusel.codetree.parsers.java8.Java8Parser;
 import org.antlr.v4.runtime.ANTLRFileStream;
 import org.antlr.v4.runtime.CommonTokenStream;
@@ -43,9 +37,13 @@ import org.antlr.v4.runtime.tree.ParseTreeWalker;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.google.common.collect.Lists;
-
-import edu.montana.gsoc.msusel.codetree.parsers.java8.Java8Lexer;
+import java.io.IOException;
+import java.nio.file.DirectoryStream;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.util.List;
+import java.util.Stack;
 
 /**
  * ParserTest -
@@ -182,16 +180,16 @@ public class JavaParserTest {
         try
         {
             // TODO Make this code specific to subclasses
-            final FileNode node = FileNode.builder(file).create();
-            tree.getProject().addFile(node);
+            final FileNode node = FileNode.builder().key(file).create();
+            tree.getProject().addChild(node);
 
             final Java8Parser parser = JavaParserTest.loadFile(file);
             final Java8Parser.CompilationUnitContext cuContext = parser.compilationUnit();
             final ParseTreeWalker walker = new ParseTreeWalker();
-            tree.getProject().addFile(node);
-            final JavaCodeTreeBuilder listener = new JavaCodeTreeBuilder(node);
-            walker.walk(listener, cuContext);
-            walker.walk(listener, cuContext);
+            tree.getProject().addChild(node);
+//            final JavaCodeTreeBuilder listener = new JavaCodeTreeBuilder(node);
+//            walker.walk(listener, cuContext);
+//            walker.walk(listener, cuContext);
         }
         catch (final IOException e)
         {

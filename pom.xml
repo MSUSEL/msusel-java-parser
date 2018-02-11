@@ -27,77 +27,77 @@
 
 -->
 <project xmlns="http://maven.apache.org/POM/4.0.0"
-  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-  xsi:schemaLocation="http://maven.apache.org/POM/4.0.0
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0
                       http://maven.apache.org/xsd/maven-4.0.0.xsd">
-  <parent>
-    <groupId>edu.montana.gsoc.msusel</groupId>
-    <artifactId>msusel-parent</artifactId>
-    <version>1.2.0-idg</version>
-  </parent>
+    <parent>
+        <groupId>edu.montana.gsoc.msusel</groupId>
+        <artifactId>msusel-parent</artifactId>
+        <version>1.2.0-idg</version>
+    </parent>
 
-  <modelVersion>4.0.0</modelVersion>
-	<groupId>edu.montana.gsoc.msusel.parsers</groupId>
-	<artifactId>msusel-java-parser</artifactId>
-	<name>MSUSEL Java Parser</name>
-  <description>Implementation of the ANTLR Java 8 parser and associated code tree generation code.</description>
+    <modelVersion>4.0.0</modelVersion>
+    <groupId>edu.montana.gsoc.msusel.parsers</groupId>
+    <artifactId>msusel-java-parser</artifactId>
+    <name>MSUSEL Java Parser</name>
+    <description>Implementation of the ANTLR Java 8 parser and associated code tree generation code.</description>
 
-  <developers>
-		<developer>
-			<id>isaac.griffith</id>
-			<name>Isaac Griffith</name>
-			<email>isaacgriffith@gmail.com</email>
-			<organization>MSUSEL</organization>
-			<organizationUrl>https://msusel.github.io/</organizationUrl>
-			<roles>
-				<role>Developer</role>
-			</roles>
-		</developer>
-	</developers>
+    <developers>
+        <developer>
+            <id>isaac.griffith</id>
+            <name>Isaac Griffith</name>
+            <email>isaacgriffith@gmail.com</email>
+            <organization>MSUSEL</organization>
+            <organizationUrl>https://msusel.github.io/</organizationUrl>
+            <roles>
+                <role>Developer</role>
+            </roles>
+        </developer>
+    </developers>
 
-	<dependencies>
-		<dependency>
-			<groupId>org.antlr</groupId>
-			<artifactId>antlr4-runtime</artifactId>
-			<version>4.5</version>
-		</dependency>
-		<dependency>
-			<groupId>edu.montana.gsoc.msusel</groupId>
-			<artifactId>msusel-codetree</artifactId>
-			<version>1.2.0-idg</version>
-		</dependency>
-		<dependency>
-			<groupId>edu.montana.gsoc.msusel</groupId>
-			<artifactId>msusel-loc-metrics</artifactId>
-			<version>1.2.0-idg</version>
-		</dependency>
-	</dependencies>
+    <dependencies>
+        <dependency>
+            <groupId>edu.montana.gsoc.msusel</groupId>
+            <artifactId>msusel-codetree</artifactId>
+            <version>1.2.0-idg</version>
+        </dependency>
+        <dependency>
+            <groupId>edu.montana.gsoc.msusel</groupId>
+            <artifactId>msusel-loc-metrics</artifactId>
+            <version>1.2.0-idg</version>
+        </dependency>
+        <dependency>
+            <groupId>org.jetbrains</groupId>
+            <artifactId>annotations</artifactId>
+            <version>15.0</version>
+        </dependency>
+    </dependencies>
 
-	<repositories>
-			<repository>
-					<id>msusel-maven-repo</id>
-					<name>msusel-maven-repo</name>
-					<releases>
-							<enabled>true</enabled>
-					</releases>
-					<snapshots>
-							<enabled>false</enabled>
-					</snapshots>
+    <repositories>
+        <repository>
+            <id>msusel-maven-repo</id>
+            <name>msusel-maven-repo</name>
+            <releases>
+                <enabled>true</enabled>
+            </releases>
+            <snapshots>
+                <enabled>false</enabled>
+            </snapshots>
 
-					<url>https://raw.github.com/MSUSEL/msusel-maven-repo/releases</url>
-			</repository>
-	</repositories>
-	<pluginRepositories>
-			<pluginRepository>
-					<id>synergian-repo</id>
-					<url>https://raw.github.com/synergian/wagon-git/releases</url>
-			</pluginRepository>
-	</pluginRepositories>
-	<distributionManagement>
-			<repository>
-					<id>msusel-maven-repo</id>
-					<name>msusel-maven-repo</name>
-					<url>git:releases://git@github.com:MSUSEL/msusel-maven-repo.git</url>
-			</repository>
-	</distributionManagement>
+            <url>https://raw.github.com/MSUSEL/msusel-maven-repo/releases</url>
+        </repository>
+    </repositories>
+    <pluginRepositories>
+        <pluginRepository>
+            <id>synergian-repo</id>
+            <url>https://raw.github.com/synergian/wagon-git/releases</url>
+        </pluginRepository>
+    </pluginRepositories>
+    <distributionManagement>
+        <repository>
+            <id>msusel-maven-repo</id>
+            <name>msusel-maven-repo</name>
+            <url>git:releases://git@github.com:MSUSEL/msusel-maven-repo.git</url>
+        </repository>
+    </distributionManagement>
 </project>
