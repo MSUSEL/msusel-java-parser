@@ -1,22 +1,39 @@
+/**
+ * The MIT License (MIT)
+ * <p>
+ * MSUSEL Java Parser
+ * Copyright (c) 2015-2017 Montana State University, Gianforte School of Computing,
+ * Software Engineering Laboratory
+ * <p>
+ * Permission is hereby granted, free of charge, to any person obtaining a copy
+ * of this software and associated documentation files (the "Software"), to deal
+ * in the Software without restriction, including without limitation the rights
+ * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+ * copies of the Software, and to permit persons to whom the Software is
+ * furnished to do so, subject to the following conditions:
+ * <p>
+ * The above copyright notice and this permission notice shall be included in all
+ * copies or substantial portions of the Software.
+ * <p>
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+ * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+ * SOFTWARE.
+ */
 package edu.montana.gsoc.msusel.codetree.parsers;
 
-import codetree.CodeTree;
-import codetree.node.Accessibility;
-import codetree.node.Modifiers;
-import codetree.node.member.FieldNode;
-import codetree.node.type.ClassNode;
-import codetree.node.type.TypeNode;
+import edu.montana.gsoc.msusel.codetree.node.Accessibility;
+import edu.montana.gsoc.msusel.codetree.node.Modifiers;
+import edu.montana.gsoc.msusel.codetree.node.type.ClassNode;
+import edu.montana.gsoc.msusel.codetree.node.type.TypeNode;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 
-import java.util.List;
-
-import static org.junit.Assert.*;
-
-public class FieldsTest {
-
-    CodeTree tree;
+public class FieldsTest extends BaseTestClass {
 
     @Before
     public void setUp() throws Exception {
@@ -30,176 +47,67 @@ public class FieldsTest {
 
     @Test
     public void testClassA() {
-        TypeNode type = tree.getUtils().findType("A");
-        assertNotNull(type);
-        assertTrue(type instanceof ClassNode);
-        assertTrue(type.getAccessibility() == Accessibility.PUBLIC);
+        retrieveType("A", Accessibility.PUBLIC, ClassNode.class);
     }
 
     @Test
     public void testClassB() {
-        TypeNode type = tree.getUtils().findType("B");
-        assertNotNull(type);
-        assertTrue(type instanceof ClassNode);
-        assertTrue(type.getAccessibility() == Accessibility.PUBLIC);
+        retrieveType("B", Accessibility.PUBLIC, ClassNode.class);
     }
 
     @Test
     public void testFieldModifiers() {
-        TypeNode type = tree.getUtils().findType("FieldModifiers");
-        assertNotNull(type);
-        assertTrue(type instanceof ClassNode);
-        assertTrue(type.getAccessibility() == Accessibility.PUBLIC);
+        TypeNode type = retrieveType("FieldModifiers", Accessibility.PUBLIC, ClassNode.class);
 
-        List<FieldNode> fields = (List<FieldNode>) type.fields();
-        assertFalse(fields.isEmpty());
-        for (FieldNode f : fields) {
-            if (f.name().equals("XXX")) {
-                assertTrue(f.hasModifier(Modifiers.STATIC));
-                assertTrue(f.hasModifier(Modifiers.FINAL));
-                assertEquals("String", f.getType().name());
-                assertTrue(f.getAccessibility() == Accessibility.PUBLIC);
-            } else if (f.name().equals("yyy")) {
-                assertTrue(f.hasModifier(Modifiers.TRANSIENT));
-                assertEquals("String", f.getType().name());
-                assertTrue(f.getAccessibility() == Accessibility.PROTECTED);
-            } else if (f.name().equals("zzz")) {
-                assertTrue(f.hasModifier(Modifiers.VOLATILE));
-                assertEquals("String", f.getType().name());
-                assertTrue(f.getAccessibility() == Accessibility.PRIVATE);
-            } else if (f.name().equals("aaa")) {
-                assertEquals("String", f.getType().name());
-                assertTrue(f.getAccessibility() == Accessibility.DEFAULT);
-            } else {
-                fail("Unknown field name found: " + f.name());
-            }
-        }
-
+        retrieveField(type, "XXX", "String", Accessibility.PUBLIC, Modifiers.STATIC, Modifiers.FINAL);
+        retrieveField(type, "yyy", "String", Accessibility.PROTECTED, Modifiers.TRANSIENT);
+        retrieveField(type, "zzz", "String", Accessibility.PRIVATE, Modifiers.VOLATILE);
+        retrieveField(type, "aaa", "String", Accessibility.DEFAULT);
     }
 
     @Test
     public void testMultipleFieldArrayType() {
-        TypeNode type = tree.getUtils().findType("MultipleFieldArrayType");
-        assertNotNull(type);
-        assertTrue(type instanceof ClassNode);
-        assertTrue(type.getAccessibility() == Accessibility.PUBLIC);
+        TypeNode type = retrieveType("MultipleFieldArrayType", Accessibility.PUBLIC, ClassNode.class);
 
-        List<FieldNode> fields = (List<FieldNode>) type.fields();
-        assertFalse(fields.isEmpty());
-        for (FieldNode f : fields) {
-            if (f.name().equals("field1")) {
-                assertEquals("String[]", f.getType().name());
-                assertTrue(f.getAccessibility() == Accessibility.PRIVATE);
-            } else if (f.name().equals("field2")) {
-                assertEquals("String[][]", f.getType().name());
-                assertTrue(f.getAccessibility() == Accessibility.PRIVATE);
-            } else {
-                fail("Unknown field name found: " + f.name());
-            }
-        }
+        retrieveField(type, "field1", "String[]", Accessibility.PRIVATE);
+        retrieveField(type, "field2", "String[][]", Accessibility.PRIVATE);
     }
 
     @Test
     public void testMultipleFields() {
-        TypeNode type = tree.getUtils().findType("MultipleFields");
-        assertNotNull(type);
-        assertTrue(type instanceof ClassNode);
-        assertTrue(type.getAccessibility() == Accessibility.PUBLIC);
+        TypeNode type = retrieveType("MultipleFields", Accessibility.PUBLIC, ClassNode.class);
 
-        List<FieldNode> fields = (List<FieldNode>) type.fields();
-        assertFalse(fields.isEmpty());
-        for (FieldNode f : fields) {
-            if (f.name().equals("field1")) {
-                assertEquals("String", f.getType().name());
-                assertTrue(f.getAccessibility() == Accessibility.DEFAULT);
-            } else if (f.name().equals("field2")) {
-                assertEquals("A", f.getType().name());
-                assertTrue(f.getAccessibility() == Accessibility.DEFAULT);
-            } else if (f.name().equals("field3")) {
-                assertEquals("B", f.getType().name());
-                assertTrue(f.getAccessibility() == Accessibility.DEFAULT);
-            } else if (f.name().equals("field4")) {
-                assertEquals("String", f.getType().name());
-                assertTrue(f.getAccessibility() == Accessibility.DEFAULT);
-            } else {
-                fail("Unknown field name found: " + f.name());
-            }
-        }
+        retrieveField(type, "field1", "String", Accessibility.DEFAULT);
+        retrieveField(type, "field2", "A", Accessibility.DEFAULT);
+        retrieveField(type, "field3", "B", Accessibility.DEFAULT);
+        retrieveField(type, "field4", "String", Accessibility.DEFAULT);
     }
 
     @Test
     public void testSingleFieldArrayType() {
-        TypeNode type = tree.getUtils().findType("SingleFieldArrayType");
-        assertNotNull(type);
-        assertTrue(type instanceof ClassNode);
-        assertTrue(type.getAccessibility() == Accessibility.PUBLIC);
+        TypeNode type = retrieveType("SingleFieldArrayType", Accessibility.PUBLIC, ClassNode.class);
 
-        List<FieldNode> fields = (List<FieldNode>) type.fields();
-        assertFalse(fields.isEmpty());
-        for (FieldNode f : fields) {
-            if (f.name().equals("field")) {
-                assertEquals("A[]", f.getType().name());
-                assertTrue(f.getAccessibility() == Accessibility.PRIVATE);
-            } else {
-                fail("Unknown field name found: " + f.name());
-            }
-        }
+        retrieveField(type, "field", "A[]", Accessibility.PRIVATE);
     }
 
     @Test
     public void testSingleFieldKnownType() {
-        TypeNode type = tree.getUtils().findType("SingleFieldKnownType");
-        assertNotNull(type);
-        assertTrue(type instanceof ClassNode);
-        assertTrue(type.getAccessibility() == Accessibility.PUBLIC);
+        TypeNode type = retrieveType("SingleFieldKnownType", Accessibility.PUBLIC, ClassNode.class);
 
-        List<FieldNode> fields = (List<FieldNode>) type.fields();
-        assertFalse(fields.isEmpty());
-        for (FieldNode f : fields) {
-            if (f.name().equals("field")) {
-                assertEquals("A", f.getType().name());
-                assertTrue(f.getAccessibility() == Accessibility.PRIVATE);
-            } else {
-                fail("Unknown field name found: " + f.name());
-            }
-        }
+        retrieveField(type, "field", "A", Accessibility.PRIVATE);
     }
 
     @Test
     public void testSingleFieldUnknownType() {
-        TypeNode type = tree.getUtils().findType("SingleFieldUnknownType");
-        assertNotNull(type);
-        assertTrue(type instanceof ClassNode);
-        assertTrue(type.getAccessibility() == Accessibility.PUBLIC);
+        TypeNode type = retrieveType("SingleFieldUnknownType", Accessibility.PUBLIC, ClassNode.class);
 
-        List<FieldNode> fields = (List<FieldNode>) type.fields();
-        assertFalse(fields.isEmpty());
-        for (FieldNode f : fields) {
-            if (f.name().equals("field")) {
-                assertEquals("String", f.getType().name());
-                assertTrue(f.getAccessibility() == Accessibility.PRIVATE);
-            } else {
-                fail("Unknown field name found: " + f.name());
-            }
-        }
+        retrieveField(type, "field", "String", Accessibility.PRIVATE);
     }
 
     @Test
     public void testSingleFieldPrimitiveType() {
-        TypeNode type = tree.getUtils().findType("SingleFieldPrimitiveType");
-        assertNotNull(type);
-        assertTrue(type instanceof ClassNode);
-        assertTrue(type.getAccessibility() == Accessibility.PUBLIC);
+        TypeNode type = retrieveType("SingleFieldPrimitiveType", Accessibility.PUBLIC, ClassNode.class);
 
-        List<FieldNode> fields = (List<FieldNode>) type.fields();
-        assertFalse(fields.isEmpty());
-        for (FieldNode f : fields) {
-            if (f.name().equals("x")) {
-                assertEquals("int", f.getType().name());
-                assertTrue(f.getAccessibility() == Accessibility.PRIVATE);
-            } else {
-                fail("Unknown field name found: " + f.name());
-            }
-        }
+        retrieveField(type, "x", "int", Accessibility.PRIVATE);
     }
 }

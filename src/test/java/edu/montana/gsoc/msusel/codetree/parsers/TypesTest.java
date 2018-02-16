@@ -1,22 +1,39 @@
+/**
+ * The MIT License (MIT)
+ *
+ * MSUSEL Java Parser
+ * Copyright (c) 2015-2017 Montana State University, Gianforte School of Computing,
+ * Software Engineering Laboratory
+ *
+ * Permission is hereby granted, free of charge, to any person obtaining a copy
+ * of this software and associated documentation files (the "Software"), to deal
+ * in the Software without restriction, including without limitation the rights
+ * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+ * copies of the Software, and to permit persons to whom the Software is
+ * furnished to do so, subject to the following conditions:
+ *
+ * The above copyright notice and this permission notice shall be included in all
+ * copies or substantial portions of the Software.
+ *
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+ * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+ * SOFTWARE.
+ */
 package edu.montana.gsoc.msusel.codetree.parsers;
 
-import codetree.CodeTree;
-import codetree.node.Accessibility;
-import codetree.node.Modifiers;
-import codetree.node.type.ClassNode;
-import codetree.node.type.InterfaceNode;
-import codetree.node.type.TypeNode;
+import edu.montana.gsoc.msusel.codetree.node.Accessibility;
+import edu.montana.gsoc.msusel.codetree.node.Modifiers;
+import edu.montana.gsoc.msusel.codetree.node.type.ClassNode;
+import edu.montana.gsoc.msusel.codetree.node.type.InterfaceNode;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertTrue;
-
-public class TypesTest {
-
-    CodeTree tree;
+public class TypesTest extends BaseTestClass {
 
     @Before
     public void setUp() throws Exception {
@@ -30,69 +47,41 @@ public class TypesTest {
 
     @Test
     public void testClassModifiers_1() {
-        TypeNode type = tree.getUtils().findType("ClassModifiers");
-        assertNotNull(type);
-        assertTrue(type instanceof ClassNode);
-        assertEquals(Accessibility.PUBLIC, type.getAccessibility());
-        assertTrue(type.hasModifier(Modifiers.STRICTFP));
+        retrieveType("ClassModifiers", Accessibility.PUBLIC, ClassNode.class, Modifiers.STRICTFP);
     }
 
     @Test
     public void testClassModifiers_2() {
-        TypeNode type = tree.getUtils().findType("ClassModifiers2");
-        assertNotNull(type);
-        assertTrue(type instanceof ClassNode);
-        assertEquals(Accessibility.PROTECTED, type.getAccessibility());
+        retrieveType("ClassModifiers2", Accessibility.PROTECTED, ClassNode.class);
     }
 
     @Test
     public void testClassModifiers_3() {
-        TypeNode type = tree.getUtils().findType("ClassModifiers3");
-        assertNotNull(type);
-        assertTrue(type instanceof ClassNode);
-        assertEquals(Accessibility.DEFAULT, type.getAccessibility());
+        retrieveType("ClassModifiers3", Accessibility.DEFAULT, ClassNode.class);
     }
 
     @Test
     public void testClassModifiers_4() {
-        TypeNode type = tree.getUtils().findType("ClassModifiers4");
-        assertNotNull(type);
-        assertTrue(type instanceof ClassNode);
-        assertEquals(Accessibility.PUBLIC, type.getAccessibility());
-        assertTrue(type.hasModifier(Modifiers.FINAL));
+        retrieveType("ClassModifiers4", Accessibility.PUBLIC, ClassNode.class, Modifiers.FINAL);
     }
 
     @Test
     public void testClassModifiers_5() {
-        TypeNode type = tree.getUtils().findType("ClassModifiers5");
-        assertNotNull(type);
-        assertTrue(type instanceof ClassNode);
-        assertEquals(Accessibility.PRIVATE, type.getAccessibility());
-        assertTrue(type.hasModifier(Modifiers.STATIC));
+        retrieveType("ClassModifiers5", Accessibility.PRIVATE, ClassNode.class, Modifiers.STATIC);
     }
 
     @Test
     public void testClassModifiers_6() {
-        TypeNode type = tree.getUtils().findType("ClassModifiers6");
-        assertNotNull(type);
-        assertTrue(type instanceof ClassNode);
-        assertEquals(Accessibility.PUBLIC, type.getAccessibility());
-        assertTrue(type.hasModifier(Modifiers.ABSTRACT));
+        retrieveType("ClassModifiers6", Accessibility.PUBLIC, ClassNode.class, Modifiers.ABSTRACT);
     }
 
     @Test
     public void testInterfaceModifiers_1() {
-        TypeNode type = tree.getUtils().findType("InterfaceModifiers");
-        assertNotNull(type);
-        assertTrue(type instanceof InterfaceNode);
-        assertEquals(Accessibility.PUBLIC, type.getAccessibility());
+        retrieveType("InterfaceModifiers", Accessibility.PUBLIC, InterfaceNode.class);
     }
 
     @Test
     public void testInterfaceModifiers_2() {
-        TypeNode type = tree.getUtils().findType("InterfaceModifiers2");
-        assertNotNull(type);
-        assertTrue(type instanceof InterfaceNode);
-        assertEquals(Accessibility.DEFAULT, type.getAccessibility());
+        retrieveType("InterfaceModifiers2", Accessibility.DEFAULT, InterfaceNode.class);
     }
 }

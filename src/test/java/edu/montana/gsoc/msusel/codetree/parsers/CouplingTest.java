@@ -1,20 +1,41 @@
+/**
+ * The MIT License (MIT)
+ *
+ * MSUSEL Java Parser
+ * Copyright (c) 2015-2017 Montana State University, Gianforte School of Computing,
+ * Software Engineering Laboratory
+ *
+ * Permission is hereby granted, free of charge, to any person obtaining a copy
+ * of this software and associated documentation files (the "Software"), to deal
+ * in the Software without restriction, including without limitation the rights
+ * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+ * copies of the Software, and to permit persons to whom the Software is
+ * furnished to do so, subject to the following conditions:
+ *
+ * The above copyright notice and this permission notice shall be included in all
+ * copies or substantial portions of the Software.
+ *
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+ * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+ * SOFTWARE.
+ */
 package edu.montana.gsoc.msusel.codetree.parsers;
 
-import codetree.CodeTree;
-import codetree.node.Accessibility;
-import codetree.node.Modifiers;
-import codetree.node.type.ClassNode;
-import codetree.node.type.TypeNode;
+import edu.montana.gsoc.msusel.codetree.node.Accessibility;
+import edu.montana.gsoc.msusel.codetree.node.Modifiers;
+import edu.montana.gsoc.msusel.codetree.node.type.ClassNode;
+import edu.montana.gsoc.msusel.codetree.node.type.TypeNode;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 
-import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 
-public class CouplingTest {
-
-    CodeTree tree;
+public class CouplingTest extends BaseTestClass {
 
     @Before
     public void setUp() throws Exception {
@@ -28,81 +49,60 @@ public class CouplingTest {
 
     @Test
     public void testBiDirectionalAssociation() {
-        TypeNode type = tree.getUtils().findType("BiDirectionalAssociation");
-        assertNotNull(type);
-        assertTrue(type instanceof ClassNode);
-        assertTrue(type.getAccessibility() == Accessibility.PUBLIC);
+        TypeNode type = retrieveType("BiDirectionalAssociation", Accessibility.PUBLIC, ClassNode.class);
 
         assertTrue(tree.hasBiDirectionalAssociation(type, tree.getUtils().findType("B")));
     }
 
     @Test
     public void testTypeB() {
-        TypeNode type = tree.getUtils().findType("B");
-        assertNotNull(type);
-        assertTrue(type instanceof ClassNode);
-        assertTrue(type.getAccessibility() == Accessibility.PUBLIC);
+        TypeNode type = retrieveType("B", Accessibility.PUBLIC, ClassNode.class);
 
-        assertTrue(tree.hasBiDirectionalAssociation(type, tree.getUtils().findType("B")));
+        assertTrue(tree.hasBiDirectionalAssociation(type, tree.getUtils().findType("BiDirectionalAssociation")));
     }
 
     @Test
     public void testContainedClasses() {
-        TypeNode type = tree.getUtils().findType("ContainedClasses");
-        assertNotNull(type);
-        assertTrue(type instanceof ClassNode);
-        assertTrue(type.getAccessibility() == Accessibility.PUBLIC);
+        TypeNode type = retrieveType("ContainedClasses", Accessibility.PUBLIC, ClassNode.class);
+        TypeNode cont = retrieveType("ContainedClasses.ContainedClass", Accessibility.PRIVATE, ClassNode.class, Modifiers.STATIC);
 
-        assertTrue(tree.hasContainmentRelation(type, tree.getUtils().findType("ContainedClasses.ContainedClass")));
+        assertTrue(tree.hasContainmentRelation(cont, type));
     }
 
     @Test
     public void testContainedClass_ContainedClass() {
-        TypeNode type = tree.getUtils().findType("ContainedClasses.ContainedClass");
-        assertNotNull(type);
-        assertTrue(type instanceof ClassNode);
-        assertTrue(type.hasModifier(Modifiers.STATIC));
-        assertTrue(type.getAccessibility() == Accessibility.PRIVATE);
+        TypeNode type = retrieveType("ContainedClasses", Accessibility.PUBLIC, ClassNode.class);
+        TypeNode cont = retrieveType("ContainedClasses.ContainedClass", Accessibility.PRIVATE, ClassNode.class, Modifiers.STATIC);
 
-        assertTrue(tree.hasContainmentRelation(tree.getUtils().findType("ContainedClasses.ContainedClass"), type));
+        assertTrue(tree.hasContainmentRelation(cont, type));
     }
 
     @Test
     public void testUniDirectionalAssociation() {
-        TypeNode type = tree.getUtils().findType("UniDirectionalAssociation");
-        assertNotNull(type);
-        assertTrue(type instanceof ClassNode);
-        assertTrue(type.getAccessibility() == Accessibility.PUBLIC);
+        TypeNode type = retrieveType("UniDirectionalAssociation", Accessibility.PUBLIC, ClassNode.class);
 
         assertTrue(tree.hasUniDirectionalAssociation(type, tree.getUtils().findType("C")));
     }
 
     @Test
     public void testTypeC() {
-        TypeNode type = tree.getUtils().findType("C");
-        assertNotNull(type);
-        assertTrue(type instanceof ClassNode);
-        assertTrue(type.getAccessibility() == Accessibility.PUBLIC);
+        TypeNode type = retrieveType("C", Accessibility.PUBLIC, ClassNode.class);
 
         assertTrue(tree.hasUniDirectionalAssociation(tree.getUtils().findType("UniDirectionalAssociation"), type));
     }
 
     @Test
     public void testUseDependency() {
-        TypeNode type = tree.getUtils().findType("UseDependency");
-        assertNotNull(type);
-        assertTrue(type instanceof ClassNode);
-        assertTrue(type.getAccessibility() == Accessibility.PUBLIC);
+        TypeNode type = retrieveType("UseDependency", Accessibility.PUBLIC, ClassNode.class);
+
+        System.out.println("Table: " + tree.getTable().get(type, tree.getUtils().findType("D")));
 
         assertTrue(tree.hasUseDependency(type, tree.getUtils().findType("D")));
     }
 
     @Test
     public void testTypeD() {
-        TypeNode type = tree.getUtils().findType("D");
-        assertNotNull(type);
-        assertTrue(type instanceof ClassNode);
-        assertTrue(type.getAccessibility() == Accessibility.PUBLIC);
+        TypeNode type = retrieveType("D", Accessibility.PUBLIC, ClassNode.class);
 
         assertTrue(tree.hasUseDependency(tree.getUtils().findType("UseDependency"), type));
     }

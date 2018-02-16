@@ -1,25 +1,41 @@
+/**
+ * The MIT License (MIT)
+ * <p>
+ * MSUSEL Java Parser
+ * Copyright (c) 2015-2017 Montana State University, Gianforte School of Computing,
+ * Software Engineering Laboratory
+ * <p>
+ * Permission is hereby granted, free of charge, to any person obtaining a copy
+ * of this software and associated documentation files (the "Software"), to deal
+ * in the Software without restriction, including without limitation the rights
+ * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+ * copies of the Software, and to permit persons to whom the Software is
+ * furnished to do so, subject to the following conditions:
+ * <p>
+ * The above copyright notice and this permission notice shall be included in all
+ * copies or substantial portions of the Software.
+ * <p>
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+ * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+ * SOFTWARE.
+ */
 package edu.montana.gsoc.msusel.codetree.parsers;
 
-import codetree.AbstractTypeRef;
-import codetree.CodeTree;
-import codetree.node.Accessibility;
-import codetree.node.Modifiers;
-import codetree.node.member.InitializerNode;
-import codetree.node.member.MethodNode;
-import codetree.node.member.ParameterNode;
-import codetree.node.type.TypeNode;
-import codetree.typeref.TypeVarTypeRef;
+import edu.montana.gsoc.msusel.codetree.node.Accessibility;
+import edu.montana.gsoc.msusel.codetree.node.Modifiers;
+import edu.montana.gsoc.msusel.codetree.node.member.MethodNode;
+import edu.montana.gsoc.msusel.codetree.node.type.ClassNode;
+import edu.montana.gsoc.msusel.codetree.node.type.InterfaceNode;
+import edu.montana.gsoc.msusel.codetree.node.type.TypeNode;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 
-import java.util.List;
-
-import static org.junit.Assert.*;
-
-public class MethodsTest {
-
-    CodeTree tree;
+public class MethodsTest extends BaseTestClass {
 
     @Before
     public void setUp() throws Exception {
@@ -33,242 +49,100 @@ public class MethodsTest {
 
     @Test
     public void testAbstractClassMethods() {
-        TypeNode type = tree.getUtils().findType("AbstractClassMethods");
-        assertNotNull(type);
-        assertTrue(type.hasModifier(Modifiers.ABSTRACT));
-        assertEquals(Accessibility.PUBLIC, type.getAccessibility());
+        TypeNode type = retrieveType("AbstractClassMethods", Accessibility.PUBLIC, ClassNode.class, Modifiers.ABSTRACT);
 
-        List<MethodNode> methods = (List<MethodNode>) type.methods();
-        for (MethodNode node : methods) {
-            if (node.name().equals("testMethod1")) {
-                assertEquals("void", node.getType().name());
-                assertEquals(Accessibility.PUBLIC, node.getAccessibility());
-                assertTrue(node.hasModifier(Modifiers.ABSTRACT));
-            } else if (node.name().equals("testMethod2")) {
-                assertEquals("void", node.getType().name());
-                assertEquals(Accessibility.PUBLIC, node.getAccessibility());
-                assertTrue(node.hasModifier(Modifiers.ABSTRACT));
-            } else {
-                fail("unknown method name");
-            }
-        }
+        retrieveMethod(type, "void testMethod1()", "void", Accessibility.PUBLIC, Modifiers.ABSTRACT);
+        retrieveMethod(type, "void testMethod2()", "void", Accessibility.PUBLIC, Modifiers.ABSTRACT);
     }
 
     @Test
     public void testInterfaceMethods() {
-        TypeNode type = tree.getUtils().findType("InterfaceMethods");
-        assertNotNull(type);
-        assertEquals(Accessibility.PUBLIC, type.getAccessibility());
-        List<MethodNode> methods = (List<MethodNode>) type.methods();
-        for (MethodNode node : methods) {
-            if (node.name().equals("testMethod1")) {
-                assertEquals("void", node.getType().name());
-            } else if (node.name().equals("testMethod2")) {
-                assertEquals("void", node.getType().name());
-            } else {
-                fail("unknown method name");
-            }
-        }
+        TypeNode type = retrieveType("InterfaceMethods", Accessibility.PUBLIC, InterfaceNode.class);
+
+        retrieveMethod(type, "void testMethod1()", "void", Accessibility.PUBLIC, Modifiers.ABSTRACT);
+        retrieveMethod(type, "void testMethod2()", "void", Accessibility.PUBLIC, Modifiers.ABSTRACT);
     }
 
     @Test
     public void testMethodExceptions() {
-        TypeNode type = tree.getUtils().findType("MethodExceptions");
-        assertNotNull(type);
-        assertEquals(Accessibility.PUBLIC, type.getAccessibility());
+        TypeNode type = retrieveType("MethodExceptions", Accessibility.PUBLIC, ClassNode.class);
 
-        List<MethodNode> methods = (List<MethodNode>) type.methods();
-        for (MethodNode node : methods) {
-            if (node.name().equals("exceptions")) {
-                assertEquals(Accessibility.PUBLIC, node.getAccessibility());
-                assertEquals("void", node.getType().name());
-                List<AbstractTypeRef> refs = (List<AbstractTypeRef>) node.getExceptions();
-//                if (!refs.get(0).name().equals("RuntimeException"))
-//                    fail("Incorrect exception type");
-            } else if (node.name().equals("exceptions2")) {
-                assertEquals(Accessibility.PUBLIC, node.getAccessibility());
-                assertEquals("void", node.getType().name());
-                List<AbstractTypeRef> refs = (List<AbstractTypeRef>) node.getExceptions();
-                for (AbstractTypeRef ref : refs) {
-                    if (!refs.get(0).name().equals("RuntimeException") && !refs.get(1).name().equals("NullPointerException"))
-                        fail("Incorrect exception type");
-                }
-            } else {
-                fail("unknown method name");
-            }
-        }
+        MethodNode method = retrieveMethod(type, "void exceptions()", "void", Accessibility.PUBLIC);
+//        ((List<?>)method.getExceptions()).forEach(System.out::println);
+//        retrieveMethodException(method, "RuntimeException");
+
+        method = retrieveMethod(type, "void exceptions2()", "void", Accessibility.PUBLIC);
+        System.out.println(method.getExceptions());
+        retrieveMethodException(method, "RuntimeException");
+        retrieveMethodException(method, "NullPointerException");
     }
 
     @Test
     public void testMethodMultipleParams() {
-        TypeNode type = tree.getUtils().findType("MethodMultipleParams");
-        assertNotNull(type);
-        assertEquals(Accessibility.PUBLIC, type.getAccessibility());
+        TypeNode type = retrieveType("MethodMultipleParams", Accessibility.PUBLIC, ClassNode.class);
 
-        List<MethodNode> methods = (List<MethodNode>) type.methods();
-        for (MethodNode node : methods) {
-            if (node.name().equals("method")) {
-                assertEquals("void", node.getType().name());
-                assertEquals(Accessibility.PUBLIC, node.getAccessibility());
-                List<ParameterNode> params = (List<ParameterNode>) node.getParams();
-                for (ParameterNode p : params) {
-                    if (p.name().equals("param1"))
-                        assertEquals("String", p.getType().name());
-                    else if (p.name().equals("param2"))
-                        assertEquals("String", p.getType().name());
-                    else
-                        fail("Unknown parameter");
-                }
-            } else if (node.name().equals("vargs")) {
-                List<ParameterNode> params = (List<ParameterNode>) node.getParams();
-                for (ParameterNode p : params) {
-                    if (p.name().equals("param1"))
-                        assertEquals("String", p.getType().name());
-                    else if (p.name().equals("param2"))
-                        assertEquals("String", p.getType().name());
-                    else
-                        fail("Unknown parameter");
-                }
-            } else {
-                fail("unknown method name: " + node.name());
-            }
-        }
+        MethodNode method = retrieveMethod(type, "void method(String, String)", "void", Accessibility.PUBLIC);
+        retrieveMethodParameter(method, "param1", "String");
+        retrieveMethodParameter(method, "param2", "String");
+
+        method = retrieveMethod(type, "void vargs(String, String)", "void", Accessibility.PUBLIC);
+        retrieveMethodParameter(method, "param1", "String");
+        retrieveMethodParameter(method, "param2", "String");
     }
 
     @Test
     public void testMethodParamMods() {
-        TypeNode type = tree.getUtils().findType("MethodParamMods");
-        assertNotNull(type);
-        assertEquals(Accessibility.PUBLIC, type.getAccessibility());
+        TypeNode type = retrieveType("MethodParamMods", Accessibility.PUBLIC, ClassNode.class);
 
-        List<MethodNode> methods = (List<MethodNode>) type.methods();
-        for (MethodNode node : methods) {
-            if (node.name().equals("method")) {
-                assertEquals("void", node.getType().name());
-                ParameterNode param0 = ((List<ParameterNode>) node.getParams()).get(0);
-//                assertEquals("param", param0.name());
-//                assertEquals("String", param0.getType().name());
-                assertTrue(param0.hasModifier(Modifiers.FINAL));
-            } else {
-                fail("unknown method name");
-            }
-        }
+        MethodNode method = retrieveMethod(type, "void method(String)", "void", Accessibility.PUBLIC);
+        retrieveMethodParameter(method, "param", "String", Modifiers.FINAL);
     }
 
     @Test
     public void testMethodParams() {
-        TypeNode type = tree.getUtils().findType("MethodParams");
-        assertNotNull(type);
-        assertEquals(Accessibility.PUBLIC, type.getAccessibility());
+        TypeNode type = retrieveType("MethodParams", Accessibility.PUBLIC, ClassNode.class);
 
-        List<MethodNode> methods = (List<MethodNode>) type.methods();
-        for (MethodNode node : methods) {
-            if (node.name().equals("knownType")) {
-                assertEquals("void", node.getType().name());
-                assertEquals(Accessibility.PUBLIC, node.getAccessibility());
-
-                List<ParameterNode> params = (List<ParameterNode>) node.getParams();
-                assertEquals("param", params.get(0).name());
-                assertEquals("B", params.get(0).getType().name());
-            } else if (node.name().equals("unknownType")) {
-                assertEquals("void", node.getType().name());
-                assertEquals(Accessibility.PUBLIC, node.getAccessibility());
-
-                List<ParameterNode> params = (List<ParameterNode>) node.getParams();
-                assertEquals("param", params.get(0).name());
-                assertEquals("String", params.get(0).getType().name());
-            } else {
-                fail("unknown method name: " + node.name());
-            }
-        }
+        MethodNode method = retrieveMethod(type, "void knownType(B)", "void", Accessibility.PUBLIC);
+        retrieveMethodParameter(method, "param", "B");
+        method = retrieveMethod(type, "void unknownType(String)", "void", Accessibility.PUBLIC);
+        retrieveMethodParameter(method, "param", "String");
     }
 
     @Test
     public void testMethodsReturnType() {
-        TypeNode type = tree.getUtils().findType("MethodsReturnType");
-        assertNotNull(type);
-        assertEquals(Accessibility.PUBLIC, type.getAccessibility());
+        TypeNode type = retrieveType("MethodsReturnType", Accessibility.PUBLIC, ClassNode.class);
 
-        List<MethodNode> methods = (List<MethodNode>) type.methods();
-        for (MethodNode node : methods) {
-            if (node.name().equals("unknownType")) {
-
-            } else if (node.name().equals("knownType")) {
-
-            } else {
-                fail("unknown method name");
-            }
-        }
+        retrieveMethod(type, "String unknownType()", "String", Accessibility.PUBLIC);
+        retrieveMethod(type, "A knownType()", "A", Accessibility.PUBLIC);
     }
 
     @Test
     public void testMethodsTypeParam() {
-        TypeNode type = tree.getUtils().findType("MethodsTypeParam");
-        assertNotNull(type);
-        assertEquals(Accessibility.PUBLIC, type.getAccessibility());
+        TypeNode type = retrieveType("MethodsTypeParam", Accessibility.PUBLIC, ClassNode.class);
 
-        List<MethodNode> methods = (List<MethodNode>) type.methods();
-        for (MethodNode node : methods) {
-            if (node.name().equals("testMethod")) {
-                assertEquals("T", node.getType().name());
-                assertEquals(Accessibility.PUBLIC, node.getAccessibility());
-
-                List<TypeVarTypeRef> params = (List<TypeVarTypeRef>) node.getTypeParams();
-//                assertEquals("T", params.get(0).name());
-            } else {
-                fail("unknown method name");
-            }
-        }
+        retrieveMethod(type, "T testMethod()", "T", Accessibility.PUBLIC);
     }
 
     @Test
     public void testVoidMethods() {
-        TypeNode type = tree.getUtils().findType("VoidMethods");
-        assertNotNull(type);
-        assertEquals(Accessibility.PUBLIC, type.getAccessibility());
+        TypeNode type = retrieveType("VoidMethods", Accessibility.PUBLIC, ClassNode.class);
 
-        List<MethodNode> methods = (List<MethodNode>) type.methods();
-        for (MethodNode node : methods) {
-            if (node.name().equals("testMethod1")) {
-                assertEquals("void", node.getType().name());
-                assertEquals(Accessibility.PUBLIC, node.getAccessibility());
-            } else if (node.name().equals("testMethod2")) {
-                assertEquals("void", node.getType().name());
-                assertEquals(Accessibility.PUBLIC, node.getAccessibility());
-            } else {
-                fail("unknown method name");
-            }
-        }
+        retrieveMethod(type, "void testMethod1()", "void", Accessibility.PUBLIC);
+        retrieveMethod(type, "void testMethod2()", "void", Accessibility.PUBLIC);
     }
 
     @Test
     public void testConstructors() {
-        TypeNode type = tree.getUtils().findType("Constructors");
-        assertNotNull(type);
-        assertEquals(Accessibility.PUBLIC, type.getAccessibility());
+        TypeNode type = retrieveType("Constructors", Accessibility.PUBLIC, ClassNode.class);
 
-        List<MethodNode> methods = (List<MethodNode>) type.methods();
-        assertEquals("Constructors", methods.get(0).name());
-        assertEquals(Accessibility.PUBLIC, methods.get(0).getAccessibility());
-
-        assertEquals("Constructors", methods.get(1).name());
-        assertEquals(Accessibility.PRIVATE, methods.get(1).getAccessibility());
-
-        ParameterNode param = (ParameterNode) methods.get(1).getParameterByName("x");
-        assertNotNull(param);
-        assertEquals("int", param.getType().name());
+        retrieveMethod(type, "Constructors()", "", Accessibility.PUBLIC);
+        MethodNode method = retrieveMethod(type, "Constructors(int)", "", Accessibility.PRIVATE);
+        retrieveMethodParameter(method, "x", "int");
     }
 
     @Test
     public void testStaticInit() {
-        TypeNode type = tree.getUtils().findType("StaticInit");
-        assertNotNull(type);
-        assertEquals(Accessibility.PUBLIC, type.getAccessibility());
-
-        List<MethodNode> methods = (List<MethodNode>) type.methods();
-        assertTrue(methods.get(0) instanceof InitializerNode);
-        InitializerNode init = (InitializerNode) methods.get(0);
-        assertFalse(init.isInstance());
-        assertEquals("<static_init$1>", init.name());
+        ClassNode type = (ClassNode) retrieveType("StaticInit", Accessibility.PUBLIC, ClassNode.class);
+        retrieveStaticInitializer(type, 1);
     }
 }

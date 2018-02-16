@@ -1,6 +1,5 @@
 package java.lang
 
-# Interfaces
 interface Appendable
 interface AutoCloseable
 interface CharSequence
@@ -10,8 +9,6 @@ interface Iterable
 interface Readable
 interface Runnable
 interface Thread.UncaughtExceptionHandler
-
-# Classes
 class Boolean
 class Byte
 class Character
@@ -22,6 +19,7 @@ class ClassLoader
 class ClassValue
 class Compiler
 class Double
+class Enum
 class Enum
 class Float
 class InheritableThreadLocal
@@ -42,19 +40,16 @@ class StackTraceElement
 class StrictMath
 class String
 class StringBuffer
+class StringBuilder
 class System
 class Thread
 class ThreadGroup
 class ThreadLocal
 class Throwable
-class void
-
-# Enums
+class Void
 enum Character.UnicodeScript
 enum ProcessBuilder.Redirect.Type
 enum Thread.State
-
-# Exceptions
 class ArithmeticException
 class ArrayIndexOutOfBoundsException
 class ArrayStoreException
@@ -82,8 +77,6 @@ class SecurityException
 class StringIndexOutOfBoundsException
 class TypeNotPresentException
 class UnsupportedOperationException
-
-# Errors
 class AbstractMethodError
 class AssertionError
 class BootstrapMethodError
@@ -107,3 +100,8 @@ class UnsatisfiedLinkError
 class UnsupportedClassVersionError
 class VerifyError
 class VirtualMachineError
+annotation Deprecated
+annotation FunctionalInterface
+annotation Override
+annotation SafeVarargs
+annotation SuppressWarnings

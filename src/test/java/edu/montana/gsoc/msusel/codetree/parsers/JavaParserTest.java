@@ -25,8 +25,8 @@
  */
 package edu.montana.gsoc.msusel.codetree.parsers;
 
-import codetree.CodeTree;
-import codetree.node.structural.FileNode;
+import edu.montana.gsoc.msusel.codetree.CodeTree;
+import edu.montana.gsoc.msusel.codetree.node.structural.FileNode;
 import com.google.common.collect.Lists;
 import edu.montana.gsoc.msusel.codetree.parsers.java8.Java8Lexer;
 import edu.montana.gsoc.msusel.codetree.parsers.java8.Java8Parser;

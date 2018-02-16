@@ -1,15 +1,44 @@
+/**
+ * The MIT License (MIT)
+ * <p>
+ * MSUSEL Java Parser
+ * Copyright (c) 2015-2017 Montana State University, Gianforte School of Computing,
+ * Software Engineering Laboratory
+ * <p>
+ * Permission is hereby granted, free of charge, to any person obtaining a copy
+ * of this software and associated documentation files (the "Software"), to deal
+ * in the Software without restriction, including without limitation the rights
+ * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+ * copies of the Software, and to permit persons to whom the Software is
+ * furnished to do so, subject to the following conditions:
+ * <p>
+ * The above copyright notice and this permission notice shall be included in all
+ * copies or substantial portions of the Software.
+ * <p>
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+ * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+ * SOFTWARE.
+ */
 package edu.montana.gsoc.msusel.codetree.parsers;
 
-import codetree.BaseCodeTreeBuilder;
-import codetree.cfg.CFGBuilder;
-import codetree.cfg.JumpTo;
-import codetree.cfg.StatementType;
-import codetree.node.member.MethodNode;
+import edu.montana.gsoc.msusel.codetree.BaseCodeTreeBuilder;
+import edu.montana.gsoc.msusel.codetree.cfg.CFGBuilder;
+import edu.montana.gsoc.msusel.codetree.cfg.JumpTo;
+import edu.montana.gsoc.msusel.codetree.cfg.StatementType;
+import edu.montana.gsoc.msusel.codetree.node.member.MethodNode;
 import edu.montana.gsoc.msusel.codetree.parsers.java8.Java8Parser;
 import lombok.extern.slf4j.Slf4j;
 
 import java.util.Stack;
 
+/**
+ * @author Isaac Griffith
+ * @version 1.2.0
+ */
 @Slf4j
 public class JavaStatementExtractor extends JavaMemberExtractor {
 
@@ -18,32 +47,96 @@ public class JavaStatementExtractor extends JavaMemberExtractor {
     private StringBuilder sigBuilder;
     private int staticInitCount = 0;
     private int instanceInitCount = 0;
+    private String currentSig;
 
+    private Stack<CFGBuilder> builderStack = new Stack<>();
     CFGBuilder builder;
 
     public JavaStatementExtractor(BaseCodeTreeBuilder builder) {
         super(builder);
     }
 
+    private void startMethod() {
+        CFGBuilder newBuilder = new CFGBuilder();
+        builderStack.push(newBuilder);
+        builder = newBuilder;
+    }
+
+    private void endMethod() {
+        builderStack.pop();
+        if (builderStack.empty())
+            builder = null;
+        else
+            builder = builderStack.peek();
+    }
+
     // CFG Owners
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
     public void enterStaticInitializer(final Java8Parser.StaticInitializerContext ctx) {
-        sigBuilder = new StringBuilder();
-        sigBuilder.append("<static_init$" + (++staticInitCount) + ">");
-        builder.startMethod();
+        MethodNode init = (MethodNode) treeBuilder.findStaticInitializer(++staticInitCount);
+        if (init != null) {
+            methods.push(init);
+
+            startMethod();
+            builder.startMethod();
+        }
+
+        super.enterStaticInitializer(ctx);
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public void exitStaticInitializer(final Java8Parser.StaticInitializerContext ctx) {
+        if (!methods.empty()) {
+            builder.endMethod(methods.peek());
+            endMethod();
+        }
+
+        super.exitStaticInitializer(ctx);
     }
 
 
+    /**
+     * {@inheritDoc}
+     */
+    @Override
     public void enterInstanceInitializer(final Java8Parser.InstanceInitializerContext ctx) {
-        sigBuilder = new StringBuilder();
-        sigBuilder.append("<init$" + (++instanceInitCount) + ">");
+        MethodNode init = (MethodNode) treeBuilder.findInstanceInitializer(++staticInitCount);
+        if (init != null) {
+            methods.push(init);
 
-        treeBuilder.findMethodFromSignature(sigBuilder.toString());
+            startMethod();
+            builder.startMethod();
+        }
 
-        builder.startMethod();
+        super.enterInstanceInitializer(ctx);
     }
 
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public void exitInstanceInitializer(final Java8Parser.InstanceInitializerContext ctx) {
+        if (!methods.empty()) {
+            builder.endMethod(methods.peek());
+            endMethod();
+        }
+
+        super.exitInstanceInitializer(ctx);
+    }
+
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public void enterConstructorDeclarator(final Java8Parser.ConstructorDeclaratorContext ctx) {
+        startMethod();
         sigBuilder = new StringBuilder();
         sigBuilder.append(ctx.simpleTypeName().Identifier().getText());
         sigBuilder.append("(");
@@ -51,15 +144,25 @@ public class JavaStatementExtractor extends JavaMemberExtractor {
         super.enterConstructorDeclarator(ctx);
     }
 
+    /**
+     * {@inheritDoc}
+     */
+    @Override
     public void exitConstructorDeclarator(final Java8Parser.ConstructorDeclaratorContext ctx) {
         String sig = sigBuilder.toString();
-        sig = sig.substring(0, sig.lastIndexOf(", ")) + ")";
+        if (sig.endsWith(", "))
+            sig = sig.substring(0, sig.lastIndexOf(", ")) + ")";
+        else
+            sig += ")";
 
-        treeBuilder.findMethodFromSignature(sig);
+        methods.push((MethodNode) treeBuilder.findMethodFromSignature(sig));
 
         super.exitConstructorDeclarator(ctx);
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public void enterFormalParameter(final Java8Parser.FormalParameterContext ctx) {
         sigBuilder.append(ctx.unannType().getText());
@@ -68,6 +171,10 @@ public class JavaStatementExtractor extends JavaMemberExtractor {
         super.enterFormalParameter(ctx);
     }
 
+    /**
+     * {@inheritDoc}
+     */
+    @Override
     public void enterReceiverParameter(final Java8Parser.ReceiverParameterContext ctx) {
         sigBuilder.append(ctx.unannType().getText());
         sigBuilder.append(", ");
@@ -75,18 +182,44 @@ public class JavaStatementExtractor extends JavaMemberExtractor {
         super.enterReceiverParameter(ctx);
     }
 
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public void enterLastFormalParameter(final Java8Parser.LastFormalParameterContext ctx) {
+        if (ctx.formalParameter() == null) {
+            sigBuilder.append(ctx.unannType().getText());
+            sigBuilder.append(", ");
+        }
+
+        super.enterLastFormalParameter(ctx);
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
     public void enterConstructorBody(final Java8Parser.ConstructorBodyContext ctx) {
         builder.startMethod();
 
         super.enterConstructorBody(ctx);
     }
 
+    /**
+     * {@inheritDoc}
+     */
+    @Override
     public void exitConstructorBody(final Java8Parser.ConstructorBodyContext ctx) {
-        builder.endMethod();
+        builder.endMethod(methods.peek());
+        endMethod();
 
         super.exitConstructorBody(ctx);
     }
 
+    /**
+     * {@inheritDoc}
+     */
+    @Override
     public void enterMethodHeader(final Java8Parser.MethodHeaderContext ctx) {
         sigBuilder = new StringBuilder();
         sigBuilder.append(ctx.result().getText());
@@ -95,17 +228,22 @@ public class JavaStatementExtractor extends JavaMemberExtractor {
         super.enterMethodHeader(ctx);
     }
 
-    public void exitMethodHeader(final Java8Parser.MethodHeaderContext ctx) {
-        super.exitMethodHeader(ctx);
-    }
-
+    /**
+     * {@inheritDoc}
+     */
+    @Override
     public void enterMethodDeclarator(final Java8Parser.MethodDeclaratorContext ctx) {
+        startMethod();
         sigBuilder.append(ctx.Identifier().getText());
         sigBuilder.append("(");
 
         super.enterMethodDeclarator(ctx);
     }
 
+    /**
+     * {@inheritDoc}
+     */
+    @Override
     public void enterMethodBody(final Java8Parser.MethodBodyContext ctx) {
         String sig = sigBuilder.toString();
         if (sig.contains(", "))
@@ -113,34 +251,32 @@ public class JavaStatementExtractor extends JavaMemberExtractor {
         else
             sig += ")";
 
-        treeBuilder.findMethodFromSignature(sig);
+        currentSig = sig;
+
+        methods.push((MethodNode) treeBuilder.findMethodFromSignature(currentSig));
 
         builder.startMethod();
 
         super.enterMethodBody(ctx);
     }
 
+    /**
+     * {@inheritDoc}
+     */
+    @Override
     public void exitMethodBody(final Java8Parser.MethodBodyContext ctx) {
-        builder.endMethod();
+        MethodNode method = treeBuilder.getTypes().peek().findMethodBySignature(currentSig);
+        builder.endMethod(method);
+        endMethod();
 
         super.exitMethodBody(ctx);
     }
 
     // CFG Contents
-    @Override
-    public void enterBlockStatement(final Java8Parser.BlockStatementContext ctx) {
-        builder.startBlock(StatementType.BLOCK_START, StatementType.BLOCK_END);
 
-        super.enterBlockStatement(ctx);
-    }
-
-    @Override
-    public void exitBlockStatement(final Java8Parser.BlockStatementContext ctx) {
-        builder.endBlock();
-
-        super.exitBlockStatement(ctx);
-    }
-
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public void enterExpressionStatement(final Java8Parser.ExpressionStatementContext ctx) {
         builder.createStatement(StatementType.EXPRESSION);
@@ -148,6 +284,9 @@ public class JavaStatementExtractor extends JavaMemberExtractor {
         super.enterExpressionStatement(ctx);
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public void enterLocalVariableDeclarationStatement(final Java8Parser.LocalVariableDeclarationStatementContext ctx) {
         builder.createStatement(StatementType.VAR_DECL);
@@ -155,12 +294,19 @@ public class JavaStatementExtractor extends JavaMemberExtractor {
         super.enterLocalVariableDeclarationStatement(ctx);
     }
 
+    /**
+     * {@inheritDoc}
+     */
+    @Override
     public void enterLocalVariableDeclaration(final Java8Parser.LocalVariableDeclarationContext ctx) {
         // TODO handle creating use dependencies via local variable decls
 
         super.enterLocalVariableDeclaration(ctx);
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public void enterEmptyStatement(final Java8Parser.EmptyStatementContext ctx) {
         builder.createStatement(StatementType.EMPTY);
@@ -168,11 +314,29 @@ public class JavaStatementExtractor extends JavaMemberExtractor {
         super.enterEmptyStatement(ctx);
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
-    public void exitEmptyStatement(final Java8Parser.EmptyStatementContext ctx) {
-        super.exitEmptyStatement(ctx);
+    public void enterStatement(final Java8Parser.StatementContext ctx) {
+        if (ctx.parent instanceof Java8Parser.IfThenElseStatementContext)
+            builder.startDecisionBlock();
+        super.enterStatement(ctx);
     }
 
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public void enterStatementNoShortIf(final Java8Parser.StatementNoShortIfContext ctx) {
+        if (ctx.parent instanceof Java8Parser.IfThenElseStatementContext || ctx.parent instanceof Java8Parser.IfThenElseStatementNoShortIfContext)
+            builder.startDecisionBlock();
+        super.enterStatementNoShortIf(ctx);
+    }
+
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public void enterLabeledStatement(final Java8Parser.LabeledStatementContext ctx) {
         builder.createStatement(null, ctx.Identifier().getText());
@@ -180,6 +344,9 @@ public class JavaStatementExtractor extends JavaMemberExtractor {
         super.enterLabeledStatement(ctx);
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public void enterLabeledStatementNoShortIf(final Java8Parser.LabeledStatementNoShortIfContext ctx) {
         builder.createStatement(null, ctx.Identifier().getText());
@@ -187,6 +354,9 @@ public class JavaStatementExtractor extends JavaMemberExtractor {
         super.enterLabeledStatementNoShortIf(ctx);
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public void enterIfThenStatement(final Java8Parser.IfThenStatementContext ctx) {
         builder.startDecision(StatementType.IF);
@@ -194,6 +364,9 @@ public class JavaStatementExtractor extends JavaMemberExtractor {
         super.enterIfThenStatement(ctx);
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public void exitIfThenStatement(final Java8Parser.IfThenStatementContext ctx) {
         super.exitIfThenStatement(ctx);
@@ -201,6 +374,9 @@ public class JavaStatementExtractor extends JavaMemberExtractor {
         builder.endDecision();
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public void enterIfThenElseStatement(final Java8Parser.IfThenElseStatementContext ctx) {
         builder.startDecision(StatementType.IF);
@@ -208,6 +384,9 @@ public class JavaStatementExtractor extends JavaMemberExtractor {
         super.enterIfThenElseStatement(ctx);
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public void exitIfThenElseStatement(final Java8Parser.IfThenElseStatementContext ctx) {
         super.exitIfThenElseStatement(ctx);
@@ -215,6 +394,9 @@ public class JavaStatementExtractor extends JavaMemberExtractor {
         builder.endDecision(false);
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public void enterIfThenElseStatementNoShortIf(final Java8Parser.IfThenElseStatementNoShortIfContext ctx) {
         builder.startDecision(StatementType.IF);
@@ -222,6 +404,9 @@ public class JavaStatementExtractor extends JavaMemberExtractor {
         super.enterIfThenElseStatementNoShortIf(ctx);
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public void exitIfThenElseStatementNoShortIf(final Java8Parser.IfThenElseStatementNoShortIfContext ctx) {
         super.exitIfThenElseStatementNoShortIf(ctx);
@@ -229,6 +414,9 @@ public class JavaStatementExtractor extends JavaMemberExtractor {
         builder.endDecision(false);
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public void enterAssertStatement(final Java8Parser.AssertStatementContext ctx) {
         builder.createStatement(StatementType.ASSERT);
@@ -236,32 +424,56 @@ public class JavaStatementExtractor extends JavaMemberExtractor {
         super.enterAssertStatement(ctx);
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public void enterSwitchStatement(final Java8Parser.SwitchStatementContext ctx) {
-        ctx.expression();
-        ctx.switchBlock().switchBlockStatementGroup(0).blockStatements();
+        builder.startDecision(StatementType.SWITCH);
 
         super.enterSwitchStatement(ctx);
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public void exitSwitchStatement(final Java8Parser.SwitchStatementContext ctx) {
+        boolean def = true;
+        for (final Java8Parser.SwitchBlockStatementGroupContext x : ctx.switchBlock().switchBlockStatementGroup()) {
+            if (x.getText().startsWith("default")) {
+                def = false;
+                break;
+            }
+        }
+        builder.endDecision(def);
+
         super.exitSwitchStatement(ctx);
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public void enterSwitchBlockStatementGroup(final Java8Parser.SwitchBlockStatementGroupContext ctx) {
-        // TODO need to connect to previous block if previous did not have a break
-        // TODO need to connect to start of switch as well
+//        builder.startSwitchBlock();
 
         super.enterSwitchBlockStatementGroup(ctx);
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public void exitSwitchBlockStatementGroup(final Java8Parser.SwitchBlockStatementGroupContext ctx) {
+        builder.exitSwitchBlock();
+
         super.exitSwitchBlockStatementGroup(ctx);
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public void enterWhileStatement(final Java8Parser.WhileStatementContext ctx) {
         builder.startLoop(StatementType.WHILE);
@@ -269,6 +481,9 @@ public class JavaStatementExtractor extends JavaMemberExtractor {
         super.enterWhileStatement(ctx);
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public void exitWhileStatement(final Java8Parser.WhileStatementContext ctx) {
         builder.endLoop();
@@ -276,6 +491,9 @@ public class JavaStatementExtractor extends JavaMemberExtractor {
         super.exitWhileStatement(ctx);
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public void enterWhileStatementNoShortIf(final Java8Parser.WhileStatementNoShortIfContext ctx) {
         builder.startLoop(StatementType.WHILE);
@@ -283,6 +501,9 @@ public class JavaStatementExtractor extends JavaMemberExtractor {
         super.enterWhileStatementNoShortIf(ctx);
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public void exitWhileStatementNoShortIf(final Java8Parser.WhileStatementNoShortIfContext ctx) {
         builder.endLoop();
@@ -290,6 +511,9 @@ public class JavaStatementExtractor extends JavaMemberExtractor {
         super.exitWhileStatementNoShortIf(ctx);
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public void enterDoStatement(final Java8Parser.DoStatementContext ctx) {
         builder.startLoop(StatementType.DO, true);
@@ -297,6 +521,9 @@ public class JavaStatementExtractor extends JavaMemberExtractor {
         super.enterDoStatement(ctx);
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public void exitDoStatement(final Java8Parser.DoStatementContext ctx) {
         builder.endLoop(true);
@@ -304,6 +531,9 @@ public class JavaStatementExtractor extends JavaMemberExtractor {
         super.exitDoStatement(ctx);
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public void enterForStatement(final Java8Parser.ForStatementContext ctx) {
         builder.startLoop(StatementType.FOR);
@@ -311,6 +541,9 @@ public class JavaStatementExtractor extends JavaMemberExtractor {
         super.enterForStatement(ctx);
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public void exitForStatement(final Java8Parser.ForStatementContext ctx) {
         super.exitForStatement(ctx);
@@ -318,6 +551,9 @@ public class JavaStatementExtractor extends JavaMemberExtractor {
         builder.endLoop();
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public void enterForStatementNoShortIf(final Java8Parser.ForStatementNoShortIfContext ctx) {
         builder.startLoop(StatementType.FOR);
@@ -325,6 +561,9 @@ public class JavaStatementExtractor extends JavaMemberExtractor {
         super.enterForStatementNoShortIf(ctx);
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public void exitForStatementNoShortIf(final Java8Parser.ForStatementNoShortIfContext ctx) {
         super.exitForStatementNoShortIf(ctx);
@@ -332,19 +571,23 @@ public class JavaStatementExtractor extends JavaMemberExtractor {
         builder.endLoop();
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public void enterBreakStatement(final Java8Parser.BreakStatementContext ctx) {
         String identifier = ctx.Identifier() != null ? ctx.Identifier().getText() : null;
-        builder.createStatement(StatementType.BREAK, identifier, true, JumpTo.LOOP_END);
+        if (identifier != null)
+            builder.createStatement(StatementType.BREAK, identifier, true, JumpTo.LABEL);
+        else
+            builder.createStatement(StatementType.BREAK, null, true, JumpTo.LOOP_END);
 
         super.enterBreakStatement(ctx);
     }
 
-    @Override
-    public void exitBreakStatement(final Java8Parser.BreakStatementContext ctx) {
-        super.exitBreakStatement(ctx);
-    }
-
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public void enterContinueStatement(final Java8Parser.ContinueStatementContext ctx) {
         String identifier = ctx.Identifier() != null ? ctx.Identifier().getText() : null;
@@ -353,23 +596,27 @@ public class JavaStatementExtractor extends JavaMemberExtractor {
         super.enterContinueStatement(ctx);
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public void exitContinueStatement(final Java8Parser.ContinueStatementContext ctx) {
         super.exitContinueStatement(ctx);
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public void enterReturnStatement(final Java8Parser.ReturnStatementContext ctx) {
-        builder.createStatement(StatementType.RETURN, null, true, JumpTo.METHOD_END);
+        builder.createReturnStatement();
 
         super.enterReturnStatement(ctx);
     }
 
-    @Override
-    public void exitReturnStatement(final Java8Parser.ReturnStatementContext ctx) {
-        super.exitReturnStatement(ctx);
-    }
-
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public void enterThrowStatement(final Java8Parser.ThrowStatementContext ctx) {
         builder.createStatement(StatementType.THROW, null, true, JumpTo.METHOD_END);
@@ -377,11 +624,17 @@ public class JavaStatementExtractor extends JavaMemberExtractor {
         super.enterThrowStatement(ctx);
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public void exitThrowStatement(final Java8Parser.ThrowStatementContext ctx) {
         super.exitThrowStatement(ctx);
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public void enterSynchronizedStatement(final Java8Parser.SynchronizedStatementContext ctx) {
         builder.startBlock(StatementType.SYNCHRONIZED);
@@ -389,6 +642,9 @@ public class JavaStatementExtractor extends JavaMemberExtractor {
         super.enterSynchronizedStatement(ctx);
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public void exitSynchronizedStatement(final Java8Parser.SynchronizedStatementContext ctx) {
         builder.endBlock();
@@ -396,6 +652,9 @@ public class JavaStatementExtractor extends JavaMemberExtractor {
         super.exitSynchronizedStatement(ctx);
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public void enterTryStatement(final Java8Parser.TryStatementContext ctx) {
         builder.startBlock(StatementType.TRY);
@@ -403,6 +662,9 @@ public class JavaStatementExtractor extends JavaMemberExtractor {
         super.enterTryStatement(ctx);
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public void exitTryStatement(final Java8Parser.TryStatementContext ctx) {
         builder.endBlock();
@@ -410,30 +672,49 @@ public class JavaStatementExtractor extends JavaMemberExtractor {
         super.exitTryStatement(ctx);
     }
 
+    /**
+     * {@inheritDoc}
+     */
+    @Override
     public void enterCatchClause(final Java8Parser.CatchClauseContext ctx) {
         builder.startBlock(StatementType.CATCH);
-        
+
         super.enterCatchClause(ctx);
     }
 
+    /**
+     * {@inheritDoc}
+     */
+    @Override
     public void exitCatchClause(final Java8Parser.CatchClauseContext ctx) {
         builder.endBlock();
 
         super.exitCatchClause(ctx);
     }
 
+    /**
+     * {@inheritDoc}
+     */
+    @Override
     public void enterFinally_(final Java8Parser.Finally_Context ctx) {
         builder.startBlock(StatementType.FINALLY);
-        
+
         super.enterFinally_(ctx);
     }
 
+    /**
+     * {@inheritDoc}
+     */
+    @Override
     public void exitFinally_(final Java8Parser.Finally_Context ctx) {
         builder.endBlock();
 
         super.exitFinally_(ctx);
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public void enterTryWithResourcesStatement(final Java8Parser.TryWithResourcesStatementContext ctx) {
         builder.startBlock(StatementType.TRY);
@@ -441,71 +722,13 @@ public class JavaStatementExtractor extends JavaMemberExtractor {
         super.enterTryWithResourcesStatement(ctx);
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public void exitTryWithResourcesStatement(final Java8Parser.TryWithResourcesStatementContext ctx) {
         builder.endBlock();
 
         super.exitTryWithResourcesStatement(ctx);
-    }
-
-    // Method Reference
-    @Override
-    public void enterMethodReference(final Java8Parser.MethodReferenceContext ctx) {
-        super.enterMethodReference(ctx);
-    }
-
-    @Override
-    public void exitMethodReference(final Java8Parser.MethodReferenceContext ctx) {
-        super.exitMethodReference(ctx);
-    }
-
-    @Override
-    public void enterMethodReference_lf_primary(final Java8Parser.MethodReference_lf_primaryContext ctx) {
-        super.enterMethodReference_lf_primary(ctx);
-    }
-
-    @Override
-    public void exitMethodReference_lf_primary(final Java8Parser.MethodReference_lf_primaryContext ctx) {
-        super.exitMethodReference_lf_primary(ctx);
-    }
-
-    @Override
-    public void enterMethodReference_lfno_primary(final Java8Parser.MethodReference_lfno_primaryContext ctx) {
-        super.enterMethodReference_lfno_primary(ctx);
-    }
-
-    @Override
-    public void exitMethodReference_lfno_primary(final Java8Parser.MethodReference_lfno_primaryContext ctx) {
-        super.exitMethodReference_lfno_primary(ctx);
-    }
-
-    @Override
-    public void enterMethodInvocation(final Java8Parser.MethodInvocationContext ctx) {
-        super.enterMethodInvocation(ctx);
-    }
-
-    @Override
-    public void exitMethodInvocation(final Java8Parser.MethodInvocationContext ctx) {
-        super.exitMethodInvocation(ctx);
-    }
-
-    @Override
-    public void enterMethodInvocation_lf_primary(final Java8Parser.MethodInvocation_lf_primaryContext ctx) {
-        super.enterMethodInvocation_lf_primary(ctx);
-    }
-
-    @Override
-    public void exitMethodInvocation_lf_primary(final Java8Parser.MethodInvocation_lf_primaryContext ctx) {
-        super.exitMethodInvocation_lf_primary(ctx);
-    }
-
-    @Override
-    public void enterMethodInvocation_lfno_primary(final Java8Parser.MethodInvocation_lfno_primaryContext ctx) {
-        super.enterMethodInvocation_lfno_primary(ctx);
-    }
-
-    @Override
-    public void exitMethodInvocation_lfno_primary(final Java8Parser.MethodInvocation_lfno_primaryContext ctx) {
-        super.exitMethodInvocation_lfno_primary(ctx);
     }
 }

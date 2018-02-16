@@ -25,8 +25,8 @@
  */
 package edu.montana.gsoc.msusel.codetree.parsers;
 
-import codetree.BaseCodeTreeBuilder;
-import codetree.node.structural.FileNode;
+import edu.montana.gsoc.msusel.codetree.BaseCodeTreeBuilder;
+import edu.montana.gsoc.msusel.codetree.node.structural.FileNode;
 import edu.montana.gsoc.msusel.codetree.parsers.java8.Java8Lexer;
 import edu.montana.gsoc.msusel.codetree.parsers.java8.Java8Parser;
 import lombok.extern.slf4j.Slf4j;
@@ -51,6 +51,9 @@ public class JavaCodeTreeBuilder extends BaseCodeTreeBuilder {
         super(new JavaArtifactIdentifier());
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public void gatherTypes(String file) {
         setFile(FileNode.builder().key(file).create());
@@ -59,15 +62,29 @@ public class JavaCodeTreeBuilder extends BaseCodeTreeBuilder {
         utilizeParser(new JavaTypeExtractor(this));
     }
 
+    /**
+     * {@inheritDoc}
+     */
+    @Override
     public void gatherRelationships() {
         utilizeParser(new JavaRelationshipExtractor(this));
     }
 
-    public void addComponentsToTypes() {
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public void gatherTypeMembers() {
         utilizeParser(new JavaFieldExtractor(this));
         utilizeParser(new JavaMethodExtractor(this));
+        utilizeParser(new JavaStatementExtractor(this));
+        utilizeParser(new JavaUseRelationExtractor(this));
     }
 
+    /**
+     * {@inheritDoc}
+     */
+    @Override
     public void utilizeParser(ParseTreeListener listener) {
         try {
             final JavaCodeTreeBuilder.JavaParserConstructor pt = new JavaCodeTreeBuilder.JavaParserConstructor();
