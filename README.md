@@ -86,4 +86,3 @@ If a build fails due to license header issues, this can be remedied using the fo
     ```bash
      $ .\mvnw.cmd license:format
     ```
->>>>>>> 8f9c1c2bcfbc73db858d3bae1a57f72548d59285
