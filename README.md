@@ -15,11 +15,11 @@ This project uses the Maven wrapper so that you do not need to install maven man
 The first time you go to build this project, simply execute the following command:
 
 ```
-./mvnw clean install -Dmaven.test.skip=true
+./mvnw clean install
 ```
 or for windows:
 ```
-.\mvnw.cmd clean package -Dmaven.test.skip=true
+.\mvnw.cmd clean install
 ```
 
 ## Building
@@ -28,43 +28,43 @@ There are two options:
 1. You can use your own version of Maven and run the following commands at the command line, from the project root directory:
    * Compiling:
       ```bash
-        $ mvn clean compile -Dmaven.test.skip=true
+        $ mvn clean compile
       ```
    * Packaging into a Jar with dependencies
       ```bash
-        $ mvn clean package -Dmaven.test.skip=true
+        $ mvn clean package
       ```
    * Packaging into a Jar and deploying to the [maven repo](https://github.com/MSUSEL/msusel-maven-repo):
       ```bash
-        $ mvn clean deploy -Dmaven.test.skip=true
+        $ mvn clean deploy
       ```
 
 2. You can use the Maven wrapper which comes with the project:
    * On Mac and Linux:
       - Compiling:
       ```bash
-        $ ./mvnw clean compile -Dmaven.test.skip=true
+        $ ./mvnw clean compile
       ```
       - Packaging into a Jar with Dependencies:
       ```bash
-        $ ./mvnw clean package -Dmaven.test.skip=true
+        $ ./mvnw clean package
       ```
       - Packaging into a Jar and deploying to the [maven repo](https://github.com/MSUSEL/msusel-maven-repo):
       ```bash
-        $ ./mvnw clean deploy -Dmaven.test.skip=true
+        $ ./mvnw clean deploy
       ```
    * Windows:
       - Compiling:
       ```bash
-        $ .\mvnw.cmd clean compile -Dmaven.test.skip=true
+        $ .\mvnw.cmd clean compile
       ```
       - Packaging into a Jar with Dependencies:
       ```bash
-        $ .\mvnw.cmd clean package -Dmaven.test.skip=true
+        $ .\mvnw.cmd clean package
       ```
       - Packaging into a Jar and deploying to the [maven repo](https://github.com/MSUSEL/msusel-maven-repo):
       ```bash
-        $ .\mvnw.cmd clean deploy -Dmaven.test.skip=true
+        $ .\mvnw.cmd clean deploy
       ```
 
 ## License
