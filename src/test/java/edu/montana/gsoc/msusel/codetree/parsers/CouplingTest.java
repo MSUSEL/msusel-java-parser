@@ -95,7 +95,7 @@ public class CouplingTest extends BaseTestClass {
     public void testUseDependency() {
         TypeNode type = retrieveType("UseDependency", Accessibility.PUBLIC, ClassNode.class);
 
-        System.out.println("Table: " + tree.getTable().get(type, tree.getUtils().findType("D")));
+        //System.out.println("Table: " + tree.getTable().get(type, tree.getUtils().findType("D")));
 
         assertTrue(tree.hasUseDependency(type, tree.getUtils().findType("D")));
     }

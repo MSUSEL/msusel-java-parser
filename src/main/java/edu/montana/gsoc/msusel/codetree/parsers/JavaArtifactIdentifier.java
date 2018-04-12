@@ -56,7 +56,6 @@ public class JavaArtifactIdentifier implements ArtifactIdentifier {
     @Singular
     private List<Path> moduleFiles = Lists.newArrayList();
 
-    private List<String> knownFileTypes = Lists.newArrayList("java", "class", "jar");
     private List<String> buildFileTypes = Lists.newArrayList("pom.xml", "build.gradle");
 
     /**
@@ -84,7 +83,7 @@ public class JavaArtifactIdentifier implements ArtifactIdentifier {
                 sourceFiles.add(file);
             } else if (file.toString().endsWith(".class")) {
                 binaryFiles.add(file);
-            } else if (file.getFileName().toString().equals("pom.xml") || file.getFileName().toString().equals("build.gradle")) {
+            } else if (buildFileTypes.contains(file.getFileName().toString())) {
                 buildFiles.add(file);
             } else if (file.endsWith(".jar") || file.endsWith(".war") || file.endsWith(".ear")) {
                 moduleFiles.add(file);

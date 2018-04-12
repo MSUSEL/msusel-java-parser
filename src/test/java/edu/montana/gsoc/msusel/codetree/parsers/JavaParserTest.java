@@ -25,9 +25,10 @@
  */
 package edu.montana.gsoc.msusel.codetree.parsers;
 
-import edu.montana.gsoc.msusel.codetree.CodeTree;
-import edu.montana.gsoc.msusel.codetree.node.structural.FileNode;
 import com.google.common.collect.Lists;
+import edu.montana.gsoc.msusel.codetree.CodeTree;
+import edu.montana.gsoc.msusel.codetree.DefaultCodeTree;
+import edu.montana.gsoc.msusel.codetree.node.structural.FileNode;
 import edu.montana.gsoc.msusel.codetree.parsers.java8.Java8Lexer;
 import edu.montana.gsoc.msusel.codetree.parsers.java8.Java8Parser;
 import org.antlr.v4.runtime.ANTLRFileStream;
@@ -121,7 +122,7 @@ public class JavaParserTest {
         // futures.add(executor.submit(() -> {
         for (int i = 0; i < 10; i++)
         {
-            final CodeTree tree = new CodeTree();
+            final CodeTree tree = new DefaultCodeTree();
 
             final long start = System.currentTimeMillis();
             fileNames.forEach((file) -> {

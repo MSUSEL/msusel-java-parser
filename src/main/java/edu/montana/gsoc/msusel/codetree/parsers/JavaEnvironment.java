@@ -26,6 +26,7 @@
 package edu.montana.gsoc.msusel.codetree.parsers;
 
 import edu.montana.gsoc.msusel.codetree.CodeTree;
+import edu.montana.gsoc.msusel.codetree.DefaultCodeTree;
 import edu.montana.gsoc.msusel.codetree.environment.EnvironmentLoader;
 import edu.montana.gsoc.msusel.codetree.node.structural.NamespaceNode;
 import edu.montana.gsoc.msusel.codetree.node.structural.ProjectNode;
@@ -49,7 +50,7 @@ public class JavaEnvironment extends EnvironmentLoader {
     }
 
     public static void main(String args[]) {
-        CodeTree tree = new CodeTree();
+        CodeTree tree = new DefaultCodeTree();
         tree.setProject(ProjectNode.builder().key("Test").create());
         JavaEnvironment je = new JavaEnvironment(tree);
         je.find("java.lang", "System");
