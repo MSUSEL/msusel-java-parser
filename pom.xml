@@ -50,7 +50,7 @@
                         <configuration>
                             <!-- Plugin configuration goes here -->
                             <server>github</server>
-                            <repositoryName>msusel-software-injector</repositoryName>
+                            <repositoryName>msusel-java-parser</repositoryName>
                             <repositoryOwner>MSUSEL</repositoryOwner>
                             <!-- The commit message -->
                             <message>Building site for project</message>
