@@ -1,31 +1,4 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<!--
-
-    The MIT License (MIT)
-
-    MSUSEL Java Parser
-    Copyright (c) 2015-2017 Montana State University, Gianforte School of Computing,
-    Software Engineering Laboratory
-
-    Permission is hereby granted, free of charge, to any person obtaining a copy
-    of this software and associated documentation files (the "Software"), to deal
-    in the Software without restriction, including without limitation the rights
-    to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
-    copies of the Software, and to permit persons to whom the Software is
-    furnished to do so, subject to the following conditions:
-
-    The above copyright notice and this permission notice shall be included in all
-    copies or substantial portions of the Software.
-
-    THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
-    IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
-    FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
-    AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
-    LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
-    OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
-    SOFTWARE.
-
--->
 <project xmlns="http://maven.apache.org/POM/4.0.0"
          xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0
@@ -50,10 +23,55 @@
             <organization>MSUSEL</organization>
             <organizationUrl>https://msusel.github.io/</organizationUrl>
             <roles>
-                <role>Developer</role>
+                <role>architect</role>
+                <role>developer</role>
             </roles>
+            <timezone>America/Denver</timezone>
+            <properties>
+                <picUrl>http://isaacgriffith.com/uploads/3/4/7/7/34775405/mypic_1_orig.png</picUrl>
+            </properties>
         </developer>
     </developers>
+
+    <build>
+        <plugins>
+            <plugin>
+                <!-- Deploy the website -->
+                <groupId>com.github.github</groupId>
+                <artifactId>site-maven-plugin</artifactId>
+                <version>0.12</version>
+                <executions>
+                    <execution>
+                        <goals>
+                            <goal>site</goal>
+                        </goals>
+                        <!-- select the Maven phase in which the plugin will be executed -->
+                        <phase>site-deploy</phase>
+                        <configuration>
+                            <!-- Plugin configuration goes here -->
+                            <server>github</server>
+                            <repositoryName>msusel-software-injector</repositoryName>
+                            <repositoryOwner>MSUSEL</repositoryOwner>
+                            <!-- The commit message -->
+                            <message>Building site for project</message>
+                            <!-- The location where the site is uploaded -->
+                            <path></path>
+                            <!-- Use merge or override the content -->
+                            <merge>false</merge>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-site-plugin</artifactId>
+                <version>3.3</version>
+                <configuration>
+                    <skipDeploy>true</skipDeploy>
+                </configuration>
+            </plugin>
+        </plugins>
+    </build>
 
     <dependencies>
         <dependency>
@@ -72,6 +90,39 @@
             <version>15.0</version>
         </dependency>
     </dependencies>
+
+    <reporting>
+        <plugins>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-javadoc-plugin</artifactId>
+                <version>3.0.0</version>
+                <configuration>
+                    <show>private</show>
+                </configuration>
+            </plugin>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-project-info-reports-plugin</artifactId>
+                <version>2.9</version>
+                <reportSets>
+                    <reportSet>
+                        <reports>
+                            <report>index</report>
+                            <report>dependencies</report>
+                            <report>dependency-info</report>
+                            <report>project-team</report>
+                            <report>cim</report>
+                            <report>issue-tracking</report>
+                            <report>license</report>
+                            <report>scm</report>
+                            <report>summary</report>
+                        </reports>
+                    </reportSet>
+                </reportSets>
+            </plugin>
+        </plugins>
+    </reporting>
 
     <repositories>
         <repository>
