@@ -1,5 +1,6 @@
 MSUSEL Java Parser
 ========================
+
 [![Build Status](https://travis-ci.org/MSUSEL/msusel-java-parser.svg?branch=master)](https://travis-ci.org/MSUSEL/msusel-java-parser)
 
 The _msusel java parser_ is based on Terrance Parr's Java grammar for Antlr 4. Using
