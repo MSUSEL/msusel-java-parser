@@ -25,11 +25,11 @@
  */
 package edu.montana.gsoc.msusel.datamodel.parsers;
 
-import edu.montana.gsoc.msusel.datamodel.BaseModelBuilder;
-import edu.montana.gsoc.msusel.datamodel.cfg.CFGBuilder;
-import edu.montana.gsoc.msusel.datamodel.cfg.JumpTo;
-import edu.montana.gsoc.msusel.datamodel.cfg.StatementType;
-import edu.montana.gsoc.msusel.datamodel.member.Method;
+import edu.isu.isuese.BaseModelBuilder;
+import edu.isu.isuese.datamodel.Method;
+import edu.isu.isuese.datamodel.cfg.CFGBuilder;
+import edu.isu.isuese.datamodel.cfg.JumpTo;
+import edu.isu.isuese.datamodel.cfg.StatementType;
 import edu.montana.gsoc.msusel.datamodel.parsers.java8.Java8Parser;
 import lombok.extern.slf4j.Slf4j;
 

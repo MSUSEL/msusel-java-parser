@@ -25,9 +25,9 @@
  */
 package edu.montana.gsoc.msusel.datamodel.parsers;
 
-import edu.montana.gsoc.msusel.datamodel.BaseModelBuilder;
+import edu.isu.isuese.BaseModelBuilder;
+import edu.isu.isuese.datamodel.Type;
 import edu.montana.gsoc.msusel.datamodel.parsers.java8.Java8Parser;
-import edu.montana.gsoc.msusel.datamodel.type.Type;
 
 import java.util.List;
 

@@ -25,10 +25,10 @@
  */
 package edu.montana.gsoc.msusel.datamodel.parsers;
 
-import edu.montana.gsoc.msusel.datamodel.BaseModelBuilder;
+import edu.isu.isuese.BaseModelBuilder;
+import edu.isu.isuese.datamodel.File;
 import edu.montana.gsoc.msusel.datamodel.parsers.java8.Java8Lexer;
 import edu.montana.gsoc.msusel.datamodel.parsers.java8.Java8Parser;
-import edu.montana.gsoc.msusel.datamodel.structural.File;
 import lombok.extern.slf4j.Slf4j;
 import org.antlr.v4.runtime.ANTLRFileStream;
 import org.antlr.v4.runtime.CommonTokenStream;
@@ -76,7 +76,7 @@ public class JavaModelBuilder extends BaseModelBuilder {
     public void utilizeParser(ParseTreeListener listener) {
         try {
             final JavaModelBuilder.JavaParserConstructor pt = new JavaModelBuilder.JavaParserConstructor();
-            final Java8Parser parser = pt.loadFile(getFile().key());
+            final Java8Parser parser = pt.loadFile(getFile().getFileKey());
             final Java8Parser.CompilationUnitContext cuContext = parser.compilationUnit();
             final ParseTreeWalker walker = new ParseTreeWalker();
             walker.walk(listener, cuContext);

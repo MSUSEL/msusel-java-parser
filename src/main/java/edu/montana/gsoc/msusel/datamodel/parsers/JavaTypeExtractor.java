@@ -25,7 +25,7 @@
  */
 package edu.montana.gsoc.msusel.datamodel.parsers;
 
-import edu.montana.gsoc.msusel.datamodel.BaseModelBuilder;
+import edu.isu.isuese.BaseModelBuilder;
 import edu.montana.gsoc.msusel.datamodel.parsers.java8.Java8Parser;
 
 // TODO Need to handle ananonymous types

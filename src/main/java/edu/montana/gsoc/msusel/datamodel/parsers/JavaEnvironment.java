@@ -25,8 +25,7 @@
  */
 package edu.montana.gsoc.msusel.datamodel.parsers;
 
-import edu.montana.gsoc.msusel.datamodel.DataModelMediator;
-import edu.montana.gsoc.msusel.datamodel.environment.EnvironmentLoader;
+import edu.isu.isuese.datamodel.environment.EnvironmentLoader;
 
 import java.io.InputStream;
 

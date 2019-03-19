@@ -27,10 +27,10 @@ package edu.montana.gsoc.msusel.datamodel.parsers;
 
 import com.google.common.collect.Lists;
 import com.google.inject.Inject;
-import edu.montana.gsoc.msusel.datamodel.ArtifactIdentifier;
-import edu.montana.gsoc.msusel.datamodel.DataModelMediator;
-import edu.montana.gsoc.msusel.datamodel.structural.File;
-import edu.montana.gsoc.msusel.datamodel.structural.FileType;
+import edu.isu.isuese.ArtifactIdentifier;
+import edu.isu.isuese.datamodel.File;
+import edu.isu.isuese.datamodel.FileType;
+import edu.isu.isuese.datamodel.Project;
 import lombok.extern.slf4j.Slf4j;
 
 import java.io.IOException;
@@ -45,10 +45,12 @@ import java.util.List;
 @Slf4j
 public class JavaArtifactIdentifier implements ArtifactIdentifier {
 
-    @Inject
-    private DataModelMediator mediator;
-
     private List<String> buildFileTypes = Lists.newArrayList("pom.xml", "build.gradle");
+    private Project project;
+
+    public JavaArtifactIdentifier(Project project) {
+        this.project = project;
+    }
 
     @Override
     public void identify(String root) {
@@ -76,8 +78,8 @@ public class JavaArtifactIdentifier implements ArtifactIdentifier {
                 type = FileType.MODULE;
             }
             if (type != null) {
-                File f = File.builder().fileKey(file.toString()).name(file.toString()).language("Java").type(type).create();
-                mediator.addFile(f);
+                File f = File.builder().fileKey(file.toString()).name(file.toString())/*.language("Java")*/.type(type).create();
+                project.addFile(f);
             }
 
 
