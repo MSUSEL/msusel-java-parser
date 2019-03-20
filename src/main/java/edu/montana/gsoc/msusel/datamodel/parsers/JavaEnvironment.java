@@ -35,8 +35,8 @@ import java.io.InputStream;
  */
 public class JavaEnvironment extends EnvironmentLoader {
 
-    public JavaEnvironment(DataModelMediator tree) {
-        super(tree);
+    public JavaEnvironment() {
+        super();
     }
 
     public void find(String ns, String name) {

@@ -48,10 +48,6 @@ public class JavaArtifactIdentifier implements ArtifactIdentifier {
     private List<String> buildFileTypes = Lists.newArrayList("pom.xml", "build.gradle");
     private Project project;
 
-    public JavaArtifactIdentifier(Project project) {
-        this.project = project;
-    }
-
     @Override
     public void identify(String root) {
         Path rootPath = Paths.get(root);
@@ -61,6 +57,11 @@ public class JavaArtifactIdentifier implements ArtifactIdentifier {
         } catch (IOException e) {
             e.printStackTrace();
         }
+    }
+
+    @Override
+    public void setProj(Project proj) {
+        this.project = proj;
     }
 
     private class JavaFileVisitor extends SimpleFileVisitor<Path> {
