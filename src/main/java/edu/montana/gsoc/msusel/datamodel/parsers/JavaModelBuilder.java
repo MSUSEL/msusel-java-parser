@@ -26,6 +26,8 @@
  */
 package edu.montana.gsoc.msusel.datamodel.parsers;
 
+import com.google.common.flogger.FluentLogger;
+import com.google.common.flogger.StackSize;
 import edu.isu.isuese.BaseModelBuilder;
 import edu.isu.isuese.datamodel.File;
 import edu.montana.gsoc.msusel.datamodel.parsers.java8.Java8Lexer;
@@ -46,11 +48,13 @@ import java.io.IOException;
  * @author Isaac Griffith
  * @version 1.3.0
  */
-@Slf4j
 public class JavaModelBuilder extends BaseModelBuilder {
 
-    public JavaModelBuilder() {
-        super(new JavaArtifactIdentifier());
+    FluentLogger log;
+
+    public JavaModelBuilder(FluentLogger log) {
+        super(new JavaArtifactIdentifier(log));
+        this.log = log;
     }
 
     @Override
@@ -82,7 +86,7 @@ public class JavaModelBuilder extends BaseModelBuilder {
             final ParseTreeWalker walker = new ParseTreeWalker();
             walker.walk(listener, cuContext);
         } catch (final IOException e) {
-            log.warn(e.getMessage(), e);
+            log.atWarning().withCause(e).withStackTrace(StackSize.SMALL).log(e.getMessage());
         }
     }
 

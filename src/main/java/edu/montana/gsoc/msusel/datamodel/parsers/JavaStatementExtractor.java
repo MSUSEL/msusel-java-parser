@@ -26,6 +26,7 @@
  */
 package edu.montana.gsoc.msusel.datamodel.parsers;
 
+import com.google.common.flogger.FluentLogger;
 import edu.isu.isuese.BaseModelBuilder;
 import edu.isu.isuese.datamodel.Method;
 import edu.isu.isuese.datamodel.cfg.CFGBuilder;
@@ -40,9 +41,9 @@ import java.util.Stack;
  * @author Isaac Griffith
  * @version 1.3.0
  */
-@Slf4j
 public class JavaStatementExtractor extends JavaMemberExtractor {
 
+    private FluentLogger log;
     private Stack<Method> methods = new Stack<>();
 
     private StringBuilder sigBuilder;

@@ -27,6 +27,7 @@
 package edu.montana.gsoc.msusel.datamodel.parsers;
 
 import com.google.common.collect.Lists;
+import com.google.common.flogger.FluentLogger;
 import com.google.inject.Inject;
 import edu.isu.isuese.ArtifactIdentifier;
 import edu.isu.isuese.datamodel.File;
@@ -43,11 +44,15 @@ import java.util.List;
  * @author Isaac Griffith
  * @version 1.3.0
  */
-@Slf4j
 public class JavaArtifactIdentifier implements ArtifactIdentifier {
 
     private List<String> buildFileTypes = Lists.newArrayList("pom.xml", "build.gradle");
     private Project project;
+    private FluentLogger log;
+
+    public JavaArtifactIdentifier(FluentLogger log) {
+        this.log = log;
+    }
 
     @Override
     public void identify(String root) {
