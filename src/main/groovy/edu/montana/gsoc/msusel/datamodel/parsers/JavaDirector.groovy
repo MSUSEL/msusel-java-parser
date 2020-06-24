@@ -26,7 +26,7 @@
  */
 package edu.montana.gsoc.msusel.datamodel.parsers
 
-import edu.isu.isuese.ArtifactIdentifier
+
 import edu.isu.isuese.BaseDirector
 import edu.isu.isuese.BaseModelBuilder
 import edu.isu.isuese.datamodel.File
