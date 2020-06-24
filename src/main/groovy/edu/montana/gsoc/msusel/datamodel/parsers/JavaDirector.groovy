@@ -28,11 +28,10 @@ package edu.montana.gsoc.msusel.datamodel.parsers
 
 
 import edu.isu.isuese.BaseDirector
-import edu.isu.isuese.BaseModelBuilder
 import edu.isu.isuese.datamodel.File
 import edu.isu.isuese.datamodel.Project
-import edu.montana.gsoc.msusel.datamodel.parsers.java8.Java8Lexer
-import edu.montana.gsoc.msusel.datamodel.parsers.java8.Java8Parser
+import edu.montana.gsoc.msusel.datamodel.parsers.java2.JavaLexer
+import edu.montana.gsoc.msusel.datamodel.parsers.java2.JavaParser
 import org.antlr.v4.runtime.CharStreams
 import org.antlr.v4.runtime.CommonTokenStream
 import org.antlr.v4.runtime.tree.ParseTreeListener
@@ -82,8 +81,8 @@ class JavaDirector extends BaseDirector {
     void utilizeParser(File file, ParseTreeListener listener) {
         try {
             final JavaParserConstructor pt = new JavaParserConstructor()
-            final Java8Parser parser = pt.loadFile(file.getFileKey())
-            final Java8Parser.CompilationUnitContext cuContext = parser.compilationUnit()
+            final JavaParser parser = pt.loadFile(file.getName())
+            final JavaParser.CompilationUnitContext cuContext = parser.compilationUnit()
             final ParseTreeWalker walker = new ParseTreeWalker()
             walker.walk(listener, cuContext)
         } catch (final IOException e) {
@@ -105,10 +104,10 @@ class JavaDirector extends BaseDirector {
          * @throws IOException
          */
         @NotNull
-        private synchronized Java8Parser loadFile(final String file) throws IOException {
-            final Java8Lexer lexer = new Java8Lexer(CharStreams.fromFileName(file))
+        private synchronized JavaParser loadFile(final String file) throws IOException {
+            final JavaLexer lexer = new JavaLexer(CharStreams.fromFileName(file))
             final CommonTokenStream tokens = new CommonTokenStream(lexer)
-            return new Java8Parser(tokens)
+            return new JavaParser(tokens)
         }
     }
 }

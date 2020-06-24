@@ -26,7 +26,6 @@
  */
 package edu.montana.gsoc.msusel.datamodel.parsers;
 
-import edu.isu.isuese.BaseModelBuilder;
 import edu.montana.gsoc.msusel.datamodel.parsers.java2.JavaParser;
 import edu.montana.gsoc.msusel.datamodel.parsers.java2.JavaParserBaseListener;
 import org.antlr.v4.runtime.tree.TerminalNode;

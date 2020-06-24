@@ -26,7 +26,6 @@
  */
 package edu.montana.gsoc.msusel.datamodel.parsers
 
-import edu.isu.isuese.BaseModelBuilder
 import edu.isu.isuese.datamodel.File
 import edu.isu.isuese.datamodel.Project
 
