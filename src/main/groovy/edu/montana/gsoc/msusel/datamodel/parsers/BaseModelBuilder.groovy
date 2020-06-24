@@ -26,6 +26,7 @@
  */
 package edu.montana.gsoc.msusel.datamodel.parsers
 
+import com.google.common.collect.Sets
 import edu.isu.isuese.datamodel.*
 
 /**
@@ -106,6 +107,7 @@ abstract class BaseModelBuilder {
             current.addFile(file)
             namespace = current
             file.updateKey()
+            file.refresh()
         }
     }
 
@@ -122,10 +124,14 @@ abstract class BaseModelBuilder {
     void endType() {
         if (!types) {
             Type type = types.pop()
-            if (types.isEmpty())
-                file.addType(type)
-            else
-                types.peek().addType(type)
+            if (types.isEmpty()) {
+                if (file.getTypeByName(type.getName()) == null)
+                    file.addType(type)
+            }
+            else {
+                if (types.peek().getTypeByName(type.getName()) == null)
+                    types.peek().addType(type)
+            }
             type.updateKey()
         }
     }
@@ -133,11 +139,13 @@ abstract class BaseModelBuilder {
     void findClass(String name) {
         Type type
         if (types)
-            type = Class.findFirst("compKey = ?", "${types.peek().getCompKey()}.$name")
+            type = types.peek().getTypeByName(name)
         else
-            type = Class.findFirst("compKey = ?", "${file.getFileKey()}:$name")
+            type = file.getTypeByName(name)
         if (type != null)
             types.push(type)
+        else
+            createClass(name, 1, 1)
     }
 
     void createClass(String name, int start, int stop) {
@@ -166,11 +174,12 @@ abstract class BaseModelBuilder {
     void findEnum(String name) {
         Type type
         if (types)
-            type = Enum.findFirst("compKey = ?", "${types.peek().getCompKey()}.$name")
+            type = types.peek().getTypeByName(name)
         else
-            type = Enum.findFirst("compKey = ?", "${file.getFileKey()}:$name")
+            type = file.getTypeByName(name)
         if (type != null)
             types.push(type)
+        else createEnum(name, 1, 1)
     }
 
     void createEnum(String name, int start, int stop) {
@@ -199,11 +208,13 @@ abstract class BaseModelBuilder {
     void findInterface(String name) {
         Type type
         if (types)
-            type = Interface.findFirst("compKey = ?", "${types.peek().getCompKey()}.$name")
+            type = types.peek().getTypeByName(name)
         else
-            type = Interface.findFirst("compKey = ?", "${file.getFileKey()}:$name")
+            type = file.getTypeByName(name)
         if (types != null)
             types.push(type)
+        else
+            createInterface(name)
     }
 
     void createInterface(String name, int start, int stop) {
@@ -313,6 +324,7 @@ abstract class BaseModelBuilder {
                 methods.push(meth)
             }
         }
+        scopes.push(Sets.newHashSet())
     }
 
     void findConstructor(String signature) {
@@ -399,7 +411,14 @@ abstract class BaseModelBuilder {
     }
 
     void finishMethod() {
-        methods.pop()
+        Member member = methods.pop()
+        if (member instanceof Method) {
+            Set<String> localVars = scopes.pop()
+            ((Method) member).setLocalVarCount(localVars.size())
+        } else if (member instanceof Initializer) {
+            Set<String> localVars = scopes.pop()
+            ((Initializer) member).setLocalVarCount(localVars.size())
+        }
     }
 
     ///////////////////
@@ -581,6 +600,10 @@ abstract class BaseModelBuilder {
         }
 
         return null
+    }
+
+    private boolean checkIsLocalVar(String name) {
+        !scopes.isEmpty() && scopes.peek().contains(name)
     }
 
     Type createMethodCall(Type current, String comp, int numParams) {
