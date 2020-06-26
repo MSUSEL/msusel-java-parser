@@ -40,6 +40,7 @@ public class Java8MemberUseExtractor extends Java8AbstractExtractor {
     boolean inEnum = false;
     boolean inInterface = false;
     boolean inTypeList = false;
+    boolean inMethodBody = false;
 
     public Java8MemberUseExtractor(BaseModelBuilder builder) {
         super(builder);
@@ -151,14 +152,35 @@ public class Java8MemberUseExtractor extends Java8AbstractExtractor {
     ////////////////////
     @Override
     public void enterMethodBody(JavaParser.MethodBodyContext ctx) {
+        inMethodBody = true;
+
         super.enterMethodBody(ctx);
     }
 
     @Override
+    public void exitMethodBody(JavaParser.MethodBodyContext ctx) {
+        inMethodBody = false;
+
+        super.exitMethodBody(ctx);
+    }
+
+    @Override
+    public void enterConstructorDeclaration(JavaParser.ConstructorDeclarationContext ctx) {
+        inMethodBody = true;
+
+        super.enterConstructorDeclaration(ctx);
+    }
+
+    @Override
+    public void exitConstructorDeclaration(JavaParser.ConstructorDeclarationContext ctx) {
+        inMethodBody = false;
+
+        super.exitConstructorDeclaration(ctx);
+    }
+
+    @Override
     public void enterBlock(JavaParser.BlockContext ctx) {
-        if (inConstructor) {
-            // TODO finish this
-        }
+
 
         super.enterBlock(ctx);
     }
@@ -222,7 +244,7 @@ public class Java8MemberUseExtractor extends Java8AbstractExtractor {
     //////////////////
     @Override
     public void enterExpression(JavaParser.ExpressionContext ctx) {
-        if (ctx.lambdaExpression() == null && !inField && ctx.getParent() instanceof JavaParser.StatementContext) {
+        if (inMethodBody && ctx.lambdaExpression() == null && !inField && ctx.getParent() instanceof JavaParser.StatementContext) {
             treeBuilder.processExpression(ctx.getText());
         }
 

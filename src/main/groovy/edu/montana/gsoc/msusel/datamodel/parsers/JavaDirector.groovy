@@ -27,7 +27,6 @@
 package edu.montana.gsoc.msusel.datamodel.parsers
 
 
-import edu.isu.isuese.BaseDirector
 import edu.isu.isuese.datamodel.File
 import edu.isu.isuese.datamodel.Project
 import edu.montana.gsoc.msusel.datamodel.parsers.java2.JavaLexer

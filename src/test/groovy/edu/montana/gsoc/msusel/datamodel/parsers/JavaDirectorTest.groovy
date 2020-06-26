@@ -26,13 +26,12 @@
  */
 package edu.montana.gsoc.msusel.datamodel.parsers
 
-import edu.isu.isuese.ArtifactIdentifier
+
 import edu.isu.isuese.datamodel.File
 import edu.isu.isuese.datamodel.Module
 import edu.isu.isuese.datamodel.Project
 import edu.isu.isuese.datamodel.System
 import groovy.util.logging.Log4j2
-import org.apache.logging.log4j.Logger
 import org.javalite.activejdbc.test.DBSpec
 import org.junit.After
 import org.junit.Before

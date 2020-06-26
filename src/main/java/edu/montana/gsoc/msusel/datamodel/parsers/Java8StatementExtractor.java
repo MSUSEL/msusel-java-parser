@@ -48,13 +48,16 @@ public class Java8StatementExtractor extends Java8AbstractExtractor {
         CFGBuilder newBuilder = new CFGBuilder();
         builderStack.push(newBuilder);
         builder = newBuilder;
+        builder.startMethod();
     }
 
     private void endMethod() {
-        if (treeBuilder.getMethods().peek() instanceof Method)
-            ((Method) treeBuilder.getMethods().peek()).setCfg(builder.getCFG());
-        else if (treeBuilder.getMethods().peek() instanceof Initializer) {
-            ((Initializer) treeBuilder.getMethods().peek()).setCfg(builder.getCFG());
+        if (!treeBuilder.getMethods().isEmpty()) {
+            if (treeBuilder.getMethods().peek() instanceof Method)
+                builder.endMethod((Method) treeBuilder.getMethods().peek());
+            else if (treeBuilder.getMethods().peek() instanceof Initializer) {
+                builder.endMethod((Initializer) treeBuilder.getMethods().peek());
+            }
         }
 
         builderStack.pop();
@@ -134,7 +137,7 @@ public class Java8StatementExtractor extends Java8AbstractExtractor {
         if (ctx.ASSERT() != null) {
             builder.createStatement(StatementType.ASSERT);
         } else if (ctx.IF() != null) {
-            builder.startDecisionBlock();
+            builder.startDecision(StatementType.IF);
         } else if (ctx.FOR() != null) {
             builder.startLoop(StatementType.FOR);
         } else if (ctx.DO() != null) {
@@ -234,5 +237,9 @@ public class Java8StatementExtractor extends Java8AbstractExtractor {
         super.enterSwitchBlockStatementGroup(ctx);
     }
 
+    public void enterLocalVariableDeclaration(JavaParser.LocalVariableDeclarationContext ctx) {
+        builder.createStatement(StatementType.VAR_DECL);
 
+        super.enterLocalVariableDeclaration(ctx);
+    }
 }

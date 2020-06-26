@@ -26,23 +26,18 @@
  */
 package edu.montana.gsoc.msusel.datamodel.parsers;
 
-import com.google.common.base.Strings;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Sets;
-import com.google.common.flogger.FluentLogger;
-import com.google.inject.Inject;
-import edu.isu.isuese.ArtifactIdentifier;
+import edu.montana.gsoc.msusel.datamodel.parsers.ArtifactIdentifier;
 import edu.isu.isuese.datamodel.*;
 import edu.isu.isuese.datamodel.Module;
 import lombok.Getter;
-import lombok.extern.slf4j.Slf4j;
 import org.apache.logging.log4j.Logger;
 
 import java.io.IOException;
 import java.nio.file.*;
 import java.nio.file.attribute.BasicFileAttributes;
-import java.util.Arrays;
 import java.util.List;
 import java.util.Set;
 
@@ -57,6 +52,7 @@ public class JavaArtifactIdentifier implements ArtifactIdentifier {
     private Logger log;
     @Getter
     private List<File> files = Lists.newArrayList();
+    private int binCount = 0;
 
     public JavaArtifactIdentifier(Logger log) {
         this.log = log;
@@ -65,21 +61,29 @@ public class JavaArtifactIdentifier implements ArtifactIdentifier {
     @Override
     public void identify(String root) {
         Path rootPath = Paths.get(root);
-
+        this.log.atInfo().log("Root Path: " + rootPath);
+        this.log.atInfo().log("Absolute Path: " + rootPath.toAbsolutePath());
         try {
-            Files.walkFileTree(rootPath, new JavaFileVisitor());
+            Files.walkFileTree(rootPath.toAbsolutePath(), new JavaFileVisitor());
         } catch (IOException e) {
-            e.printStackTrace();
+            log.atWarn().log("Could not walk the file tree");
         }
+        this.log.atInfo().log("Binary File Count: " + binCount);
+        this.log.atInfo().log("File Found: " + files.size());
     }
 
     @Override
     public void setProjectPaths() {
+        this.log.atInfo().log("Setting Project Paths");
         Module mod = project.getModules().get(0);
         files = mod.getFilesByType(FileType.BINARY);
         mod.setSrcPath(setPaths(FileType.SOURCE).toArray(new String[0]));
+        this.log.atInfo().log("Source Path: " + mod.getSrcPath());
         mod.setTestPath(setPaths(FileType.TEST).toArray(new String[0]));
+        this.log.atInfo().log("Test Path: " + mod.getTestPath());
         mod.setBinPath(setPaths(FileType.BINARY).toArray(new String[0]));
+        this.log.atInfo().log("Binary Path: " + mod.getBinaryPath());
+        this.log.atInfo().log("Binary File Count: " + binCount);
     }
 
     private List<String> setPaths(FileType type) {
@@ -87,7 +91,9 @@ public class JavaArtifactIdentifier implements ArtifactIdentifier {
         List<File> files = mod.getFilesByType(type);
         FileTree tree = new FileTree();
         for (File f : files) {
-            tree.addPath(f.getName().replace(mod.getFullPath(), ""));
+            String path = f.getName().replace(mod.getFullPath(), "");
+            log.atInfo().log("Added Path: " + path);
+            tree.addPath(path);
         }
         Set<String> rootNamespaces = Sets.newHashSet();
         for (Namespace ns : mod.getNamespaces())
@@ -120,15 +126,19 @@ public class JavaArtifactIdentifier implements ArtifactIdentifier {
             FileType type = null;
             if (file.toString().endsWith(".java")) {
                 type = FileType.SOURCE;
-                if (file.toString().contains("test"))
-                    type = FileType.TEST;
-            } else if (file.toString().endsWith(".class")) {
+//                if (file.toString().contains("test"))
+//                    type = FileType.TEST;
+            } else if (file.getFileName().toString().endsWith(".class")) {
                 type = FileType.BINARY;
+                binCount++;
             } else if (buildFileTypes.contains(file.getFileName().toString())) {
                 type = FileType.BUILD;
-                project.getModules().get(0).addBuildFile(file.getFileName().toString());
             } else if (file.endsWith(".jar") || file.endsWith(".war") || file.endsWith(".ear")) {
                 type = FileType.MODULE;
+            } else if (file.getFileName().toString().equalsIgnoreCase("readme.md") ||
+                    file.getFileName().toString().startsWith("LICENSE") ||
+                    file.getFileName().toString().startsWith("CHANGELOG")) {
+                type = FileType.DOC;
             }
             if (type != null) {
                 File f = File.builder()
@@ -138,8 +148,26 @@ public class JavaArtifactIdentifier implements ArtifactIdentifier {
                         .type(type)
                         .create();
                 files.add(f);
+                project.addFile(f);
+                log.atInfo().log("Identified " + type + " file: " + file.getFileName());
             }
 
+            return FileVisitResult.CONTINUE;
+        }
+
+        @Override
+        public FileVisitResult postVisitDirectory(Path dir, IOException exc) throws IOException {
+            log.atInfo().log("Checking Path: " + dir.toString());
+
+            return FileVisitResult.CONTINUE;
+        }
+
+        @Override
+        public FileVisitResult preVisitDirectory(Path dir, BasicFileAttributes attrs) throws IOException {
+            if (dir.getFileName().toString().equals(".gradle") || dir.getFileName().toString().equals(".git") ||
+                    dir.getFileName().toString().equals(".m2") || dir.getFileName().toString().equals(".mvn") ||
+                    dir.getFileName().toString().equals(".idea") || dir.getFileName().toString().equals("gradle"))
+                return FileVisitResult.SKIP_SUBTREE;
 
             return FileVisitResult.CONTINUE;
         }

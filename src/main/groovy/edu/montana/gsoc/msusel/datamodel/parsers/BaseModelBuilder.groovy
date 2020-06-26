@@ -278,8 +278,9 @@ abstract class BaseModelBuilder {
     ///////////////////
 
     void findInitializer(String name, boolean instance) {
-        Initializer init = types ? Initializer.findFirst("key = ?", "${types.peek().getCompKey()}:$name") : null
+        Initializer init = !types.isEmpty() ? types.peek().getInitializerWithName(name) : null
         if (init) methods.push(init)
+        scopes.push(Sets.newHashSet())
     }
 
     void createInitializer(String name, boolean instance, int start, int end) {
@@ -300,11 +301,13 @@ abstract class BaseModelBuilder {
                 methods.push(init)
             }
         }
+        scopes.push(Sets.newHashSet())
     }
 
     void findMethod(String signature) {
         Method meth = types ? Method.findFirst("compKey = ?", "${types.peek().getCompKey()}#$signature") : null
         if (meth) methods.push(meth)
+        scopes.push(Sets.newHashSet())
     }
 
     void createMethod(String name, int start, int end) {
@@ -330,6 +333,7 @@ abstract class BaseModelBuilder {
     void findConstructor(String signature) {
         Constructor cons = types ? Constructor.findFirst("compKey = ?", "${types.peek().getCompKey()}#$signature") : null
         if (cons) methods.push(cons)
+        scopes.push(Sets.newHashSet())
     }
 
     void createConstructor(String name, int start, int end) {
@@ -345,6 +349,7 @@ abstract class BaseModelBuilder {
             cons.updateKey()
             methods.push(cons)
         }
+        scopes.push(Sets.newHashSet())
     }
 
     void createMethodParameter() {
@@ -411,13 +416,15 @@ abstract class BaseModelBuilder {
     }
 
     void finishMethod() {
-        Member member = methods.pop()
-        if (member instanceof Method) {
-            Set<String> localVars = scopes.pop()
-            ((Method) member).setLocalVarCount(localVars.size())
-        } else if (member instanceof Initializer) {
-            Set<String> localVars = scopes.pop()
-            ((Initializer) member).setLocalVarCount(localVars.size())
+        if (!methods.isEmpty()) {
+            Member member = methods.pop()
+            if (member instanceof Method) {
+                Set<String> localVars = scopes.pop()
+                ((Method) member).setLocalVarCount(localVars.size())
+            } else if (member instanceof Initializer) {
+                Set<String> localVars = scopes.pop()
+                ((Initializer) member).setLocalVarCount(localVars.size())
+            }
         }
     }
 
@@ -520,16 +527,15 @@ abstract class BaseModelBuilder {
 
         Type type
         list.each { str ->
-            println "\n$str"
+//            println "\n$str"
             String[] components = str.split(/\./)
             components.eachWithIndex { comp, index ->
-                if (!comp.contains("(")) {
-                    type = handleNonMethodCall(type, comp, components, index)
-                } else {
+                if (comp.contains("(") && comp.contains(")")) {
                     String args = comp.substring(comp.indexOf("(") + 1, comp.indexOf(")"))
                     int numParams = args.split(",").size()
                     type = handleMethodCall(type, comp, numParams)
-                }
+                } else
+                    type = handleNonMethodCall(type, comp, components, index)
             }
         }
     }
@@ -648,7 +654,7 @@ abstract class BaseModelBuilder {
     }
 
     void createConstructorCall(Type type, int numParams) {
-        if (type) {
+        if (type && !methods.isEmpty()) {
             def m
 
             if (((Stack<Member>) methods).peek() instanceof Method) {

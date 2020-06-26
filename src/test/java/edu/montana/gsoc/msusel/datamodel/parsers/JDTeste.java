@@ -33,11 +33,9 @@ import edu.isu.isuese.datamodel.Project;
 import edu.isu.isuese.datamodel.System;
 import lombok.extern.log4j.Log4j2;
 import org.javalite.activejdbc.test.DBSpec;
-import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
-import org.junit.platform.runner.JUnitPlatform;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.Test;
 
 import java.util.List;
 
@@ -47,13 +45,14 @@ import static org.junit.Assert.fail;
 public class JDTeste extends DBSpec {
 
     JavaDirector fixture;
+    Project proj;
     List<File> files = Lists.newArrayList();
     String basePath = "data/example-classes";
 
     @BeforeEach
     public void setUp() throws Exception {
         System sys   = System.builder().name("Test").key("test").basePath(basePath).create();
-        Project proj  = Project.builder().name("test").projKey("test").relPath("").create();
+        proj  = Project.builder().name("test").projKey("test").relPath("").create();
         Module mod   = Module.builder().name("default").moduleKey("default").relPath("").create();
         proj.addModule(mod);
         sys.addProject(proj);
@@ -79,6 +78,14 @@ public class JDTeste extends DBSpec {
 
     @Test
     public void process() {
+        fixture.process(files);
+
+        fail();
+    }
+
+    @Test
+    public void processWithStatements() {
+        fixture = new JavaDirector(proj, log, true);
         fixture.process(files);
 
         fail();
