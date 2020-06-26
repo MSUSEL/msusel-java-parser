@@ -75,33 +75,31 @@ public class JavaArtifactIdentifier implements ArtifactIdentifier {
     @Override
     public void setProjectPaths() {
         this.log.atInfo().log("Setting Project Paths");
-        Module mod = project.getModules().get(0);
-        files = mod.getFilesByType(FileType.BINARY);
-        mod.setSrcPath(setPaths(FileType.SOURCE).toArray(new String[0]));
-        this.log.atInfo().log("Source Path: " + mod.getSrcPath());
-        mod.setTestPath(setPaths(FileType.TEST).toArray(new String[0]));
-        this.log.atInfo().log("Test Path: " + mod.getTestPath());
-        mod.setBinPath(setPaths(FileType.BINARY).toArray(new String[0]));
-        this.log.atInfo().log("Binary Path: " + mod.getBinaryPath());
+        files = project.getFilesByType(FileType.BINARY);
+        project.setSrcPath(setPaths(FileType.SOURCE).toArray(new String[0]));
+        this.log.atInfo().log("Source Path: " + project.getSrcPath());
+        project.setTestPath(setPaths(FileType.TEST).toArray(new String[0]));
+        this.log.atInfo().log("Test Path: " + project.getTestPath());
+        project.setBinPath(setPaths(FileType.BINARY).toArray(new String[0]));
+        this.log.atInfo().log("Binary Path: " + project.getBinaryPath());
         this.log.atInfo().log("Binary File Count: " + binCount);
     }
 
     private List<String> setPaths(FileType type) {
-        Module mod = project.getModules().get(0);
-        List<File> files = mod.getFilesByType(type);
+        List<File> files = project.getFilesByType(type);
         FileTree tree = new FileTree();
         for (File f : files) {
-            String path = f.getName().replace(mod.getFullPath(), "");
+            String path = f.getName().replace(project.getFullPath(), "");
             log.atInfo().log("Added Path: " + path);
             tree.addPath(path);
         }
         Set<String> rootNamespaces = Sets.newHashSet();
-        for (Namespace ns : mod.getNamespaces())
+        for (Namespace ns : project.getNamespaces())
             rootNamespaces.add(ns.getName());
         List<String> srcPaths = Lists.newArrayList(tree.findPaths(rootNamespaces));
 
         for (File f : files) {
-            String relPath = f.getName().replace(mod.getFullPath(), "");
+            String relPath = f.getName().replace(project.getFullPath(), "");
             int index;
             for (String p : srcPaths) {
                 if (relPath.startsWith(p)) {
