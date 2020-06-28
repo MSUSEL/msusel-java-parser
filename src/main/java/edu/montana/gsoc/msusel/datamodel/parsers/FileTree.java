@@ -92,7 +92,7 @@ public class FileTree {
     }
 
     public void addPath(String path) {
-        String[] components = path.split("[\\/]");
+        String[] components = path.split(File.separator);
 
         Node current = root;
         for (String comp : components) {

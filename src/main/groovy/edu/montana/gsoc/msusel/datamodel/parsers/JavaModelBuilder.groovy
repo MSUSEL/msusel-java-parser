@@ -28,6 +28,7 @@ package edu.montana.gsoc.msusel.datamodel.parsers
 
 import edu.isu.isuese.datamodel.File
 import edu.isu.isuese.datamodel.Project
+import edu.isu.isuese.datamodel.util.DBCredentials
 
 /**
  * Using the parser, this class incrementally builds a DataModelMediator one file at a
@@ -38,8 +39,8 @@ import edu.isu.isuese.datamodel.Project
  */
 class JavaModelBuilder extends BaseModelBuilder {
 
-    JavaModelBuilder(Project proj, File file) {
-        super(proj, file)
+    JavaModelBuilder(Project proj, File file, DBCredentials credentials) {
+        super(proj, file, credentials)
     }
 
     String cleanExpression(String expr) {

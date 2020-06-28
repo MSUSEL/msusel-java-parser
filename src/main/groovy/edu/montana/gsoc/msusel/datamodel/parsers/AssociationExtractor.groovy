@@ -27,7 +27,10 @@
 package edu.montana.gsoc.msusel.datamodel.parsers
 
 import edu.isu.isuese.datamodel.*
-import org.javalite.activejdbc.ModelListener
+import edu.isu.isuese.datamodel.util.DBCredentials
+import edu.isu.isuese.datamodel.util.DBManager
+import groovyx.gpars.GParsPool
+import jsr166y.ForkJoinPool
 
 /**
  * @author Isaac Griffith
@@ -37,22 +40,37 @@ class AssociationExtractor {
 
     Project project
 
-    AssociationExtractor(Project proj) {
+    DBCredentials credentials
+
+    AssociationExtractor(Project proj, DBCredentials credentials) {
         this.project = proj
+        this.credentials = credentials
     }
 
     void extractAssociations() {
+        DBManager.instance.open(credentials)
         Set<Type> types = project.getAllTypes()
+        DBManager.close()
 
-        types.each {
-            handleTypeAssociation(it)
+        GParsPool.withPool(8) { ForkJoinPool pool ->
+            types.eachParallel { Type type ->
+                handleTypeAssociation(type, pool)
+            }
         }
     }
 
-    private void handleTypeAssociation(Type type) {
-        type.getFields().each { Field f ->
-            if (f.getType() != null && f.getType().getReference() != null)
-                createAssociation(type, f.getType())
+    private void handleTypeAssociation(Type type, ForkJoinPool pool) {
+        DBManager.instance.open(credentials)
+        List<Field> fields = type.getFields()
+        DBManager.instance.close()
+
+        GParsPool.withExistingPool(pool) {
+            fields.eachParallel { Field f ->
+                DBManager.instance.open(credentials)
+                if (f.getType() != null && f.getType().getReference() != null)
+                    createAssociation(type, f.getType())
+                DBManager.instance.close()
+            }
         }
     }
 

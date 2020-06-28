@@ -31,6 +31,7 @@ import edu.isu.isuese.datamodel.Method;
 import edu.isu.isuese.datamodel.cfg.CFGBuilder;
 import edu.isu.isuese.datamodel.cfg.JumpTo;
 import edu.isu.isuese.datamodel.cfg.StatementType;
+import edu.isu.isuese.datamodel.util.DBCredentials;
 import edu.montana.gsoc.msusel.datamodel.parsers.java2.JavaParser;
 
 import java.util.Stack;
@@ -39,13 +40,15 @@ public class Java8StatementExtractor extends Java8AbstractExtractor {
 
     private Stack<CFGBuilder> builderStack = new Stack<>();
     CFGBuilder builder;
+    DBCredentials credentials;
 
     public Java8StatementExtractor(BaseModelBuilder builder) {
         super(builder);
+        credentials = builder.getCredentials();
     }
 
     private void startMethod() {
-        CFGBuilder newBuilder = new CFGBuilder();
+        CFGBuilder newBuilder = new CFGBuilder(credentials);
         builderStack.push(newBuilder);
         builder = newBuilder;
         builder.startMethod();

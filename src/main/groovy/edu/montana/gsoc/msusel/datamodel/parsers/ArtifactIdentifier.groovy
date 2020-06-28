@@ -38,8 +38,4 @@ interface ArtifactIdentifier {
     void identify(String root)
 
     void setProj(Project proj)
-
-    List<File> getFiles()
-
-    void setProjectPaths()
 }

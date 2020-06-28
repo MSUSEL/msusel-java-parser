@@ -85,7 +85,7 @@ public class JDTeste extends DBSpec {
 
     @Test
     public void processWithStatements() {
-        fixture = new JavaDirector(proj, log, true);
+        fixture = new JavaDirector(proj, log, true, null);
         fixture.process(files);
 
         fail();

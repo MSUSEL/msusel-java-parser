@@ -29,6 +29,8 @@ package edu.montana.gsoc.msusel.datamodel.parsers
 
 import edu.isu.isuese.datamodel.File
 import edu.isu.isuese.datamodel.Project
+import edu.isu.isuese.datamodel.util.DBCredentials
+import edu.isu.isuese.datamodel.util.DBManager
 import edu.montana.gsoc.msusel.datamodel.parsers.java2.JavaLexer
 import edu.montana.gsoc.msusel.datamodel.parsers.java2.JavaParser
 import org.antlr.v4.runtime.CharStreams
@@ -44,40 +46,85 @@ import org.jetbrains.annotations.NotNull
  */
 class JavaDirector extends BaseDirector {
 
-    JavaDirector(Project proj, Logger logger, boolean statements = false) {
-        super(proj, new JavaArtifactIdentifier(logger), logger, statements)
+    JavaDirector(Project proj, Logger logger, DBCredentials credentials, boolean statements = false) {
+        super(proj, new JavaArtifactIdentifier(logger, credentials), logger, credentials, statements)
     }
 
     @Override
     void gatherFileAndTypeInfo(File file) {
-        BaseModelBuilder builder = new JavaModelBuilder(proj, file)
+        DBManager.instance.open(credentials)
+        int stage = file.getParseStage()
+        DBManager.instance.close()
+
+        if (stage >= 1)
+            return
+
+        BaseModelBuilder builder = new JavaModelBuilder(proj, file, credentials)
         utilizeParser(file, new Java8FileAndTypeExtractor(builder))
+
+        DBManager.instance.open(credentials)
+        file.setParseStage(1)
+        DBManager.instance.close()
     }
 
     @Override
     void gatherMembersAndBasicRelationInfo(File file) {
-        BaseModelBuilder builder = new JavaModelBuilder(proj, file)
+        DBManager.instance.open(credentials)
+        int stage = file.getParseStage()
+        DBManager.instance.close()
+
+        if (stage >= 2)
+            return
+
+        BaseModelBuilder builder = new JavaModelBuilder(proj, file, credentials)
         utilizeParser(file, new Java8MemberAndGenRealUseRelsExtractor(builder))
+
+        DBManager.instance.open(credentials)
+        file.setParseStage(2)
+        DBManager.instance.close()
     }
 
     @Override
     void gatherMemberUsageInfo(File file) {
-        BaseModelBuilder builder = new JavaModelBuilder(proj, file)
+        DBManager.instance.open(credentials)
+        int stage = file.getParseStage()
+        DBManager.instance.close()
+
+        if (stage >= 3)
+            return
+
+        BaseModelBuilder builder = new JavaModelBuilder(proj, file, credentials)
         utilizeParser(file, new Java8MemberUseExtractor(builder))
+
+        DBManager.instance.open(credentials)
+        file.setParseStage(3)
+        DBManager.instance.close()
     }
 
     @Override
     void gatherStatementInfo(File file) {
-        BaseModelBuilder builder = new JavaModelBuilder(proj, file)
+        DBManager.instance.open(credentials)
+        int stage = file.getParseStage()
+        DBManager.instance.close()
+
+        if (stage >= 4)
+            return
+
+        BaseModelBuilder builder = new JavaModelBuilder(proj, file, credentials)
         utilizeParser(file, new Java8StatementExtractor(builder))
+
+        DBManager.instance.open(credentials)
+        file.setParseStage(4)
+        DBManager.instance.close()
     }
 
     @Override
     boolean includeFile(File file) {
-        file.getName().endsWith(".java") && !file.getName().toLowerCase().contains("test")
+        file.getName().endsWith(".java")
     }
 
     void utilizeParser(File file, ParseTreeListener listener) {
+        logger.atInfo().log("Parsing....")
         try {
             final JavaParserConstructor pt = new JavaParserConstructor()
             final JavaParser parser = pt.loadFile(file.getName())

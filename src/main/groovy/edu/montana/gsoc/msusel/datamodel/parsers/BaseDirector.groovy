@@ -27,7 +27,12 @@
 package edu.montana.gsoc.msusel.datamodel.parsers
 
 import edu.isu.isuese.datamodel.File
+import edu.isu.isuese.datamodel.FileType
 import edu.isu.isuese.datamodel.Project
+import edu.isu.isuese.datamodel.util.DBCredentials
+import edu.isu.isuese.datamodel.util.DBManager
+import groovyx.gpars.GParsExecutorsPool
+import groovyx.gpars.GParsPool
 import org.apache.logging.log4j.Logger
 
 /**
@@ -38,68 +43,83 @@ abstract class BaseDirector {
 
     Logger logger
     boolean statements
-    Project proj
+    protected Project proj
     ArtifactIdentifier identifier
+    DBCredentials credentials
 
-    BaseDirector(Project proj, ArtifactIdentifier identifier, Logger logger, boolean statements = false) {
+    BaseDirector(Project proj, ArtifactIdentifier identifier, Logger logger, DBCredentials creds, boolean statements = false) {
         this.proj = proj
         this.identifier = identifier
         this.logger = logger
         this.statements = statements
+        this.credentials = creds
     }
 
     void build(String path) {
-        List<File> files = identify(proj, path)
-        logger.atInfo().log("Processing " + files.size() + " files")
+        identify(proj, path)
+
+        List<File> files = []
+        DBManager.instance.open(credentials)
+        files.addAll(proj.getFilesByType(FileType.SOURCE))
+        DBManager.instance.close()
+
         process(files)
         identifier = null
     }
 
-    List<File> identify(Project proj, String path) {
+    void identify(Project proj, String path) {
         logger.atInfo().log("Setting up the artifact identifier")
         identifier.setProj(proj)
-        identifier.identify(path)
 
         logger.atInfo().log("Traversing the project and gathering artifact info")
-        identifier.getFiles()
-        logger.atInfo().log("Artifact info gathering complete")
+        identifier.identify(path)
 
-        identifier.getFiles()
+        logger.atInfo().log("Artifact info gathering complete")
     }
 
     void process(final List<File> files) {
         logger.atInfo().log("Processing files and their contained info")
+
         logger.atInfo().log("Gathering File and Type Info into Model")
-        onFiles(files) { File file -> gatherFileAndTypeInfo(file) }
-        logger.atInfo().log("Gathering Type Members and Basic Relation Info into Model")
-        onFiles(files) { File file -> gatherMembersAndBasicRelationInfo(file) }
-        logger.atInfo().log("Gathering Member Usage Info into Model")
-        onFiles(files) { File file -> gatherMemberUsageInfo(file) }
-        if (statements) {
-            logger.atInfo().log("Gathering Statement Info and CFG into Model")
-            onFiles(files) { File file -> gatherStatementInfo(file) }
+        GParsExecutorsPool.withPool(8) {
+            files.eachParallel { File file -> if (includeFile(file)) gatherFileAndTypeInfo(file) }
+//        files.each { File file -> if (includeFile(file)) gatherFileAndTypeInfo(file) }
         }
+
+        logger.atInfo().log("Gathering Type Members and Basic Relation Info into Model")
+        GParsExecutorsPool.withPool(8) {
+            files.each { File file -> if (includeFile(file)) gatherMembersAndBasicRelationInfo(file) }
+        }
+
+        logger.atInfo().log("Gathering Member Usage Info into Model")
+        GParsExecutorsPool.withPool(8) {
+            files.each { File file -> if (includeFile(file)) gatherMemberUsageInfo(file) }
+        }
+
+        if (statements) {
+            GParsExecutorsPool.withPool(8) {
+                logger.atInfo().log("Gathering Statement Info and CFG into Model")
+                files.each { File file -> if (includeFile(file)) gatherStatementInfo(file) }
+            }
+        }
+
         logger.atInfo().log("Gathering Type Associations into Model")
         gatherTypeAssociations()
         logger.atInfo().log("File processing complete")
     }
 
-    void onFiles(List<File> files, Closure<Void> method) {
-        files.each { file ->
-            if (includeFile(file)) {
-                method(file)
-            }
-        }
-    }
-
     abstract void gatherFileAndTypeInfo(File file)
+
     abstract void gatherMembersAndBasicRelationInfo(File file)
+
     abstract void gatherMemberUsageInfo(File file)
+
     abstract void gatherStatementInfo(File file)
+
     abstract boolean includeFile(File file)
 
     void gatherTypeAssociations() {
-        AssociationExtractor assocXtractor = new AssociationExtractor(proj)
+        AssociationExtractor assocXtractor = new AssociationExtractor(proj, credentials)
         assocXtractor.extractAssociations()
     }
 }
