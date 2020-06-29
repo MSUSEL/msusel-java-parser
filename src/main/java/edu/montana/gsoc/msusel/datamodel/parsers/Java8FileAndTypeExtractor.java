@@ -29,9 +29,11 @@ package edu.montana.gsoc.msusel.datamodel.parsers;
 import com.google.common.collect.Lists;
 import edu.montana.gsoc.msusel.datamodel.parsers.java2.JavaParser;
 import edu.montana.gsoc.msusel.datamodel.parsers.java2.JavaParserBaseListener;
+import lombok.extern.log4j.Log4j2;
 
 import java.util.List;
 
+@Log4j2
 public class Java8FileAndTypeExtractor extends JavaParserBaseListener {
 
     BaseModelBuilder treeBuilder;
@@ -56,6 +58,7 @@ public class Java8FileAndTypeExtractor extends JavaParserBaseListener {
     ////////////////////////////
     @Override
     public void enterPackageDeclaration(JavaParser.PackageDeclarationContext ctx) {
+        log.atInfo().log(treeBuilder.getFile().getName() + " Entering Package");
         inPackage = true;
 
         super.enterPackageDeclaration(ctx);
@@ -63,6 +66,7 @@ public class Java8FileAndTypeExtractor extends JavaParserBaseListener {
 
     @Override
     public void exitPackageDeclaration(JavaParser.PackageDeclarationContext ctx) {
+        log.atInfo().log(treeBuilder.getFile().getName() + " Leaving Package");
         inPackage = false;
 
         super.exitPackageDeclaration(ctx);
@@ -75,6 +79,7 @@ public class Java8FileAndTypeExtractor extends JavaParserBaseListener {
     ////////////////////////////
     @Override
     public void enterImportDeclaration(JavaParser.ImportDeclarationContext ctx) {
+        log.atInfo().log(treeBuilder.getFile().getName() + " Entering Import");
         inImport = true;
 
         super.enterImportDeclaration(ctx);
@@ -82,6 +87,7 @@ public class Java8FileAndTypeExtractor extends JavaParserBaseListener {
 
     @Override
     public void exitImportDeclaration(JavaParser.ImportDeclarationContext ctx) {
+        log.atInfo().log(treeBuilder.getFile().getName() + " Exiting Package");
         inImport = false;
 
         super.exitImportDeclaration(ctx);
@@ -89,6 +95,7 @@ public class Java8FileAndTypeExtractor extends JavaParserBaseListener {
 
     @Override
     public void enterQualifiedName(JavaParser.QualifiedNameContext ctx) {
+        log.atInfo().log(treeBuilder.getFile().getName() + " Entering Qualified Name");
         if (inPackage) {
             treeBuilder.createNamespace(ctx.getText());
         } else if (inImport) {
@@ -104,6 +111,7 @@ public class Java8FileAndTypeExtractor extends JavaParserBaseListener {
     //
     ////////////////////////////
     public void enterTypeDeclaration(JavaParser.TypeDeclarationContext ctx) {
+        log.atInfo().log(treeBuilder.getFile().getName() + " Entering Type Declaration");
         modifiers.clear();
         inTypeDecl = true;
 
@@ -111,12 +119,14 @@ public class Java8FileAndTypeExtractor extends JavaParserBaseListener {
     }
 
     public void exitTypeDeclaration(JavaParser.TypeDeclarationContext ctx) {
+        log.atInfo().log(treeBuilder.getFile().getName() + " Exiting Type Declaration");
         treeBuilder.endType();
 
         super.exitTypeDeclaration(ctx);
     }
 
     public void enterLocalTypeDeclaration(JavaParser.LocalTypeDeclarationContext ctx) {
+        log.atInfo().log(treeBuilder.getFile().getName() + " Entering Local Type Declaration");
         modifiers.clear();
         inTypeDecl = true;
 
@@ -124,6 +134,7 @@ public class Java8FileAndTypeExtractor extends JavaParserBaseListener {
     }
 
     public void exitLocalTypeDeclaration(JavaParser.LocalTypeDeclarationContext ctx) {
+        log.atInfo().log(treeBuilder.getFile().getName() + " Exiting Local Type Declaration");
         treeBuilder.endType();
 
         super.exitLocalTypeDeclaration(ctx);
@@ -135,6 +146,7 @@ public class Java8FileAndTypeExtractor extends JavaParserBaseListener {
     //
     ////////////////////////////
     public void enterClassDeclaration(JavaParser.ClassDeclarationContext ctx) {
+        log.atInfo().log(treeBuilder.getFile().getName() + " Entering Class Declaration");
         treeBuilder.createClass(ctx.IDENTIFIER().getText(), ctx.getStart().getLine(), ctx.getStop().getLine());
         treeBuilder.setTypeModifiers(modifiers);
 
@@ -142,6 +154,7 @@ public class Java8FileAndTypeExtractor extends JavaParserBaseListener {
     }
 
     public void enterEnumDeclaration(JavaParser.EnumDeclarationContext ctx) {
+        log.atInfo().log(treeBuilder.getFile().getName() + " Entering Enum Declaration");
         treeBuilder.createEnum(ctx.IDENTIFIER().getText(), ctx.getStart().getLine(), ctx.getStop().getLine());
         treeBuilder.setTypeModifiers(modifiers);
 
@@ -149,6 +162,7 @@ public class Java8FileAndTypeExtractor extends JavaParserBaseListener {
     }
 
     public void enterInterfaceDeclaration(JavaParser.InterfaceDeclarationContext ctx) {
+        log.atInfo().log(treeBuilder.getFile().getName() + " Entering Interface Declaration");
         treeBuilder.createInterface(ctx.IDENTIFIER().getText(), ctx.getStart().getLine(), ctx.getStop().getLine());
         treeBuilder.setTypeModifiers(modifiers);
 
@@ -156,6 +170,7 @@ public class Java8FileAndTypeExtractor extends JavaParserBaseListener {
     }
 
     public void enterAnnotationTypeDeclaration(JavaParser.AnnotationTypeDeclarationContext ctx) {
+        log.atInfo().log(treeBuilder.getFile().getName() + " Entering Annotation Type Declaration");
         treeBuilder.createAnnotation(ctx.IDENTIFIER().getText(), ctx.getStart().getLine(), ctx.getStop().getLine());
         treeBuilder.setTypeModifiers(modifiers);
 
@@ -168,6 +183,7 @@ public class Java8FileAndTypeExtractor extends JavaParserBaseListener {
     //
     ////////////////////////////
     public void enterClassOrInterfaceModifier(JavaParser.ClassOrInterfaceModifierContext ctx) {
+        log.atInfo().log(treeBuilder.getFile().getName() + " Entering Class or Interface Modifier");
         if (ctx.annotation() == null)
             modifiers.add(ctx.getText());
 
@@ -180,12 +196,14 @@ public class Java8FileAndTypeExtractor extends JavaParserBaseListener {
     //
     ////////////////////////////
     public void enterTypeParameters(JavaParser.TypeParametersContext ctx) {
+        log.atInfo().log(treeBuilder.getFile().getName() + " Entering Type Parameters");
         inTypeParams = true;
 
         super.enterTypeParameters(ctx);
     }
 
     public void exitTypeParameters(JavaParser.TypeParametersContext ctx) {
+        log.atInfo().log(treeBuilder.getFile().getName() + " Exiting Type Parameters");
         inTypeParams = false;
 
         super.exitTypeParameters(ctx);
@@ -203,6 +221,7 @@ public class Java8FileAndTypeExtractor extends JavaParserBaseListener {
     //
     ////////////////////////////
     public void enterClassOrInterfaceType(JavaParser.ClassOrInterfaceTypeContext ctx) {
+        log.atInfo().log(treeBuilder.getFile().getName() + " Entering Class or Inteface Type");
         if (inTypeParams && inTypeDecl) {
             //treeBuilder.addTypeParamBoundType(ctx.getText());
         }
@@ -216,30 +235,35 @@ public class Java8FileAndTypeExtractor extends JavaParserBaseListener {
     //
     ////////////////////////////
     public void enterClassBody(JavaParser.ClassBodyContext ctx) {
+        log.atInfo().log(treeBuilder.getFile().getName() + " Entering Class Body");
         inTypeDecl = false;
 
         super.enterClassBody(ctx);
     }
 
     public void enterInterfaceBody(JavaParser.InterfaceBodyContext ctx) {
+        log.atInfo().log(treeBuilder.getFile().getName() + " Entering Inteface Body");
         inTypeDecl = false;
 
         super.enterInterfaceBody(ctx);
     }
 
     public void enterEnumConstants(JavaParser.EnumConstantsContext ctx) {
+        log.atInfo().log(treeBuilder.getFile().getName() + " Entering Enum Constants");
         inTypeDecl = false;
 
         super.enterEnumConstants(ctx);
     }
 
     public void enterEnumBodyDeclarations(JavaParser.EnumBodyDeclarationsContext ctx) {
+        log.atInfo().log(treeBuilder.getFile().getName() + " Entering Enum Body Declarations");
         inTypeDecl = false;
 
         super.enterEnumBodyDeclarations(ctx);
     }
 
     public void enterAnnotationTypeBody(JavaParser.AnnotationTypeBodyContext ctx) {
+        log.atInfo().log(treeBuilder.getFile().getName() + " Entering Annotation Type Body");
         inTypeDecl = false;
 
         super.enterAnnotationTypeBody(ctx);

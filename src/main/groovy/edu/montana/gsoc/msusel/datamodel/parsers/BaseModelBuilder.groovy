@@ -93,45 +93,43 @@ abstract class BaseModelBuilder {
 
     }
 
-//////////////////////
-// Structures
-//////////////////////
+    //////////////////////
+    // Structures
+    //////////////////////
     void createNamespace(String name) {
-        Namespace current = namespace
-        if (current == null) {
-            String[] packageNames = name.split(/\./)
+        log.atInfo().log("Finding/Creating Namespace: " + name)
+        String[] packageNames = name.split(/\./)
 
-            for (String seg : packageNames) {
+        Namespace current = null;
+        for (String seg : packageNames) {
+            DBManager.instance.open(credentials)
+            String n = current == null ? seg : String.join(".", current.getName(), seg)
+            String relPath = seg
+
+            boolean hasNamespace = proj.hasNamespace(n)
+            DBManager.instance.close()
+
+            if (!hasNamespace) {
+                log.atInfo().log("Creating Namespace: " + n)
+                Namespace parent = current
+
                 DBManager.instance.open(credentials)
-                String pKey = current == null ? "" : current.getNsKey()
-                String n = current == null ? seg : String.join(".", current.getName(), seg)
-                String relPath = seg
-                String key = pKey.isEmpty() ? seg : String.join(".", pKey, seg) // TODO fix this
-
-                boolean hasNamespace = proj.hasNamespace(n)
+                current = Namespace.builder()
+                        .name(n)
+                        .nsKey(n)
+                        .relPath(relPath)
+                        .create()
+                if (parent != null)
+                    parent.addNamespace(current)
+                proj.addNamespace(current)
+                current.updateKey()
                 DBManager.instance.close()
-
-                if (!hasNamespace) {
-                    Namespace parent = current
-
-                    DBManager.instance.open(credentials)
-                    current = Namespace.builder()
-                            .name(n)
-                            .nsKey(key)
-                            .relPath(relPath)
-                            .create()
-                    if (parent != null)
-                        parent.addNamespace(current)
-                    proj.addNamespace(current)
-                    current.updateKey()
-                    DBManager.instance.close()
-                } else {
-                    DBManager.instance.open(credentials)
-                    Namespace parent = current
-                    setParentNamespace(parent, current)
-                    current = proj.findNamespace(key)
-                    DBManager.instance.close()
-                }
+            } else {
+                DBManager.instance.open(credentials)
+                Namespace parent = current
+                setParentNamespace(parent, current)
+                current = proj.findNamespace(n)
+                DBManager.instance.close()
             }
 
             DBManager.instance.open(credentials)
