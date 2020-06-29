@@ -64,13 +64,17 @@ abstract class BaseModelBuilder {
         }
 
         DBManager.instance.open(credentials)
-        if (proj.getParentSystem() == null) {
+        this.system = proj.getParentSystem()
+        DBManager.instance.close()
+
+        if (this.system == null) {
             throw new IllegalArgumentException("Project must be a part of a system")
         }
 
         this.proj = proj
-        this.system = proj.getParentSystem()
         this.file = file
+
+        DBManager.instance.open(credentials)
         if (file.getParentNamespace() != null)
             namespace = file.getParentNamespace()
         DBManager.instance.close()
@@ -104,8 +108,13 @@ abstract class BaseModelBuilder {
                 String relPath = seg
                 String key = pKey.isEmpty() ? seg : String.join(".", pKey, seg) // TODO fix this
 
-                if (!proj.hasNamespace(n)) {
+                boolean hasNamespace = proj.hasNamespace(n)
+                DBManager.instance.close()
+
+                if (!hasNamespace) {
                     Namespace parent = current
+
+                    DBManager.instance.open(credentials)
                     current = Namespace.builder()
                             .name(n)
                             .nsKey(key)
@@ -115,12 +124,14 @@ abstract class BaseModelBuilder {
                         parent.addNamespace(current)
                     proj.addNamespace(current)
                     current.updateKey()
+                    DBManager.instance.close()
                 } else {
+                    DBManager.instance.open(credentials)
                     Namespace parent = current
                     setParentNamespace(parent, current)
                     current = proj.findNamespace(key)
+                    DBManager.instance.close()
                 }
-                DBManager.instance.close()
             }
 
             DBManager.instance.open(credentials)
@@ -130,9 +141,7 @@ abstract class BaseModelBuilder {
             file.updateKey()
             file.refresh()
             DBManager.instance.close()
-
         }
-
     }
 
     void createImport(String name, int start, int end) {
@@ -210,7 +219,6 @@ abstract class BaseModelBuilder {
             types.push(cls)
         }
         DBManager.instance.close()
-
     }
 
     void findEnum(String name) {
@@ -346,9 +354,10 @@ abstract class BaseModelBuilder {
     void findInitializer(String name, boolean instance) {
         DBManager.instance.open(credentials)
         Initializer init = !types.isEmpty() ? types.peek().getInitializerWithName(name) : null
+        DBManager.instance.close()
+
         if (init) methods.push(init)
         scopes.push(Sets.newHashSet())
-        DBManager.instance.close()
     }
 
     void createInitializer(String name, boolean instance, int start, int end) {
@@ -378,10 +387,10 @@ abstract class BaseModelBuilder {
     void findMethod(String signature) {
         DBManager.instance.open(credentials)
         Method meth = types ? Method.findFirst("compKey = ?", "${types.peek().getCompKey()}#$signature") : null
-        if (meth) methods.push(meth)
-        scopes.push(Sets.newHashSet())
         DBManager.instance.close()
 
+        scopes.push(Sets.newHashSet())
+        if (meth) methods.push(meth)
     }
 
     void createMethod(String name, int start, int end) {
@@ -410,9 +419,10 @@ abstract class BaseModelBuilder {
     void findConstructor(String signature) {
         DBManager.instance.open(credentials)
         Constructor cons = types ? Constructor.findFirst("compKey = ?", "${types.peek().getCompKey()}#$signature") : null as Constructor
-        if (cons) methods.push(cons)
-        scopes.push(Sets.newHashSet())
         DBManager.instance.close()
+
+        scopes.push(Sets.newHashSet())
+        if (cons) methods.push(cons)
     }
 
     void createConstructor(String name, int start, int end) {
@@ -478,6 +488,7 @@ abstract class BaseModelBuilder {
 
     void setParameterType(String type) {
         Type t = findType(type)
+
         DBManager.instance.open(credentials)
         currentParam.setType(t.createTypeRef())
         DBManager.instance.close()
@@ -491,6 +502,7 @@ abstract class BaseModelBuilder {
 
     void setMethodReturnType(String type) {
         Type t = findType(type)
+
         if (t && methods && methods.peek() instanceof Method) {
             DBManager.instance.open(credentials)
             ((Method) methods.peek()).setReturnType(t.createTypeRef())
@@ -519,6 +531,7 @@ abstract class BaseModelBuilder {
 
     void addMethodException(String type) {
         Type t = findType(type)
+
         if (t && methods && methods.peek() instanceof Method) {
             DBManager.instance.open(credentials)
             ((Method) methods.peek()).addException(t.createTypeRef())
@@ -532,11 +545,13 @@ abstract class BaseModelBuilder {
             Member member = methods.pop()
             if (member instanceof Method) {
                 Set<String> localVars = scopes.pop()
+
                 DBManager.instance.open(credentials)
                 ((Method) member).setLocalVarCount(localVars.size())
                 DBManager.instance.close()
             } else if (member instanceof Initializer) {
                 Set<String> localVars = scopes.pop()
+
                 DBManager.instance.open(credentials)
                 ((Initializer) member).setLocalVarCount(localVars.size())
                 DBManager.instance.close()
@@ -554,6 +569,7 @@ abstract class BaseModelBuilder {
             DBManager.instance.open(credentials)
             boolean hasField = types.peek().hasFieldWithName(name)
             DBManager.instance.close()
+
             if (!hasField) {
                 DBManager.instance.open(credentials)
                 Field field = Field.builder()
@@ -569,9 +585,9 @@ abstract class BaseModelBuilder {
                     DBManager.instance.open(credentials)
                     field.setType(TypeRef.createPrimitiveTypeRef(fieldType))
                     DBManager.instance.close()
-                }
-                else {
+                } else {
                     Type t = findType(fieldType)
+
                     if (t) {
                         DBManager.instance.open(credentials)
                         field.setType(t.createTypeRef())
@@ -586,6 +602,7 @@ abstract class BaseModelBuilder {
     void createEnumLiteral(String name, int start, int end) {
         if (types && types.peek() instanceof Enum) {
             Enum enm = (Enum) types.peek()
+
             DBManager.instance.open(credentials)
             if (!enm.hasLiteralWithName(name)) {
                 Literal lit = Literal.builder()
@@ -603,30 +620,39 @@ abstract class BaseModelBuilder {
 
     void setFieldModifiers(Field field, List<String> modifiers) {
         modifiers.each { mod ->
+            DBManager.instance.open(credentials)
             Accessibility access = handleAccessibility(mod)
             Modifier modifier = handleNamedModifiers(mod)
             if (access) field.setAccessibility(access)
             if (modifier) field.addModifier(modifier)
+            DBManager.instance.close()
         }
     }
 
     ///////////////////
     // Relationships
     ///////////////////
-
     void addRealization(String typeName) {
         if (types) {
-            DBManager.instance.open(credentials)
-            types.peek().realizes(findType(typeName))
-            DBManager.instance.close()
+            Type t = findType(typeName)
+
+            if (t) {
+                DBManager.instance.open(credentials)
+                types.peek().realizes(t)
+                DBManager.instance.close()
+            }
         }
     }
 
     void addGeneralization(String typeName) {
         if (types) {
-            DBManager.instance.open(credentials)
-            types.peek().generalizedBy(findType(typeName))
-            DBManager.instance.close()
+            Type t = findType(typeName)
+
+            if (t) {
+                DBManager.instance.open(credentials)
+                types.peek().generalizedBy(t)
+                DBManager.instance.close()
+            }
         }
     }
 
@@ -648,9 +674,13 @@ abstract class BaseModelBuilder {
 
     void addUseDependency(String type) {
         if (types) {
-            DBManager.instance.open(credentials)
-            types.peek().useTo(findType(type))
-            DBManager.instance.close()
+            Type t = findType(type)
+
+            if (t) {
+                DBManager.instance.open(credentials)
+                types.peek().useTo(t)
+                DBManager.instance.close()
+            }
         }
     }
 

@@ -99,14 +99,19 @@ class JavaArtifactIdentifier implements ArtifactIdentifier {
             }
             if (type != null) {
                 DBManager.instance.open(credentials)
-                File f = File.builder()
-                        .fileKey(file.toString())
-                        .name(file.toString())
-                        /*.language("Java")*/
-                        .type(type)
-                        .create()
-                files.add(f)
-                project.addFile(f)
+                if (!project.getFileByName(file.toString())) {
+                    File f = File.builder()
+                            .fileKey(file.toString())
+                            .name(file.toString())
+                            /*.language("Java")*/
+                            .type(type)
+                            .create()
+                    files.add(f)
+                    project.addFile(f)
+                } else {
+                    File f = project.getFileByName(file.toString())
+                    files.add(f)
+                }
                 log.atInfo().log("Identified " + type + " file: " + file.getFileName())
                 DBManager.instance.close()
             }

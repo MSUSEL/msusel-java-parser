@@ -26,11 +26,15 @@
  */
 package edu.montana.gsoc.msusel.datamodel.parsers
 
+import com.google.common.collect.Sets
 import edu.isu.isuese.datamodel.*
 import edu.isu.isuese.datamodel.util.DBCredentials
 import edu.isu.isuese.datamodel.util.DBManager
+import groovyx.gpars.GParsExecutorsPool
 import groovyx.gpars.GParsPool
 import jsr166y.ForkJoinPool
+
+import java.util.concurrent.ExecutorService
 
 /**
  * @author Isaac Griffith
@@ -48,30 +52,33 @@ class AssociationExtractor {
     }
 
     void extractAssociations() {
+        Set<Type> types = Sets.newHashSet()
         DBManager.instance.open(credentials)
-        Set<Type> types = project.getAllTypes()
-        DBManager.close()
+        types.addAll(project.getAllTypes())
+        DBManager.instance.close()
 
-        GParsPool.withPool(8) { ForkJoinPool pool ->
+        GParsExecutorsPool.withPool(8) { ExecutorService srvc ->
             types.eachParallel { Type type ->
-                handleTypeAssociation(type, pool)
+                DBManager.instance.open(credentials)
+                handleTypeAssociation(type)
+                DBManager.instance.close()
             }
         }
     }
 
-    private void handleTypeAssociation(Type type, ForkJoinPool pool) {
-        DBManager.instance.open(credentials)
+    private void handleTypeAssociation(Type type/*, ExecutorService pool*/) {
+//        DBManager.instance.open(credentials)
         List<Field> fields = type.getFields()
-        DBManager.instance.close()
+//        DBManager.instance.close()
 
-        GParsPool.withExistingPool(pool) {
-            fields.eachParallel { Field f ->
-                DBManager.instance.open(credentials)
+//        GParsExecutorsPool.withExistingPool(pool) {
+            fields.each { Field f ->
+//                DBManager.instance.open(credentials)
                 if (f.getType() != null && f.getType().getReference() != null)
                     createAssociation(type, f.getType())
-                DBManager.instance.close()
+//                DBManager.instance.close()
             }
-        }
+//        }
     }
 
     private void createAssociation(Type type, TypeRef ref) {
