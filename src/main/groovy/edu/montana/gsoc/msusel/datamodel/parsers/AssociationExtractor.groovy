@@ -57,13 +57,13 @@ class AssociationExtractor {
         types.addAll(project.getAllTypes())
         DBManager.instance.close()
 
-        GParsExecutorsPool.withPool(8) { ExecutorService srvc ->
+//        GParsExecutorsPool.withPool(8) { ExecutorService srvc ->
             types.eachParallel { Type type ->
                 DBManager.instance.open(credentials)
                 handleTypeAssociation(type)
                 DBManager.instance.close()
             }
-        }
+//        }
     }
 
     private void handleTypeAssociation(Type type/*, ExecutorService pool*/) {
