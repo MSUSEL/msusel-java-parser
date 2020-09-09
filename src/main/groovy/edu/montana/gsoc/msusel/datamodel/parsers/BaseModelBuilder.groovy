@@ -892,10 +892,12 @@ abstract class BaseModelBuilder {
         if (type) {
             def m
 
-            if (((Stack<Member>) methods).peek() instanceof Method) {
-                m = (Method) ((Stack<Member>) methods).peek()
-            } else if (((Stack<Member>) methods).peek() instanceof Initializer) {
-                m = (Initializer) ((Stack<Member>) methods).peek()
+            if (!methods.isEmpty()) {
+                if (((Stack<Member>) methods).peek() instanceof Method) {
+                    m = (Method) ((Stack<Member>) methods).peek()
+                } else if (((Stack<Member>) methods).peek() instanceof Initializer) {
+                    m = (Initializer) ((Stack<Member>) methods).peek()
+                }
             }
 
 //            DBManager.instance.open(credentials)
