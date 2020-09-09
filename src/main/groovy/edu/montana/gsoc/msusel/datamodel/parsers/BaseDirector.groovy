@@ -92,9 +92,10 @@ abstract class BaseDirector {
         }
 
         logger.atInfo().log("Gathering Member Usage Info into Model")
-        GParsExecutorsPool.withPool(4) {
-            files.eachParallel { File file -> if (includeFile(file)) gatherMemberUsageInfo(file) }
-        }
+//        GParsExecutorsPool.withPool(4) {
+//            files.eachParallel { File file -> if (includeFile(file)) gatherMemberUsageInfo(file) }
+        files.each { File file -> if (includeFile(file)) gatherMemberUsageInfo(file) }
+//        }
 
         if (statements) {
             GParsExecutorsPool.withPool(8) {

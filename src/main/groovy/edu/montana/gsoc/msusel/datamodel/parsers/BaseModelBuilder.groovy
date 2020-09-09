@@ -577,6 +577,8 @@ abstract class BaseModelBuilder {
                         .start(start)
                         .end(end)
                         .create()
+                types.peek().addMember(field)
+                field.updateKey()
                 DBManager.instance.close()
 
                 if (primitive) {
@@ -588,6 +590,7 @@ abstract class BaseModelBuilder {
 
                     if (t) {
                         DBManager.instance.open(credentials)
+                        log.atInfo().log("Creating type ref to ${t.getName()} for field ${field.getName()}")
                         field.setType(t.createTypeRef())
                         DBManager.instance.close()
                     }
@@ -895,14 +898,16 @@ abstract class BaseModelBuilder {
                 m = (Initializer) ((Stack<Member>) methods).peek()
             }
 
-            DBManager.instance.open(credentials)
+//            DBManager.instance.open(credentials)
             Field f = type.getFieldWithName(comp)
             if (f && m) {
                 m.usesField(f)
-                if (f.getType().getType() == TypeRefType.Type)
+                if (f.getType().getType() == TypeRefType.Type) {
+                    log.atInfo().log("Field Name: ${f.getName()}")
                     type = (Type) f.getType().getType(proj.getProjectKey())
+                }
             }
-            DBManager.instance.close()
+//            DBManager.instance.close()
         }
 
         return type
