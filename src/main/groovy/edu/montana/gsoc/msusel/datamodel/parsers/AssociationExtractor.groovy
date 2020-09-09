@@ -58,7 +58,8 @@ class AssociationExtractor {
         DBManager.instance.close()
 
 //        GParsExecutorsPool.withPool(8) { ExecutorService srvc ->
-            types.eachParallel { Type type ->
+//            types.eachParallel { Type type ->
+            types.each { Type type ->
                 DBManager.instance.open(credentials)
                 handleTypeAssociation(type)
                 DBManager.instance.close()
