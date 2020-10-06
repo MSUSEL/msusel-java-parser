@@ -86,7 +86,8 @@ class AssociationExtractor {
         Reference reference = ref.getReference()
         if (reference && ref.getType() == TypeRefType.Type) {
             Type dep = ref.getType(project.getProjectKey())
-            type.associatedTo(dep)
+            if (type != null)
+                type.associatedTo(dep)
         }
     }
 }
