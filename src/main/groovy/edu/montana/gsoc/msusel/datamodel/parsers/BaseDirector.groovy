@@ -98,10 +98,11 @@ abstract class BaseDirector {
 //        }
 
         if (statements) {
-            GParsExecutorsPool.withPool(8) {
+//            GParsExecutorsPool.withPool(8) {
                 logger.atInfo().log("Gathering Statement Info and CFG into Model")
-                files.eachParallel { File file -> if (includeFile(file)) gatherStatementInfo(file) }
-            }
+//                files.eachParallel { File file -> if (includeFile(file)) gatherStatementInfo(file) }
+            files.each { File file -> if (includeFile(file)) gatherStatementInfo(file) }
+//            }
         }
 
         logger.atInfo().log("Gathering Type Associations into Model")

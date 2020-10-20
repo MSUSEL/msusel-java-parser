@@ -60,7 +60,7 @@ public class JDTeste extends DBSpec {
         files.add(File.builder().name(basePath + "/AllInOne7.java").fileKey(basePath + "/AllInOne7.java").relPath("AllInOne7.java").create());
         files.add(File.builder().name(basePath + "/AllInOne8.java").fileKey(basePath + "/AllInOne8.java").relPath("AllInOne8.java").create());
 
-        fixture = new JavaDirector(proj, log);
+        fixture = new JavaDirector(proj, log, null);
     }
 
     @AfterEach
@@ -85,7 +85,7 @@ public class JDTeste extends DBSpec {
 
     @Test
     public void processWithStatements() {
-        fixture = new JavaDirector(proj, log, true, null);
+        fixture = new JavaDirector(proj, log, null, true);
         fixture.process(files);
 
         fail();
