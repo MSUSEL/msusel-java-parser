@@ -241,7 +241,7 @@ public class Java8StatementExtractor extends Java8AbstractExtractor {
     }
 
     public void enterLocalVariableDeclaration(JavaParser.LocalVariableDeclarationContext ctx) {
-        builder.createStatement(StatementType.VAR_DECL);
+        builder.createStatement(StatementType.VARDECL);
 
         super.enterLocalVariableDeclaration(ctx);
     }
