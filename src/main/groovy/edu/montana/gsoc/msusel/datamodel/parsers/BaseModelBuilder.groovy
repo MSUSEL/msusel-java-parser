@@ -177,6 +177,7 @@ abstract class BaseModelBuilder {
 
     void findClass(String name) {
         Type type
+        log.atInfo().log("Finding/Creating Class: " + name)
         if (types) {
             DBManager.instance.open(credentials)
             type = types.peek().getTypeByName(name)
@@ -194,6 +195,7 @@ abstract class BaseModelBuilder {
     }
 
     void createClass(String name, int start, int stop) {
+        log.atInfo().log("Creating Class: " + name)
         DBManager.instance.open(credentials)
         if (types && types.peek().getTypeByName(name) != null)
             types.push(types.peek().getTypeByName(name))
@@ -220,6 +222,7 @@ abstract class BaseModelBuilder {
     }
 
     void findEnum(String name) {
+        log.atInfo().log("Finding/Creating Enum: " + name)
         Type type
         if (types) {
             DBManager.instance.open(credentials)
@@ -237,6 +240,7 @@ abstract class BaseModelBuilder {
     }
 
     void createEnum(String name, int start, int stop) {
+        log.atInfo().log("Creating Enum: " + name)
         DBManager.instance.open(credentials)
         if (types && types.peek().getTypeByName(name) != null)
             types.push(types.peek().getTypeByName(name))
@@ -264,6 +268,7 @@ abstract class BaseModelBuilder {
     }
 
     void findInterface(String name) {
+        log.atInfo().log("Finding/Creating Interface: " + name)
         Type type = null
         if (types) {
             DBManager.instance.open(credentials)
@@ -282,6 +287,7 @@ abstract class BaseModelBuilder {
     }
 
     void createInterface(String name, int start, int stop) {
+        log.atInfo().log("Creating Interface: " + name)
         DBManager.instance.open(credentials)
         if (types && types.peek().getTypeByName(name) != null)
             types.push(types.peek().getTypeByName(name))
@@ -299,7 +305,7 @@ abstract class BaseModelBuilder {
                 types.peek().addType(ifc)
             } else {
                 namespace.addType(ifc)
-                file.addType(ifc)
+                file.addType(ifc)  // TODO Evaluate if we should be adding types in both cases
             }
             ifc.updateKey()
             types.push(ifc)
