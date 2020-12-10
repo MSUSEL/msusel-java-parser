@@ -211,10 +211,11 @@ abstract class BaseModelBuilder {
                     .create()
             if (types) {
                 types.peek().addType(cls)
-            } else {
-                namespace.addType(cls)
-                file.addType(cls)
             }
+
+            namespace.addType(cls)
+            file.addType(cls)
+            
             cls.updateKey()
             types.push(cls)
         }
@@ -256,10 +257,11 @@ abstract class BaseModelBuilder {
                     .create()
             if (types) {
                 types.peek().addType(enm)
-            } else {
-                namespace.addType(enm)
-                file.addType(enm)
             }
+
+            namespace.addType(enm)
+            file.addType(enm)
+
             enm.updateKey()
             types.push(enm)
         }
@@ -303,10 +305,11 @@ abstract class BaseModelBuilder {
                     .create()
             if (types) {
                 types.peek().addType(ifc)
-            } else {
-                namespace.addType(ifc)
-                file.addType(ifc)  // TODO Evaluate if we should be adding types in both cases
             }
+
+            namespace.addType(ifc)
+            file.addType(ifc)
+
             ifc.updateKey()
             types.push(ifc)
         }
