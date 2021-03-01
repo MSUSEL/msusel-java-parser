@@ -989,11 +989,7 @@ abstract class BaseModelBuilder {
             // Check same package
             if (namespace != null) {
                 DBManager.instance.open(credentials)
-                candidate = proj.findType("name", namespace.getName() + "." + name)
-                DBManager.instance.close()
-            } else {
-                DBManager.instance.open(credentials)
-                candidate = proj.findType("name", name)
+                candidate = namespace.getTypeByName(namespace.getName() + "." + name)
                 DBManager.instance.close()
             }
 
