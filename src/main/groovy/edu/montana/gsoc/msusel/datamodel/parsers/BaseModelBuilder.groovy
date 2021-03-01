@@ -991,7 +991,7 @@ abstract class BaseModelBuilder {
     }
 
     private Type findTypeByQualifiedName(String name) {
-        return proj.findType("name", name)
+        return proj.findType("qualified_name", name)
     }
 
     private Type createUnknownType(String name) {
