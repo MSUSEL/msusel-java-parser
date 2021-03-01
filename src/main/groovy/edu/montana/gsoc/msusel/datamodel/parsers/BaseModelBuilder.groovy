@@ -150,6 +150,7 @@ abstract class BaseModelBuilder {
         DBManager.instance.open(credentials)
         Import imp = Import.findFirst("name = ?", name)
         if (!imp)
+            log.atInfo().log("Creating import with name: " + name)
             imp = Import.builder().name(name).start(start).end(end).create()
 
         file.addImport(imp)
