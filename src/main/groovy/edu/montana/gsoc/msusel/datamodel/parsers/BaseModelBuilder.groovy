@@ -98,7 +98,11 @@ abstract class BaseModelBuilder {
     //////////////////////
     void createNamespace(String name) {
         log.atInfo().log("Finding/Creating Namespace: " + name)
-        String[] packageNames = name.split(/\./)
+        String[] packageNames
+        if (name.contains("."))
+            packageNames = name.split(/\./)
+        else
+            packageNames = [name]
 
         Namespace current = null;
         for (String seg : packageNames) {
@@ -144,7 +148,9 @@ abstract class BaseModelBuilder {
 
     void createImport(String name, int start, int end) {
         DBManager.instance.open(credentials)
-        Import imp = Import.builder().name(name).start(start).end(end).create()
+        Import imp = Import.findFirst("name = ?", name)
+        if (!imp)
+            imp = Import.builder().name(name).start(start).end(end).create()
 
         file.addImport(imp)
         DBManager.instance.close()

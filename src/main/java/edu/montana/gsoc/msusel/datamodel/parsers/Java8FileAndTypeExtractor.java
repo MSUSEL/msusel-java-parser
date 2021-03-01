@@ -221,7 +221,7 @@ public class Java8FileAndTypeExtractor extends JavaParserBaseListener {
     //
     ////////////////////////////
     public void enterClassOrInterfaceType(JavaParser.ClassOrInterfaceTypeContext ctx) {
-        log.atInfo().log(treeBuilder.getFile().getName() + " Entering Class or Inteface Type");
+        log.atInfo().log(treeBuilder.getFile().getName() + " Entering Class or Interface Type");
         if (inTypeParams && inTypeDecl) {
             //treeBuilder.addTypeParamBoundType(ctx.getText());
         }
@@ -242,7 +242,7 @@ public class Java8FileAndTypeExtractor extends JavaParserBaseListener {
     }
 
     public void enterInterfaceBody(JavaParser.InterfaceBodyContext ctx) {
-        log.atInfo().log(treeBuilder.getFile().getName() + " Entering Inteface Body");
+        log.atInfo().log(treeBuilder.getFile().getName() + " Entering Interface Body");
         inTypeDecl = false;
 
         super.enterInterfaceBody(ctx);
