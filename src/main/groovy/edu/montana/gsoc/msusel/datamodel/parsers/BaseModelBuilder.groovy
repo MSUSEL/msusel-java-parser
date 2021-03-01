@@ -947,25 +947,25 @@ abstract class BaseModelBuilder {
         null
     }
 
-/**
- * Adds the child namespace to the provided parent namespace
- * @param parent Parent of the child namespace
- * @param child Child namespace
- */
+    /**
+     * Adds the child namespace to the provided parent namespace
+     * @param parent Parent of the child namespace
+     * @param child Child namespace
+     */
     void setParentNamespace(Namespace parent, Namespace child) {
         if (parent != null && !parent.containsNamespace(child))
             parent.addNamespace(child)
     }
 
-/**
- * Finds a type with the given name, first searching the current namespace, then searching fully specified imported types,
- * then checking the types defined in known language specific wildcard imports, then checking automatically included language
- * types, and finally checking unknown wildcard imports. If the type is not defined within the context of the system under analysis
- * it will be constructed as an UnknownType.
- *
- * @param name The name of the type
- * @return The Type corresponding to the provided type name.
- */
+    /**
+     * Finds a type with the given name, first searching the current namespace, then searching fully specified imported types,
+     * then checking the types defined in known language specific wildcard imports, then checking automatically included language
+     * types, and finally checking unknown wildcard imports. If the type is not defined within the context of the system under analysis
+     * it will be constructed as an UnknownType.
+     *
+     * @param name The name of the type
+     * @return The Type corresponding to the provided type name.
+     */
     Type findType(String name) { // FIXME
         log.atInfo().log("Finding type: $name")
         List<String> general = []
@@ -1075,21 +1075,21 @@ abstract class BaseModelBuilder {
         candidate
     }
 
-/**
- * A heuristic to determine if the provided type name is fully defined. That is whether the type name has more than one "."
- * @param name Name to evaluate
- * @return true if the name has more than one ".", false otherwise.
- */
+    /**
+     * A heuristic to determine if the provided type name is fully defined. That is whether the type name has more than one "."
+     * @param name Name to evaluate
+     * @return true if the name has more than one ".", false otherwise.
+     */
     boolean notFullySpecified(String name) {
-        return name.count(".") > 1
+        return name.count(".") < 1
     }
 
-/**
- * Retrieves the full name of the the type with the short name provided. This name is constructed by appending the current package name
- * to the provided name, if it is not already present.
- * @param name The name to evaluate.
- * @return The fully qualified name of the type
- */
+    /**
+     * Retrieves the full name of the the type with the short name provided. This name is constructed by appending the current package name
+     * to the provided name, if it is not already present.
+     * @param name The name to evaluate.
+     * @return The fully qualified name of the type
+     */
     String getFullName(String name) {
         if (!types.empty()) {
             "${typeKey()}.${name}"
