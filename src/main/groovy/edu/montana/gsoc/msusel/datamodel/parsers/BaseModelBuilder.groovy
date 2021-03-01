@@ -1057,9 +1057,11 @@ abstract class BaseModelBuilder {
                 DBManager.instance.close()
             } else {
                 DBManager.instance.open(credentials)
+                if (name.count(".") < 1)
+                    name = "java.lang." + name
                 candidate = UnknownType.builder()
-                        .name("java.lang." + name)
-                        .compKey("java.lang." + name)
+                        .name(name)
+                        .compKey(name)
                         .create()
                 DBManager.instance.close()
             }
