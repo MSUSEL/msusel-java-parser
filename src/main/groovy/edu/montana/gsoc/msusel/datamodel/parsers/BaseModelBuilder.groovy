@@ -189,7 +189,7 @@ abstract class BaseModelBuilder {
             DBManager.instance.close()
         } else {
             DBManager.instance.open(credentials)
-            type = file.getTypeByName(name)
+            type = namespace.getTypeByName(name)
             DBManager.instance.close()
         }
 
@@ -203,8 +203,8 @@ abstract class BaseModelBuilder {
         DBManager.instance.open(credentials)
         if (types && types.peek().getTypeByName(name) != null)
             types.push(types.peek().getTypeByName(name))
-        else if (file.getTypeByName(name) != null) {
-            types.push(file.getTypeByName(name))
+        else if (namespace.getTypeByName(name) != null) {
+            types.push(namespace.getTypeByName(name))
         } else {
             Class cls = Class.builder()
                     .name(name)
@@ -234,7 +234,7 @@ abstract class BaseModelBuilder {
             DBManager.instance.close()
         } else {
             DBManager.instance.open(credentials)
-            type = file.getTypeByName(name)
+            type = namespace.getTypeByName(name)
             DBManager.instance.close()
         }
 
@@ -247,8 +247,8 @@ abstract class BaseModelBuilder {
         DBManager.instance.open(credentials)
         if (types && types.peek().getTypeByName(name) != null)
             types.push(types.peek().getTypeByName(name))
-        else if (file.getTypeByName(name) != null) {
-            types.push(file.getTypeByName(name))
+        else if (namespace.getTypeByName(name) != null) {
+            types.push(namespace.getTypeByName(name))
         } else {
             Enum enm = Enum.builder()
                     .name(name)
@@ -279,7 +279,7 @@ abstract class BaseModelBuilder {
             DBManager.instance.close()
         } else {
             DBManager.instance.open(credentials)
-            type = file.getTypeByName(name)
+            type = namespace.getTypeByName(name)
             DBManager.instance.close()
         }
 
@@ -293,8 +293,8 @@ abstract class BaseModelBuilder {
         DBManager.instance.open(credentials)
         if (types && types.peek().getTypeByName(name) != null)
             types.push(types.peek().getTypeByName(name))
-        else if (file.getTypeByName(name) != null) {
-            types.push(file.getTypeByName(name))
+        else if (namespace.getTypeByName(name) != null) {
+            types.push(namespace.getTypeByName(name))
         } else {
             Interface ifc = Interface.builder()
                     .name(name)
@@ -968,106 +968,98 @@ abstract class BaseModelBuilder {
      */
     Type findType(String name) { // FIXME
         log.atInfo().log("Finding type: $name")
-        List<String> general = []
-        List<String> specific = []
 
         Type candidate
 
         if (notFullySpecified(name)) {
-            List<String> imports = [];
-            DBManager.instance.open(credentials)
-            imports = file.getImports()*.getName()
-            DBManager.instance.close()
-
-            for (String s : imports) {
-                if (s.endsWith("*"))
-                    general.add(s)
-                else
-                    specific.add(s)
-            }
-
-            // Check same package
-            if (namespace != null) {
-                DBManager.instance.open(credentials)
-                candidate = namespace.getTypeByName(namespace.getName() + "." + name)
-                DBManager.instance.close()
-            }
-
-            if (candidate == null) {
-                // Check specific imports
-                for (String spec : specific) {
-                    if (spec.endsWith(name)) {
-                        DBManager.instance.open(credentials)
-                        candidate = proj.findType("name", spec)
-                        DBManager.instance.close()
-                    }
-
-                    if (candidate != null)
-                        break
-                }
-            }
-
-            // Check general imports
-            if (candidate == null) {
-                for (String gen : general) {
-                    String imp = gen.replace("*", name)
-                    DBManager.instance.open(credentials)
-                    candidate = proj.findType("name", imp)
-                    DBManager.instance.close()
-
-                    if (candidate != null)
-                        break
-                }
-            }
-
-            // else java.lang
-            if (candidate == null) {
-                DBManager.instance.open(credentials)
-                candidate = proj.findType("name", "java.lang." + name)
-                DBManager.instance.close()
-            }
-
+            candidate = findTypeInNamespace(name)
+            if (candidate == null) candidate = findTypeUsingSpecificImports(name)
+            if (candidate == null) candidate = findTypeUsingGeneralImports(name)
+            if (candidate == null) candidate = findTypeInDefaultNamespace(name)
         } else {
-            DBManager.instance.open(credentials)
-            candidate = proj.findType("name", name)
-            DBManager.instance.close()
+            candidate = findTypeByQualifiedName(name)
         }
 
         // In the event that no valid candidate was found, then it is an unknown type
-        if (candidate == null) {
-            if (!specific.isEmpty()) {
-                for (String spec : specific) {
-                    if (spec.endsWith(name)) {
-                        DBManager.instance.open(credentials)
-                        candidate = UnknownType.builder().compKey(spec).create()
-                        DBManager.instance.close()
-                        break
-                    }
-                }
-            } else if (!general.isEmpty()) {
-                DBManager.instance.open(credentials)
-                candidate = UnknownType.builder()
-                        .name(general.get(0).substring(0, general.get(0).lastIndexOf(".")) + name)
-                        .compKey(general.get(0).substring(0, general.get(0).lastIndexOf(".")) + name)
-                        .create()
-                DBManager.instance.close()
-            } else {
-                DBManager.instance.open(credentials)
-                if (name.count(".") < 1)
-                    name = "java.lang." + name
-                candidate = UnknownType.builder()
-                        .name(name)
-                        .compKey(name)
-                        .create()
-                DBManager.instance.close()
-            }
+        if (candidate == null) candidate = createUnknownType(name)
 
-            if (candidate != null) {
-                DBManager.instance.open(credentials)
-                proj.addUnknownType((UnknownType) candidate)
-                candidate.updateKey()
-                DBManager.instance.close()
-            }
+        candidate
+    }
+
+    private Type findTypeByQualifiedName(String name) {
+        DBManager.instance.open(credentials)
+        Type candidate = proj.findType("name", name)
+        DBManager.instance.close()
+        candidate
+    }
+
+    private Type createUnknownType(String name) {
+        Type candidate = null
+
+        String specific = file.getImports()*.getName().find { !it.endsWith(name) }
+        String general = file.getImports()*.getName().find { it.endsWith("*") }
+
+        DBManager.instance.open(credentials)
+        if (specific) {
+            candidate = UnknownType.builder()
+                    .name(specific)
+                    .compKey(specific)
+                    .create()
+        } else if (general) {
+            candidate = UnknownType.builder()
+                    .name(general.replace("*", name))
+                    .compKey(general.replace("*", name))
+                    .create()
+        } else {
+            if (name.count(".") < 1)
+                name = "java.lang." + name
+            candidate = UnknownType.builder()
+                    .name(name)
+                    .compKey(name)
+                    .create()
+        }
+
+        proj.addUnknownType((UnknownType) candidate)
+        candidate.updateKey()
+        DBManager.instance.close()
+
+        candidate
+    }
+
+    private Type findTypeInDefaultNamespace(String name) {
+        return findTypeByQualifiedName("java.lang." + name)
+    }
+
+    private Type findTypeUsingGeneralImports(String name) {
+        List<String> general = file.getImports()*.getName().findAll { it.endsWith("*") }
+        Type candidate = null
+        for (String gen : general) {
+            String imp = gen.replace("*", name)
+
+            candidate = findTypeByQualifiedName(imp);
+
+            if (candidate != null)
+                break
+        }
+        candidate
+    }
+
+    private Type findTypeUsingSpecificImports(String name) {
+        String specific = file.getImports()*.getName().find { it.endsWith(name) }
+        Type candidate = null
+
+        if (specific) {
+            candidate = findTypeByQualifiedName(specific)
+        }
+
+        candidate
+    }
+
+    private Type findTypeInNamespace(String name) {
+        Type candidate = null
+
+        if (namespace != null) {
+            candidate = findTypeByQualifiedName(namespace.getName() + "." + name)
         }
 
         candidate
