@@ -971,6 +971,7 @@ abstract class BaseModelBuilder {
 
         Type candidate
 
+        DBManager.instance.open(credentials)
         if (notFullySpecified(name)) {
             candidate = findTypeInNamespace(name)
             if (candidate == null) candidate = findTypeUsingSpecificImports(name)
@@ -982,15 +983,13 @@ abstract class BaseModelBuilder {
 
         // In the event that no valid candidate was found, then it is an unknown type
         if (candidate == null) candidate = createUnknownType(name)
+        DBManager.instance.close()
 
         candidate
     }
 
     private Type findTypeByQualifiedName(String name) {
-        DBManager.instance.open(credentials)
-        Type candidate = proj.findType("name", name)
-        DBManager.instance.close()
-        candidate
+        return proj.findType("name", name)
     }
 
     private Type createUnknownType(String name) {
@@ -999,7 +998,6 @@ abstract class BaseModelBuilder {
         String specific = file.getImports()*.getName().find { !it.endsWith(name) }
         String general = file.getImports()*.getName().find { it.endsWith("*") }
 
-        DBManager.instance.open(credentials)
         if (specific) {
             candidate = UnknownType.builder()
                     .name(specific)
@@ -1018,10 +1016,8 @@ abstract class BaseModelBuilder {
                     .compKey(name)
                     .create()
         }
-
         proj.addUnknownType((UnknownType) candidate)
         candidate.updateKey()
-        DBManager.instance.close()
 
         candidate
     }
@@ -1036,7 +1032,7 @@ abstract class BaseModelBuilder {
         for (String gen : general) {
             String imp = gen.replace("*", name)
 
-            candidate = findTypeByQualifiedName(imp);
+            candidate = findTypeByQualifiedName(imp)
 
             if (candidate != null)
                 break
