@@ -82,13 +82,13 @@ abstract class BaseDirector {
 
         logger.atInfo().log("Gathering File and Type Info into Model")
 //        GParsExecutorsPool.withPool(4) {
-            files.each { File file -> if (includeFile(file)) gatherFileAndTypeInfo(file) }
+        files.each { File file -> if (includeFile(file)) gatherFileAndTypeInfo(file) }
 //        files.each { File file -> if (includeFile(file)) gatherFileAndTypeInfo(file) }
 //        }
 
         logger.atInfo().log("Gathering Type Members and Basic Relation Info into Model")
 //        GParsExecutorsPool.withPool(4) {
-            files.each { File file -> if (includeFile(file)) gatherMembersAndBasicRelationInfo(file) }
+        files.each { File file -> if (includeFile(file)) gatherMembersAndBasicRelationInfo(file) }
 //        }
 
         logger.atInfo().log("Gathering Member Usage Info into Model")
@@ -99,7 +99,7 @@ abstract class BaseDirector {
 
         if (statements) {
 //            GParsExecutorsPool.withPool(8) {
-                logger.atInfo().log("Gathering Statement Info and CFG into Model")
+            logger.atInfo().log("Gathering Statement Info and CFG into Model")
 //                files.eachParallel { File file -> if (includeFile(file)) gatherStatementInfo(file) }
             files.each { File file -> if (includeFile(file)) gatherStatementInfo(file) }
 //            }

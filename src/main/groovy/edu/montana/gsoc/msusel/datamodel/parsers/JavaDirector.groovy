@@ -125,10 +125,10 @@ class JavaDirector extends BaseDirector {
 
     void utilizeParser(File file, ParseTreeListener listener) {
         DBManager.instance.open(credentials)
-        String path = file.getName()
+        String path = file.getFullPath()
         DBManager.instance.close()
 
-        logger.atInfo().log("Parsing..." + path)
+        logger.atInfo().log("Parsing... " + path)
         try {
             final JavaParserConstructor pt = new JavaParserConstructor()
             final JavaParser parser = pt.loadFile(path)
