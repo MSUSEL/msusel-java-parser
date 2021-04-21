@@ -101,8 +101,9 @@ class JavaArtifactIdentifier implements ArtifactIdentifier {
                 DBManager.instance.open(credentials)
                 if (!project.getFileByName(file.toString())) {
                     File f = File.builder()
-                            .fileKey(file.toString())
+                            .fileKey(project.getProjectKey() + ":" + file.toString())
                             .name(file.toString())
+                            .relPath(file.getFileName().toString())
                             /*.language("Java")*/
                             .type(type)
                             .create()
