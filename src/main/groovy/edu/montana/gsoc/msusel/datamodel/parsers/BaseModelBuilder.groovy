@@ -206,7 +206,11 @@ abstract class BaseModelBuilder {
         if (types && types.peek().getTypeByName(name) != null)
             types.push(types.peek().getTypeByName(name))
         else if (namespace.getTypeByName(name) != null) {
-            types.push(namespace.getTypeByName(name))
+            Type t = namespace.getTypeByName(name)
+            t.setEnd(stop)
+            t.setStart(start)
+            t.save()
+            types.push(t)
         } else {
             Class cls = Class.builder()
                     .name(name)
@@ -250,7 +254,11 @@ abstract class BaseModelBuilder {
         if (types && types.peek().getTypeByName(name) != null)
             types.push(types.peek().getTypeByName(name))
         else if (namespace.getTypeByName(name) != null) {
-            types.push(namespace.getTypeByName(name))
+            Type t = namespace.getTypeByName(name)
+            t.setEnd(stop)
+            t.setStart(start)
+            t.save()
+            types.push(t)
         } else {
             Enum enm = Enum.builder()
                     .name(name)
@@ -296,7 +304,11 @@ abstract class BaseModelBuilder {
         if (types && types.peek().getTypeByName(name) != null)
             types.push(types.peek().getTypeByName(name))
         else if (namespace.getTypeByName(name) != null) {
-            types.push(namespace.getTypeByName(name))
+            Type t = namespace.getTypeByName(name)
+            t.setEnd(stop)
+            t.setStart(start)
+            t.save()
+            types.push(t)
         } else {
             Interface ifc = Interface.builder()
                     .name(name)
@@ -373,7 +385,11 @@ abstract class BaseModelBuilder {
         if (types) {
             DBManager.instance.open(credentials)
             if (types.peek().hasInitializerWithName(name)) {
-                methods.push(types.peek().getInitializerWithName(name))
+                Initializer i = types.peek().getInitializerWithName(name)
+                i.setEnd(end)
+                i.setStart(start)
+                i.save()
+                methods.push(i)
             } else {
                 Initializer init = Initializer.builder()
                         .name(name)
@@ -406,7 +422,11 @@ abstract class BaseModelBuilder {
         if (types) {
             DBManager.instance.open(credentials)
             if (types.peek().hasMethodWithName(name)) {
-                methods.push(types.peek().getMethodWithName(name))
+                Method m = types.peek().getMethodWithName(name)
+                m.setEnd(end)
+                m.setStart(start)
+                m.save()
+                methods.push(m)
             } else {
                 Method meth = Method.builder()
                         .name(name)
@@ -437,6 +457,7 @@ abstract class BaseModelBuilder {
     void createConstructor(String name, int start, int end) {
         if (types) {
             DBManager.instance.open(credentials)
+
             Constructor cons = Constructor.creator()
                     .name(name)
                     .compKey(name)
@@ -447,9 +468,9 @@ abstract class BaseModelBuilder {
             types.peek().addMember(cons)
             cons.updateKey()
             methods.push(cons)
+
             DBManager.instance.close()
         }
-
         scopes.push(Sets.newHashSet())
     }
 
@@ -579,7 +600,14 @@ abstract class BaseModelBuilder {
             boolean hasField = types.peek().hasFieldWithName(name)
             DBManager.instance.close()
 
-            if (!hasField) {
+            if (hasField) {
+                DBManager.instance.open(credentials)
+                Field f = types.peek().getFieldWithName(name)
+                f.setEnd(end)
+                f.setStart(start)
+                f.save()
+                DBManager.instance.close()
+            } else {
                 DBManager.instance.open(credentials)
                 Field field = Field.builder()
                         .name(name)
@@ -616,7 +644,13 @@ abstract class BaseModelBuilder {
             Enum enm = (Enum) types.peek()
 
             DBManager.instance.open(credentials)
-            if (!enm.hasLiteralWithName(name)) {
+            if (enm.hasLiteralWithName(name)) {
+                Literal l = enm.getLiteralWithName(name)
+                l.setEnd(end)
+                l.setStart(start)
+                l.save()
+            }
+            else {
                 Literal lit = Literal.builder()
                         .name(name)
                         .compKey(name)
