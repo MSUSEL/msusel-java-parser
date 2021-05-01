@@ -935,7 +935,7 @@ abstract class BaseModelBuilder {
         Type type = current
 
         if (type) {
-            def m
+            Method m
 
             if (!methods.isEmpty()) {
                 if (((Stack<Member>) methods).peek() instanceof Method) {
