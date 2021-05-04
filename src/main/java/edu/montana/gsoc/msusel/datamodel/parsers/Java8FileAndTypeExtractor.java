@@ -40,6 +40,7 @@ public class Java8FileAndTypeExtractor extends JavaParserBaseListener {
     List<String> modifiers = Lists.newArrayList();
     boolean inPackage;
     boolean inImport;
+    boolean onDemand;
     boolean inTypeDecl;
     boolean inTypeParams;
 
@@ -47,6 +48,7 @@ public class Java8FileAndTypeExtractor extends JavaParserBaseListener {
         treeBuilder = builder;
         inPackage = false;
         inImport = false;
+        onDemand = false;
         inTypeDecl = false;
         inTypeParams = false;
     }
@@ -82,13 +84,17 @@ public class Java8FileAndTypeExtractor extends JavaParserBaseListener {
         log.atInfo().log(treeBuilder.getFile().getName() + " Entering Import");
         inImport = true;
 
+        if (ctx.MUL() != null)
+            onDemand = true;
+
         super.enterImportDeclaration(ctx);
     }
 
     @Override
     public void exitImportDeclaration(JavaParser.ImportDeclarationContext ctx) {
-        log.atInfo().log(treeBuilder.getFile().getName() + " Exiting Package");
+        log.atInfo().log(treeBuilder.getFile().getName() + " Exiting Import");
         inImport = false;
+        onDemand = false;
 
         super.exitImportDeclaration(ctx);
     }
@@ -99,7 +105,10 @@ public class Java8FileAndTypeExtractor extends JavaParserBaseListener {
         if (inPackage) {
             treeBuilder.createNamespace(ctx.getText());
         } else if (inImport) {
-            treeBuilder.createImport(ctx.getText(), ctx.getStart().getLine(), ctx.getStop().getLine());
+            String name = ctx.getText();
+            if (onDemand)
+                name += ".*";
+            treeBuilder.createImport(name, ctx.getStart().getLine(), ctx.getStop().getLine());
         }
 
         super.enterQualifiedName(ctx);
