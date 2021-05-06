@@ -109,6 +109,12 @@ class JavaArtifactIdentifier implements ArtifactIdentifier {
                             .create()
                     files.add(f)
                     project.addFile(f)
+                    if (type == FileType.SOURCE) {
+                        int end = file.toFile().readLines().size()
+                        int start = 1
+                        f.setStart(start)
+                        f.setEnd(end)
+                    }
                 } else {
                     File f = project.getFileByName(file.toString())
                     files.add(f)
