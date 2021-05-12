@@ -1029,33 +1029,39 @@ abstract class BaseModelBuilder {
     }
 
     private Type createUnknownType(String name) {
-        Type candidate = null
+        String typeName = determineTypeName(name)
+        findOrCreateUnknownType(typeName)
+    }
 
+    private Type findOrCreateUnknownType(String typeName) {
+        Type candidate = UnknownType.findFirst("name = ?", typeName)
+        if (!candidate) {
+            candidate = UnknownType.builder()
+                    .name(typeName)
+                    .compKey(typeName)
+                    .create()
+            proj.addUnknownType((UnknownType) candidate)
+            candidate.updateKey()
+        }
+        candidate
+    }
+
+    private String determineTypeName(String name) {
         String specific = file.getImports()*.getName().find { !it.endsWith(name) }
         String general = file.getImports()*.getName().find { it.endsWith("*") }
 
+        String typeName
         if (specific) {
-            candidate = UnknownType.builder()
-                    .name(specific)
-                    .compKey(specific)
-                    .create()
+            typeName = specific
         } else if (general) {
-            candidate = UnknownType.builder()
-                    .name(general.replace("*", name))
-                    .compKey(general.replace("*", name))
-                    .create()
+            typeName = general.replace("*", name)
         } else {
             if (name.count(".") < 1)
-                name = "java.lang." + name
-            candidate = UnknownType.builder()
-                    .name(name)
-                    .compKey(name)
-                    .create()
+                typeName = "java.lang." + name
+            else
+                typeName = name
         }
-        proj.addUnknownType((UnknownType) candidate)
-        candidate.updateKey()
-
-        candidate
+        typeName
     }
 
     private Type findTypeInDefaultNamespace(String name) {
