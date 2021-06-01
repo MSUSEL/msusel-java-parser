@@ -121,6 +121,7 @@ public class Java8FileAndTypeExtractor extends JavaParserBaseListener {
     ////////////////////////////
     public void enterTypeDeclaration(JavaParser.TypeDeclarationContext ctx) {
         log.atInfo().log(treeBuilder.getFile().getName() + " Entering Type Declaration");
+        System.out.println(treeBuilder.getFile().getName() + " Entering Type Declaration");
         modifiers.clear();
         inTypeDecl = true;
 

@@ -599,7 +599,7 @@ abstract class BaseModelBuilder {
     void createField(String name, String fieldType, boolean primitive, int start, int end, List<String> modifiers) {
         if (types) {
             DBManager.instance.open(credentials)
-            boolean hasField = types.peek().hasFieldWithName(name)
+            boolean hasField = types.peek().hasFieldWithName(name) || Field.findFirst("compKey = ?", "${tys.peek().getCompKey()}#${name}") != null
             DBManager.instance.close()
 
             if (hasField) {
