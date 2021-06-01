@@ -608,12 +608,14 @@ abstract class BaseModelBuilder {
                 f.setEnd(end)
                 f.setStart(start)
                 f.save()
+                setFieldModifiers(f, modifiers)
                 DBManager.instance.close()
             } else {
                 DBManager.instance.open(credentials)
+                String typeKey = types.peek().getCompKey()
                 Field field = Field.builder()
                         .name(name)
-                        .compKey(name)
+                        .compKey("${typeKey}#${name}")
                         .accessibility(Accessibility.PUBLIC)
                         .start(start)
                         .end(end)
@@ -653,9 +655,10 @@ abstract class BaseModelBuilder {
                 l.save()
             }
             else {
+                String typeName = types.peek().getCompKey()
                 Literal lit = Literal.builder()
                         .name(name)
-                        .compKey(name)
+                        .compKey("${typeName}#${name}")
                         .start(start)
                         .end(end)
                         .create()
