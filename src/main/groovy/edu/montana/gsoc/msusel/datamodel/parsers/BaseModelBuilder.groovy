@@ -492,7 +492,7 @@ abstract class BaseModelBuilder {
 
     void addParameterModifier(String mod) {
         DBManager.instance.open(credentials)
-        currentParam.addModifier(mod)
+        currentParam?.addModifier(mod)
         DBManager.instance.close()
     }
 
