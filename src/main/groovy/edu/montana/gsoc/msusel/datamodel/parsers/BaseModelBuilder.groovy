@@ -77,6 +77,8 @@ abstract class BaseModelBuilder {
         DBManager.instance.open(credentials)
         if (file.getParentNamespace() != null)
             namespace = file.getParentNamespace()
+        else
+            namespace = proj.getDefaultNamespace()
         DBManager.instance.close()
     }
 
