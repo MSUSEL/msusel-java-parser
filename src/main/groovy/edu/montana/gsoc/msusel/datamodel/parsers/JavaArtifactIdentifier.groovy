@@ -83,8 +83,8 @@ class JavaArtifactIdentifier implements ArtifactIdentifier {
             FileType type = null
             if (file.toString().endsWith(".java")) {
                 type = FileType.SOURCE
-//                if (file.toString().contains("test"))
-//                    type = FileType.TEST
+                if (file.getParent().toString().toLowerCase().contains("test"))
+                    type = FileType.TEST
             } else if (file.getFileName().toString().endsWith(".class")) {
                 type = FileType.BINARY
                 binCount++
