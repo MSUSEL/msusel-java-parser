@@ -214,7 +214,7 @@ abstract class BaseModelBuilder {
             t.save()
             types.push(t)
         } else {
-            Class cls = Class.builder()
+            Type cls = Type.builder().type(Type.CLASS)
                     .name(name)
                     .compKey(name)
                     .accessibility(Accessibility.PUBLIC)
@@ -262,7 +262,7 @@ abstract class BaseModelBuilder {
             t.save()
             types.push(t)
         } else {
-            Enum enm = Enum.builder()
+            Type enm = Type.builder().type(Type.ENUM)
                     .name(name)
                     .compKey(name)
                     .accessibility(Accessibility.PUBLIC)
@@ -312,7 +312,7 @@ abstract class BaseModelBuilder {
             t.save()
             types.push(t)
         } else {
-            Interface ifc = Interface.builder()
+            Type ifc = Type.builder().type(Type.INTERFACE)
                     .name(name)
                     .compKey(name)
                     .accessibility(Accessibility.PUBLIC)
@@ -643,8 +643,8 @@ abstract class BaseModelBuilder {
     }
 
     void createEnumLiteral(String name, int start, int end) {
-        if (types && types.peek() instanceof Enum) {
-            Enum enm = (Enum) types.peek()
+        if (types && types.peek().getType() == Type.ENUM) {
+            Type enm = types.peek()
 
             DBManager.instance.open(credentials)
             if (enm.hasLiteralWithName(name)) {
@@ -1036,13 +1036,14 @@ abstract class BaseModelBuilder {
     }
 
     private Type findOrCreateUnknownType(String typeName) {
-        Type candidate = UnknownType.findFirst("name = ?", typeName)
+        Type candidate = Type.findFirst("name = ? and type = ?", typeName, Type.UNKNOWN)
         if (!candidate) {
-            candidate = UnknownType.builder()
+            candidate = Type.builder()
                     .name(typeName)
+                    .type(Type.UNKNOWN)
                     .compKey(typeName)
                     .create()
-            proj.addUnknownType((UnknownType) candidate)
+            proj.addUnknownType(candidate)
             candidate.updateKey()
         }
         candidate
