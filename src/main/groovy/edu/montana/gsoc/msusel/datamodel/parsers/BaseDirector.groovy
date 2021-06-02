@@ -81,15 +81,15 @@ abstract class BaseDirector {
         logger.atInfo().log("Processing files and their contained info")
 
         logger.atInfo().log("Gathering File and Type Info into Model")
-        GParsPool.withPool(4) {
-//        files.each { File file -> if (includeFile(file)) gatherFileAndTypeInfo(file) }
-            files.eachParallel { File file ->
-                if (includeFile(file)) {
-                    println file
-                    gatherFileAndTypeInfo(file)
-                }
-            }
-        }
+//        GParsPool.withPool(4) {
+        files.each { File file -> if (includeFile(file)) gatherFileAndTypeInfo(file) }
+//            files.eachParallel { File file ->
+//                if (includeFile(file)) {
+//                    println file.name
+//                    gatherFileAndTypeInfo(file)
+//                }
+//            }
+//        }
 
         logger.atInfo().log("Gathering Type Members and Basic Relation Info into Model")
 //        GParsExecutorsPool.withPool(4) {
