@@ -633,7 +633,6 @@ abstract class BaseModelBuilder {
 
                     if (t) {
                         DBManager.instance.open(credentials)
-                        log.atInfo().log("Creating type ref to ${t.getName()} for field ${field.getName()}")
                         field.setType(t.createTypeRef())
                         DBManager.instance.close()
                     }
@@ -1008,8 +1007,6 @@ abstract class BaseModelBuilder {
      * @return The Type corresponding to the provided type name.
      */
     Type findType(String name) { // FIXME
-        log.atInfo().log("Finding type: $name")
-
         Type candidate
 
         DBManager.instance.open(credentials)
