@@ -621,7 +621,7 @@ abstract class BaseModelBuilder {
                         .end(end)
                         .create()
                 types.peek().addMember(field)
-                field.updateKey()
+                field.refresh()
                 DBManager.instance.close()
 
                 if (primitive) {
