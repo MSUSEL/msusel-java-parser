@@ -185,171 +185,84 @@ abstract class BaseModelBuilder {
 
     }
 
-    void findClass(String name) {
+    void findOrCreateType(String typeName, int typeType, int start = 1, int stop = 1) {
         Type type
         if (types) {
             DBManager.instance.open(credentials)
-            type = types.peek().getTypeByName(name)
+            type = types.peek().getTypeByName(typeName)
             DBManager.instance.close()
         } else {
             DBManager.instance.open(credentials)
-            type = namespace.getTypeByName(name)
+            type = namespace.getTypeByName(typeName)
             DBManager.instance.close()
         }
 
         if (type != null)
             types.push(type)
         else
-            createClass(name, 1, 1)
+            createType(typeName, typeType, start, stop)
     }
 
-    void createClass(String name, int start, int stop) {
+    void createType(String typeName, int typeType, int start, int stop) {
         DBManager.instance.open(credentials)
-        if (types && types.peek().getTypeByName(name) != null)
-            types.push(types.peek().getTypeByName(name))
-        else if (namespace.getTypeByName(name) != null) {
-            Type t = namespace.getTypeByName(name)
-            t.setEnd(stop)
-            t.setStart(start)
-            t.save()
-            types.push(t)
-        } else {
-            Type cls = Type.builder().type(Type.CLASS)
-                    .name(name)
-                    .compKey(name)
-                    .accessibility(Accessibility.PUBLIC)
-                    .start(start)
-                    .end(stop)
-                    .create()
+        Type type = findType(typeName)
+        if (type) {
+            type.setStart(start)
+            type.setEnd(stop)
+            type.setType(typeType)
+            type.save()
+
             if (types) {
-                types.peek().addType(cls)
+                types.peek().addType(type)
             }
 
-            namespace.addType(cls)
-            file.addType(cls)
-
-            cls.updateKey()
-            types.push(cls)
-        }
-        DBManager.instance.close()
-    }
-
-    void findEnum(String name) {
-        Type type
-        if (types) {
-            DBManager.instance.open(credentials)
-            type = types.peek().getTypeByName(name)
-            DBManager.instance.close()
-        } else {
-            DBManager.instance.open(credentials)
-            type = namespace.getTypeByName(name)
-            DBManager.instance.close()
-        }
-
-        if (type != null)
+            namespace.addType(type)
+            file.addType(type)
+            proj.removeUnknownType(type)
+            type.updateKey()
             types.push(type)
-        else createEnum(name, 1, 1)
-    }
-
-    void createEnum(String name, int start, int stop) {
-        DBManager.instance.open(credentials)
-        if (types && types.peek().getTypeByName(name) != null)
-            types.push(types.peek().getTypeByName(name))
-        else if (namespace.getTypeByName(name) != null) {
-            Type t = namespace.getTypeByName(name)
-            t.setEnd(stop)
-            t.setStart(start)
-            t.save()
-            types.push(t)
-        } else {
-            Type enm = Type.builder().type(Type.ENUM)
-                    .name(name)
-                    .compKey(name)
-                    .accessibility(Accessibility.PUBLIC)
-                    .start(start)
-                    .end(stop)
-                    .create()
-            if (types) {
-                types.peek().addType(enm)
-            }
-
-            namespace.addType(enm)
-            file.addType(enm)
-
-            enm.updateKey()
-            types.push(enm)
-        }
-        DBManager.instance.close()
-
-    }
-
-    void findInterface(String name) {
-        Type type = null
-        if (types) {
-            DBManager.instance.open(credentials)
-            type = types.peek().getTypeByName(name)
-            DBManager.instance.close()
-        } else {
-            DBManager.instance.open(credentials)
-            type = namespace.getTypeByName(name)
-            DBManager.instance.close()
-        }
-
-        if (!types.isEmpty() && type != null)
+        } else if (types && types.peek().getTypeByName(typeName) != null)
+            types.push(types.peek().getTypeByName(typeName))
+        else if (namespace.getTypeByName(typeName) != null) {
+            type = namespace.getTypeByName(typeName)
+            type.setEnd(stop)
+            type.setStart(start)
+            type.save()
             types.push(type)
-        else
-            createInterface(name, 1, 1)
-    }
-
-    void createInterface(String name, int start, int stop) {
-        DBManager.instance.open(credentials)
-        if (types && types.peek().getTypeByName(name) != null)
-            types.push(types.peek().getTypeByName(name))
-        else if (namespace.getTypeByName(name) != null) {
-            Type t = namespace.getTypeByName(name)
-            t.setEnd(stop)
-            t.setStart(start)
-            t.save()
-            types.push(t)
         } else {
-            Type ifc = Type.builder().type(Type.INTERFACE)
-                    .name(name)
-                    .compKey(name)
+            type = Type.builder()
+                    .type(typeType)
+                    .name(typeName)
+                    .compKey(typeName)
                     .accessibility(Accessibility.PUBLIC)
                     .start(start)
                     .end(stop)
                     .create()
             if (types) {
-                types.peek().addType(ifc)
+                types.peek().addType(type)
             }
 
-            namespace.addType(ifc)
-            file.addType(ifc)
-
-            ifc.updateKey()
-            types.push(ifc)
+            namespace.addType(type)
+            file.addType(type)
+            type.updateKey()
+            types.push(type)
         }
         DBManager.instance.close()
-    }
-
-    void findAnnotation(String name) {
-        findInterface(name)
-    }
-
-    void createAnnotation(String name, int start, int stop) {
-        createInterface(name, start, stop)
     }
 
     void setTypeModifiers(List<String> modifiers) {
-        if (types) {
-            modifiers.each { mod ->
-                DBManager.instance.open(credentials)
-                Accessibility access = handleAccessibility(mod)
-                Modifier modifier = handleNamedModifiers(mod)
-                if (access) types.peek().setAccessibility(access)
-                if (modifier) types.peek().addModifier(modifier)
-                DBManager.instance.close()
-            }
+        if (types)
+            setModifiers(modifiers, types.peek())
+    }
+
+    void setModifiers(List<String> modifiers, Component comp) {
+        modifiers.each { mod ->
+            DBManager.instance.open(credentials)
+            Accessibility access = handleAccessibility(mod)
+            Modifier modifier = handleNamedModifiers(mod)
+            if (access) comp.setAccessibility(access)
+            if (modifier) comp.addModifier(modifier)
+            DBManager.instance.close()
         }
     }
 
@@ -497,16 +410,8 @@ abstract class BaseModelBuilder {
     }
 
     void setMethodModifiers(List<String> mods) {
-        if (methods) {
-            mods.each { mod ->
-                DBManager.instance.open(credentials)
-                Accessibility access = handleAccessibility(mod)
-                Modifier modifier = handleNamedModifiers(mod)
-                if (access) methods.peek().setAccessibility(access)
-                if (modifier) methods.peek().addModifier(modifier)
-                DBManager.instance.close()
-            }
-        }
+        if (methods)
+            setModifiers(mods, methods.peek())
     }
 
     void createMethodTypeParameter(String name) {
@@ -608,7 +513,7 @@ abstract class BaseModelBuilder {
                 f.setEnd(end)
                 f.setStart(start)
                 f.save()
-                setFieldModifiers(f, modifiers)
+                setModifiers(modifiers, f)
                 DBManager.instance.close()
             } else {
                 DBManager.instance.open(credentials)
@@ -637,7 +542,7 @@ abstract class BaseModelBuilder {
                         DBManager.instance.close()
                     }
                 }
-                setFieldModifiers(field, modifiers)
+                setModifiers(modifiers, field)
             }
         }
     }
@@ -652,8 +557,7 @@ abstract class BaseModelBuilder {
                 l.setEnd(end)
                 l.setStart(start)
                 l.save()
-            }
-            else {
+            } else {
                 String typeName = types.peek().getCompKey()
                 Literal lit = Literal.builder()
                         .name(name)
@@ -1059,10 +963,10 @@ abstract class BaseModelBuilder {
         } else if (general) {
             typeName = general.replace("*", name)
         } else {
-            if (name.count(".") < 1)
-                typeName = "java.lang." + name
-            else
-                typeName = name
+//            if (name.count(".") < 1)
+//                typeName = "java.lang." + name
+//            else
+            typeName = name
         }
         typeName
     }
@@ -1133,4 +1037,16 @@ abstract class BaseModelBuilder {
         types.peek().getCompKey()
     }
 
+    void reconcileUnknownTypes() {
+        DBManager.instance.open(credentials)
+        proj.getUnknownTypes().each {
+            String typeName = it.name
+            if (typeName.count(".") < 1) {
+                typeName = "java.lang." + typeName
+                it.setName(typeName)
+                it.updateKey()
+            }
+        }
+        DBManager.instance.close()
+    }
 }

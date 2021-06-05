@@ -29,6 +29,7 @@ package edu.montana.gsoc.msusel.datamodel.parsers;
 import com.google.common.collect.Lists;
 import edu.isu.isuese.datamodel.Initializer;
 import edu.isu.isuese.datamodel.Method;
+import edu.isu.isuese.datamodel.Type;
 import edu.isu.isuese.datamodel.cfg.CFGBuilder;
 import edu.isu.isuese.datamodel.cfg.JumpTo;
 import edu.isu.isuese.datamodel.cfg.StatementType;
@@ -191,7 +192,7 @@ public class Java8SinglePassExtractor extends JavaParserBaseListener {
     ////////////////////////////
     public void enterClassDeclaration(JavaParser.ClassDeclarationContext ctx) {
 //        log.atInfo().log(treeBuilder.getFile().getName() + " Entering Class Declaration");
-        treeBuilder.createClass(ctx.IDENTIFIER().getText(), ctx.getStart().getLine(), ctx.getStop().getLine());
+        treeBuilder.findOrCreateType(ctx.IDENTIFIER().getText(), Type.CLASS, ctx.getStart().getLine(), ctx.getStop().getLine());
         treeBuilder.setTypeModifiers(modifiers);
         inType = true;
         inClass = true;
@@ -201,7 +202,7 @@ public class Java8SinglePassExtractor extends JavaParserBaseListener {
 
     public void enterEnumDeclaration(JavaParser.EnumDeclarationContext ctx) {
 //        log.atInfo().log(treeBuilder.getFile().getName() + " Entering Enum Declaration");
-        treeBuilder.createEnum(ctx.IDENTIFIER().getText(), ctx.getStart().getLine(), ctx.getStop().getLine());
+        treeBuilder.findOrCreateType(ctx.IDENTIFIER().getText(), Type.ENUM, ctx.getStart().getLine(), ctx.getStop().getLine());
         treeBuilder.setTypeModifiers(modifiers);
         inType = true;
         inEnum = true;
@@ -211,7 +212,7 @@ public class Java8SinglePassExtractor extends JavaParserBaseListener {
 
     public void enterInterfaceDeclaration(JavaParser.InterfaceDeclarationContext ctx) {
 //        log.atInfo().log(treeBuilder.getFile().getName() + " Entering Interface Declaration");
-        treeBuilder.createInterface(ctx.IDENTIFIER().getText(), ctx.getStart().getLine(), ctx.getStop().getLine());
+        treeBuilder.findOrCreateType(ctx.IDENTIFIER().getText(), Type.INTERFACE, ctx.getStart().getLine(), ctx.getStop().getLine());
         treeBuilder.setTypeModifiers(modifiers);
         inType = true;
         inInterface = true;
@@ -221,7 +222,7 @@ public class Java8SinglePassExtractor extends JavaParserBaseListener {
 
     public void enterAnnotationTypeDeclaration(JavaParser.AnnotationTypeDeclarationContext ctx) {
 //        log.atInfo().log(treeBuilder.getFile().getName() + " Entering Annotation Type Declaration");
-        treeBuilder.createAnnotation(ctx.IDENTIFIER().getText(), ctx.getStart().getLine(), ctx.getStop().getLine());
+        treeBuilder.findOrCreateType(ctx.IDENTIFIER().getText(), Type.ANNOTATION, ctx.getStart().getLine(), ctx.getStop().getLine());
         treeBuilder.setTypeModifiers(modifiers);
         inType = true;
         inInterface = true;

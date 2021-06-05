@@ -26,6 +26,7 @@
  */
 package edu.montana.gsoc.msusel.datamodel.parsers;
 
+import edu.isu.isuese.datamodel.Type;
 import edu.montana.gsoc.msusel.datamodel.parsers.java2.JavaParser;
 import edu.montana.gsoc.msusel.datamodel.parsers.java2.JavaParserBaseListener;
 import org.antlr.v4.runtime.tree.TerminalNode;
@@ -104,28 +105,28 @@ public abstract class Java8AbstractExtractor extends JavaParserBaseListener {
 
     @Override
     public void enterClassDeclaration(final JavaParser.ClassDeclarationContext ctx) {
-        treeBuilder.findClass(ctx.IDENTIFIER().getText());
+        treeBuilder.findOrCreateType(ctx.IDENTIFIER().getText(), Type.CLASS);
 
         super.enterClassDeclaration(ctx);
     }
 
     @Override
     public void enterInterfaceDeclaration(final JavaParser.InterfaceDeclarationContext ctx) {
-        treeBuilder.findInterface(ctx.IDENTIFIER().getText());
+        treeBuilder.findOrCreateType(ctx.IDENTIFIER().getText(), Type.INTERFACE);
 
         super.enterInterfaceDeclaration(ctx);
     }
 
     @Override
     public void enterEnumDeclaration(final JavaParser.EnumDeclarationContext ctx) {
-        treeBuilder.findEnum(ctx.IDENTIFIER().getText());
+        treeBuilder.findOrCreateType(ctx.IDENTIFIER().getText(), Type.ENUM);
 
         super.enterEnumDeclaration(ctx);
     }
 
     @Override
     public void enterAnnotationTypeDeclaration(final JavaParser.AnnotationTypeDeclarationContext ctx) {
-        treeBuilder.findAnnotation(ctx.IDENTIFIER().getText());
+        treeBuilder.findOrCreateType(ctx.IDENTIFIER().getText(), Type.ANNOTATION);
 
         super.enterAnnotationTypeDeclaration(ctx);
     }

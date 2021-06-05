@@ -27,6 +27,7 @@
 package edu.montana.gsoc.msusel.datamodel.parsers;
 
 import com.google.common.collect.Lists;
+import edu.isu.isuese.datamodel.Type;
 import edu.montana.gsoc.msusel.datamodel.parsers.java2.JavaParser;
 import edu.montana.gsoc.msusel.datamodel.parsers.java2.JavaParserBaseListener;
 import lombok.extern.log4j.Log4j2;
@@ -156,7 +157,7 @@ public class Java8FileAndTypeExtractor extends JavaParserBaseListener {
     ////////////////////////////
     public void enterClassDeclaration(JavaParser.ClassDeclarationContext ctx) {
         log.atInfo().log(treeBuilder.getFile().getName() + " Entering Class Declaration");
-        treeBuilder.createClass(ctx.IDENTIFIER().getText(), ctx.getStart().getLine(), ctx.getStop().getLine());
+        treeBuilder.createType(ctx.IDENTIFIER().getText(), Type.CLASS, ctx.getStart().getLine(), ctx.getStop().getLine());
         treeBuilder.setTypeModifiers(modifiers);
 
         super.enterClassDeclaration(ctx);
@@ -164,7 +165,7 @@ public class Java8FileAndTypeExtractor extends JavaParserBaseListener {
 
     public void enterEnumDeclaration(JavaParser.EnumDeclarationContext ctx) {
         log.atInfo().log(treeBuilder.getFile().getName() + " Entering Enum Declaration");
-        treeBuilder.createEnum(ctx.IDENTIFIER().getText(), ctx.getStart().getLine(), ctx.getStop().getLine());
+        treeBuilder.createType(ctx.IDENTIFIER().getText(), Type.ENUM, ctx.getStart().getLine(), ctx.getStop().getLine());
         treeBuilder.setTypeModifiers(modifiers);
 
         super.enterEnumDeclaration(ctx);
@@ -172,7 +173,7 @@ public class Java8FileAndTypeExtractor extends JavaParserBaseListener {
 
     public void enterInterfaceDeclaration(JavaParser.InterfaceDeclarationContext ctx) {
         log.atInfo().log(treeBuilder.getFile().getName() + " Entering Interface Declaration");
-        treeBuilder.createInterface(ctx.IDENTIFIER().getText(), ctx.getStart().getLine(), ctx.getStop().getLine());
+        treeBuilder.createType(ctx.IDENTIFIER().getText(), Type.INTERFACE, ctx.getStart().getLine(), ctx.getStop().getLine());
         treeBuilder.setTypeModifiers(modifiers);
 
         super.enterInterfaceDeclaration(ctx);
@@ -180,7 +181,7 @@ public class Java8FileAndTypeExtractor extends JavaParserBaseListener {
 
     public void enterAnnotationTypeDeclaration(JavaParser.AnnotationTypeDeclarationContext ctx) {
 //        log.atInfo().log(treeBuilder.getFile().getName() + " Entering Annotation Type Declaration");
-        treeBuilder.createAnnotation(ctx.IDENTIFIER().getText(), ctx.getStart().getLine(), ctx.getStop().getLine());
+        treeBuilder.createType(ctx.IDENTIFIER().getText(), Type.ANNOTATION, ctx.getStart().getLine(), ctx.getStop().getLine());
         treeBuilder.setTypeModifiers(modifiers);
 
         super.enterAnnotationTypeDeclaration(ctx);
