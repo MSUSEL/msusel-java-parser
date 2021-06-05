@@ -31,6 +31,8 @@ import edu.isu.isuese.datamodel.File
 import edu.isu.isuese.datamodel.Module
 import edu.isu.isuese.datamodel.Project
 import edu.isu.isuese.datamodel.System
+import edu.isu.isuese.datamodel.util.DBCredentials
+import edu.isu.isuese.datamodel.util.DBManager
 import groovy.util.logging.Log4j2
 import org.javalite.activejdbc.test.DBSpec
 import org.junit.After
@@ -38,14 +40,18 @@ import org.junit.Before
 import org.junit.Test
 
 @Log4j2
-class JavaDirectorTest extends DBSpec {
+class JavaDirectorTest {
 
     JavaDirector fixture
     List<File> files = []
     String basePath = "data/example-classes"
+    DBCredentials creds
 
     @Before
     void setUp() throws Exception {
+        DBCredentials.builder().user("dev1").pass("passwd").url("jdbc:sqlite:data/test.db").driver("org.sqlite.JDBC").create()
+
+        DBManager.instance.open(creds)
         System  sys   = System.builder().name("Test").key("test").basePath(basePath).create()
         Project proj  = Project.builder().name("test").projKey("test").relPath("").create()
         Module  mod   = Module.builder().name("default").moduleKey("default").relPath("").create()
@@ -54,12 +60,16 @@ class JavaDirectorTest extends DBSpec {
 
         files << File.builder().name("$basePath/AllInOne7.java").fileKey("$basePath/AllInOne7.java").relPath("AllInOne7.java").create()
         files << File.builder().name("$basePath/AllInOne7.java").fileKey("$basePath/AllInOne8.java").relPath("AllInOne8.java").create()
+        DBManager.instance.close()
 
-        fixture = new JavaDirector(proj, log)
+        fixture = new JavaDirector(proj, log, creds)
     }
 
     @After
     void tearDown() throws Exception {
+        DBManager.instance.open(creds)
+        DBManager.
+        DBManager.close()
     }
 
     @Test
