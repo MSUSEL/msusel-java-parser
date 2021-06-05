@@ -49,7 +49,7 @@ class JavaDirectorTest {
 
     @Before
     void setUp() throws Exception {
-        creds = DBCredentials.builder().user("dev1").pass("passwd").url("jdbc:sqlite:data/test.db").driver("org.sqlite.JDBC").create()
+        creds = DBCredentials.builder().type("sqlite").user("dev1").pass("passwd").url("jdbc:sqlite:data/test.db").driver("org.sqlite.JDBC").create()
         DBManager.instance.createDatabase(creds)
 
         DBManager.instance.open(creds)
