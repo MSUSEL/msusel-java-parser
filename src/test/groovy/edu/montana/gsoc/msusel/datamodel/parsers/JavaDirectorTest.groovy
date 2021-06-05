@@ -49,7 +49,8 @@ class JavaDirectorTest {
 
     @Before
     void setUp() throws Exception {
-        DBCredentials.builder().user("dev1").pass("passwd").url("jdbc:sqlite:data/test.db").driver("org.sqlite.JDBC").create()
+        creds = DBCredentials.builder().user("dev1").pass("passwd").url("jdbc:sqlite:data/test.db").driver("org.sqlite.JDBC").create()
+        DBManager.instance.createDatabase(creds)
 
         DBManager.instance.open(creds)
         System  sys   = System.builder().name("Test").key("test").basePath(basePath).create()
@@ -59,7 +60,7 @@ class JavaDirectorTest {
         sys.addProject(proj)
 
         files << File.builder().name("$basePath/AllInOne7.java").fileKey("$basePath/AllInOne7.java").relPath("AllInOne7.java").create()
-        files << File.builder().name("$basePath/AllInOne7.java").fileKey("$basePath/AllInOne8.java").relPath("AllInOne8.java").create()
+        files << File.builder().name("$basePath/AllInOne8.java").fileKey("$basePath/AllInOne8.java").relPath("AllInOne8.java").create()
         DBManager.instance.close()
 
         fixture = new JavaDirector(proj, log, creds)
@@ -68,8 +69,8 @@ class JavaDirectorTest {
     @After
     void tearDown() throws Exception {
         DBManager.instance.open(creds)
-        DBManager.
-        DBManager.close()
+        DBManager.instance.rollback()
+        DBManager.instance.close()
     }
 
     @Test
