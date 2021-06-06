@@ -50,6 +50,11 @@ class JavaDirector extends BaseDirector {
         super(proj, new JavaArtifactIdentifier(logger, credentials), logger, credentials, statements)
     }
 
+    void gatherAllInfoAtOnce(File file) {
+        BaseModelBuilder builder = new JavaModelBuilder(proj, file, credentials)
+        utilizeParser(file, new Java8SinglePassExtractor(builder))
+    }
+
     @Override
     void gatherFileAndTypeInfo(File file) {
         DBManager.instance.open(credentials)

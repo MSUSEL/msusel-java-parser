@@ -80,35 +80,22 @@ abstract class BaseDirector {
     void process(final List<File> files) {
         logger.atInfo().log("Processing files and their contained info")
 
-        logger.atInfo().log("Gathering File and Type Info into Model")
-//        GParsPool.withPool(4) {
-        files.each { File file -> if (includeFile(file)) gatherFileAndTypeInfo(file) }
-//            files.eachParallel { File file ->
-//                if (includeFile(file)) {
-//                    println file.name
-//                    gatherFileAndTypeInfo(file)
-//                }
-//            }
+//        logger.atInfo().log("Gathering File and Type Info into Model")
+//        files.each { File file -> println("File: $file"); if (includeFile(file)) gatherFileAndTypeInfo(file) }
+//
+//        logger.atInfo().log("Gathering Type Members and Basic Relation Info into Model")
+//        files.each { File file -> if (includeFile(file)) gatherMembersAndBasicRelationInfo(file) }
+//
+//        logger.atInfo().log("Gathering Member Usage Info into Model")
+//        files.each { File file -> if (includeFile(file)) gatherMemberUsageInfo(file) }
+//
+//        if (statements) {
+//            logger.atInfo().log("Gathering Statement Info and CFG into Model")
+//            files.each { File file -> if (includeFile(file)) gatherStatementInfo(file) }
 //        }
 
-        logger.atInfo().log("Gathering Type Members and Basic Relation Info into Model")
-//        GParsExecutorsPool.withPool(4) {
-        files.each { File file -> if (includeFile(file)) gatherMembersAndBasicRelationInfo(file) }
-//        }
-
-        logger.atInfo().log("Gathering Member Usage Info into Model")
-//        GParsExecutorsPool.withPool(4) {
-//            files.eachParallel { File file -> if (includeFile(file)) gatherMemberUsageInfo(file) }
-        files.each { File file -> if (includeFile(file)) gatherMemberUsageInfo(file) }
-//        }
-
-        if (statements) {
-//            GParsExecutorsPool.withPool(8) {
-            logger.atInfo().log("Gathering Statement Info and CFG into Model")
-//                files.eachParallel { File file -> if (includeFile(file)) gatherStatementInfo(file) }
-            files.each { File file -> if (includeFile(file)) gatherStatementInfo(file) }
-//            }
-        }
+        logger.atInfo().log("Parsing and extracting file info")
+        files.each {File file -> if (includeFile(file)) gatherAllInfoAtOnce(file) }
 
         logger.atInfo().log("Gathering Type Associations into Model")
         gatherTypeAssociations()
@@ -122,6 +109,8 @@ abstract class BaseDirector {
     abstract void gatherMemberUsageInfo(File file)
 
     abstract void gatherStatementInfo(File file)
+
+    abstract void gatherAllInfoAtOnce(File file)
 
     abstract boolean includeFile(File file)
 

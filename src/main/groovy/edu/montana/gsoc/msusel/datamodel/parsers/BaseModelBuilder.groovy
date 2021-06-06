@@ -204,6 +204,7 @@ abstract class BaseModelBuilder {
     }
 
     void createType(String typeName, int typeType, int start, int stop) {
+        println "CreateType: TypeName = $typeName"
         Type type = findType(typeName)
         DBManager.instance.open(credentials)
         if (type) {
@@ -212,15 +213,17 @@ abstract class BaseModelBuilder {
             type.setType(typeType)
             type.save()
 
-            if (types) {
-                types.peek().addType(type)
-            }
+            if (typeType != Type.UNKNOWN) {
+                if (types) {
+                    types.peek().addType(type)
+                }
 
-            namespace.addType(type)
-            file.addType(type)
-            proj.removeUnknownType(type)
-            type.updateKey()
-            types.push(type)
+                namespace.addType(type)
+                file.addType(type)
+                proj.removeUnknownType(type)
+                type.updateKey()
+                types.push(type)
+            }
         } else if (types && types.peek().getTypeByName(typeName) != null)
             types.push(types.peek().getTypeByName(typeName))
         else if (namespace.getTypeByName(typeName) != null) {
@@ -424,7 +427,7 @@ abstract class BaseModelBuilder {
     }
 
     void setParameterType(String type) {
-        Type t = findType(type)
+        Type t = findType(type, true)
 
         DBManager.instance.open(credentials)
         currentParam.setType(t.createTypeRef())
@@ -438,7 +441,7 @@ abstract class BaseModelBuilder {
     }
 
     void setMethodReturnType(String type) {
-        Type t = findType(type)
+        Type t = findType(type, true)
 
         if (t && methods && methods.peek() instanceof Method) {
             DBManager.instance.open(credentials)
@@ -467,7 +470,7 @@ abstract class BaseModelBuilder {
     }
 
     void addMethodException(String type) {
-        Type t = findType(type)
+        Type t = findType(type, true)
 
         if (t && methods && methods.peek() instanceof Method) {
             DBManager.instance.open(credentials)
@@ -534,7 +537,7 @@ abstract class BaseModelBuilder {
                     field.setType(TypeRef.createPrimitiveTypeRef(fieldType))
                     DBManager.instance.close()
                 } else {
-                    Type t = findType(fieldType)
+                    Type t = findType(fieldType, true)
 
                     if (t) {
                         DBManager.instance.open(credentials)
@@ -588,7 +591,7 @@ abstract class BaseModelBuilder {
     ///////////////////
     void addRealization(String typeName) {
         if (types) {
-            Type t = findType(typeName)
+            Type t = findType(typeName, true)
 
             if (t) {
                 DBManager.instance.open(credentials)
@@ -600,7 +603,7 @@ abstract class BaseModelBuilder {
 
     void addGeneralization(String typeName) {
         if (types) {
-            Type t = findType(typeName)
+            Type t = findType(typeName, true)
 
             if (t) {
                 DBManager.instance.open(credentials)
@@ -628,7 +631,7 @@ abstract class BaseModelBuilder {
 
     void addUseDependency(String type) {
         if (types) {
-            Type t = findType(type)
+            Type t = findType(type, true)
 
             if (t) {
                 DBManager.instance.open(credentials)
@@ -910,7 +913,7 @@ abstract class BaseModelBuilder {
      * @param name The name of the type
      * @return The Type corresponding to the provided type name.
      */
-    Type findType(String name) { // FIXME
+    Type findType(String name, boolean createUnknown = false) { // FIXME
         Type candidate
 
         DBManager.instance.open(credentials)
@@ -924,7 +927,7 @@ abstract class BaseModelBuilder {
         }
 
         // In the event that no valid candidate was found, then it is an unknown type
-        if (candidate == null) candidate = createUnknownType(name)
+        if (candidate == null && createUnknown) candidate = createUnknownType(name)
         DBManager.instance.close()
 
         candidate

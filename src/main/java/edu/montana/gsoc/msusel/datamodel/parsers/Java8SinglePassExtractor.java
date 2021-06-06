@@ -81,6 +81,7 @@ public class Java8SinglePassExtractor extends JavaParserBaseListener {
         onDemand = false;
         inTypeDecl = false;
         inTypeParams = false;
+        credentials = builder.getCredentials();
     }
 
     ////////////////////////////
