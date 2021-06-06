@@ -57,10 +57,10 @@ public class MethodsTest extends BaseTestClass {
 
         Method method = retrieveMethod(type, "void exceptions()", "void", Accessibility.PUBLIC);
 //        ((List<?>)method.getExceptions()).forEach(Project.out::println);
-//        retrieveMethodException(method, "RuntimeException");
+        retrieveMethodException(method, "RuntimeException");
 
         method = retrieveMethod(type, "void exceptions2()", "void", Accessibility.PUBLIC);
-        java.lang.System.out.println(method.getExceptions());
+//        java.lang.System.out.println(method.getExceptions());
         retrieveMethodException(method, "RuntimeException");
         retrieveMethodException(method, "NullPointerException");
     }
@@ -83,7 +83,7 @@ public class MethodsTest extends BaseTestClass {
         Type type = retrieveType("MethodParamMods", Accessibility.PUBLIC, Type.CLASS);
 
         Method method = retrieveMethod(type, "void method(String)", "void", Accessibility.PUBLIC);
-//        retrieveMethodParameter(method, "param", "String", "FINAL");
+        retrieveMethodParameter(method, "param", "String", "FINAL");
     }
 
     @Test

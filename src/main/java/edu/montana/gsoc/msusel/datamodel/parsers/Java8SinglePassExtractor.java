@@ -290,8 +290,15 @@ public class Java8SinglePassExtractor extends JavaParserBaseListener {
         } else if (!inTypeList && inClass) {
             treeBuilder.addGeneralization(ctx.getText().replaceAll("<.*>", ""));
         } else if (inMethod) {
-            treeBuilder.setMethodReturnType(ctx.getText());
-            handleMethodType(ctx);
+            if (inParameters) {
+                treeBuilder.setParameterType(ctx.getText());
+                treeBuilder.addUseDependency(ctx.getText().replaceAll("<.*>", ""));
+            } else if (inLocalVar) {
+                treeBuilder.addUseDependency(ctx.getText().replaceAll("<.*>", ""));
+            } else {
+                treeBuilder.setMethodReturnType(ctx.getText());
+                treeBuilder.addUseDependency(ctx.getText().replaceAll("<.*>", ""));
+            }
         } else if (inConstructor) {
             handleMethodType(ctx);
         }
@@ -603,6 +610,8 @@ public class Java8SinglePassExtractor extends JavaParserBaseListener {
             fieldNames.add(ctx.IDENTIFIER().getText());
         else if (inLocalVar && ctx.IDENTIFIER() != null) {
             treeBuilder.addLocalVarToScope(ctx.IDENTIFIER().getText());
+        } else if (inParameters && ctx.IDENTIFIER() != null) {
+            treeBuilder.setParameterName(ctx.IDENTIFIER().getText());
         }
         // TODO add array knowledge here
 //        if (ctx.RBRACK() != null) {
@@ -666,14 +675,7 @@ public class Java8SinglePassExtractor extends JavaParserBaseListener {
     }
 
     private void handleMethodType(JavaParser.ClassOrInterfaceTypeContext ctx) {
-        if (inParameters) {
-            treeBuilder.setParameterType(ctx.getText());
-            treeBuilder.addUseDependency(ctx.getText().replaceAll("<.*>", ""));
-        } else if (inLocalVar) {
-            treeBuilder.addUseDependency(ctx.getText().replaceAll("<.*>", ""));
-        } else {
-            treeBuilder.addUseDependency(ctx.getText().replaceAll("<.*>", ""));
-        }
+
     }
 
     @Override

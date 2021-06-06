@@ -345,13 +345,21 @@ abstract class BaseModelBuilder {
                 m.save()
                 methods.push(m)
             } else {
+                Accessibility access
+                if (types.peek().getType() == Type.INTERFACE)
+                    access = Accessibility.PUBLIC
+                else
+                    access = Accessibility.DEFAULT
+
                 Method meth = Method.builder()
                         .name(name)
                         .compKey(name)
-                        .accessibility(Accessibility.DEFAULT)
+                        .accessibility(access)
                         .start(start)
                         .end(end)
                         .create()
+                if (types.peek().getType() == Type.INTERFACE)
+                    meth.addModifier("ABSTRACT")
                 types.peek().addMember(meth)
                 meth.updateKey()
                 methods.push(meth)
@@ -394,7 +402,7 @@ abstract class BaseModelBuilder {
     void createMethodParameter() {
         DBManager.instance.open(credentials)
         currentParam = Parameter.builder().varg(false).create()
-        if (methods && methods.peek() instanceof Method)
+        if (methods && methods.peek() != null)
             ((Method) methods.peek()).addParameter(currentParam)
         DBManager.instance.close()
     }
@@ -402,6 +410,14 @@ abstract class BaseModelBuilder {
     void setVariableParameter(boolean varg) {
         DBManager.instance.open(credentials)
         currentParam.setVarg(varg)
+        currentParam.save()
+        DBManager.instance.close()
+    }
+
+    void setParameterName(String name) {
+        DBManager.instance.open(credentials)
+        currentParam.setName(name)
+        currentParam.save()
         DBManager.instance.close()
     }
 
@@ -521,14 +537,23 @@ abstract class BaseModelBuilder {
                 DBManager.instance.close()
             } else {
                 DBManager.instance.open(credentials)
+                Accessibility access
+                if (types.peek().getType() == Type.INTERFACE)
+                    access = Accessibility.PUBLIC
+                else
+                    access = Accessibility.DEFAULT
                 String typeKey = types.peek().getCompKey()
                 Field field = Field.builder()
                         .name(name)
                         .compKey("${typeKey}#${name}")
-                        .accessibility(Accessibility.DEFAULT)
+                        .accessibility(access)
                         .start(start)
                         .end(end)
                         .create()
+                if (types.peek().getType() == Type.INTERFACE) {
+                    field.addModifier("STATIC")
+                    field.addModifier("FINAL")
+                }
                 types.peek().addMember(field)
                 field.refresh()
                 DBManager.instance.close()

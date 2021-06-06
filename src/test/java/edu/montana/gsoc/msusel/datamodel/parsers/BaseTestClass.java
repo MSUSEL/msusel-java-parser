@@ -113,12 +113,14 @@ public abstract class BaseTestClass {
         return method;
     }
 
-    public Parameter retrieveMethodParameter(Method method, String paramName, String paramType, Modifier... mods) {
+    public Parameter retrieveMethodParameter(Method method, String paramName, String paramType, String... mods) {
         DBManager.getInstance().open(credentials);
+        java.lang.System.out.println("Method: " + method.signature());
+        method.getParams().forEach(x -> {java.lang.System.out.println("Parameter: " + x.getName()); });
         Parameter param = method.getParameterByName(paramName);
         assertEquals(paramName, param.getName());
         assertEquals(paramType, param.getType().getTypeName());
-        List<Modifier> modList = Arrays.asList(mods);
+        List<String> modList = Arrays.asList(mods);
         modList.forEach(mod -> assertTrue(param.hasModifier(mod)));
         DBManager.getInstance().close();
 
