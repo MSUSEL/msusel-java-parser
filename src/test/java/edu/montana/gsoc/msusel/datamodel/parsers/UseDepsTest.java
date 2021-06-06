@@ -40,7 +40,7 @@ import java.util.Map;
 
 import static org.junit.Assert.assertTrue;
 
-public class UseDepsTest extends BaseTestClass {
+public class UseDepsTest /*extends BaseTestClass*/ {
 
 //    @Before
 //    public void setUp() throws Exception {

@@ -164,7 +164,7 @@ abstract class BaseModelBuilder {
     // Types
     //////////////////////
     void endType() {
-        if (!types) {
+        if (types) {
             Type type = types.pop()
             if (types.isEmpty()) {
                 DBManager.instance.open(credentials)
@@ -236,7 +236,7 @@ abstract class BaseModelBuilder {
                     .type(typeType)
                     .name(typeName)
                     .compKey(typeName)
-                    .accessibility(Accessibility.PUBLIC)
+                    .accessibility(Accessibility.DEFAULT)
                     .start(start)
                     .end(stop)
                     .create()
@@ -348,7 +348,7 @@ abstract class BaseModelBuilder {
                 Method meth = Method.builder()
                         .name(name)
                         .compKey(name)
-                        .accessibility(Accessibility.PUBLIC)
+                        .accessibility(Accessibility.DEFAULT)
                         .start(start)
                         .end(end)
                         .create()
@@ -412,8 +412,10 @@ abstract class BaseModelBuilder {
     }
 
     void setMethodModifiers(List<String> mods) {
-        if (methods)
+        if (methods) {
+//            println "Mods: $mods"
             setModifiers(mods, methods.peek())
+        }
     }
 
     void createMethodTypeParameter(String name) {
@@ -523,7 +525,7 @@ abstract class BaseModelBuilder {
                 Field field = Field.builder()
                         .name(name)
                         .compKey("${typeKey}#${name}")
-                        .accessibility(Accessibility.PUBLIC)
+                        .accessibility(Accessibility.DEFAULT)
                         .start(start)
                         .end(end)
                         .create()
@@ -570,17 +572,6 @@ abstract class BaseModelBuilder {
                 enm.addMember(lit)
                 lit.updateKey()
             }
-            DBManager.instance.close()
-        }
-    }
-
-    void setFieldModifiers(Field field, List<String> modifiers) {
-        modifiers.each { mod ->
-            DBManager.instance.open(credentials)
-            Accessibility access = handleAccessibility(mod)
-            Modifier modifier = handleNamedModifiers(mod)
-            if (access) field.setAccessibility(access)
-            if (modifier) field.addModifier(modifier)
             DBManager.instance.close()
         }
     }

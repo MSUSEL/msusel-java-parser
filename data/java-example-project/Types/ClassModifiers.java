@@ -1,3 +1,5 @@
+package test;
+
 public strictfp class ClassModifiers {
 
 }

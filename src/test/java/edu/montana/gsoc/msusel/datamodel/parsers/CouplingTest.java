@@ -38,7 +38,7 @@ import org.junit.Test;
 
 import static org.junit.Assert.assertTrue;
 
-public class CouplingTest extends BaseTestClass {
+public class CouplingTest /*extends BaseTestClass*/ {
 
 //    @Before
 //    public void setUp() throws Exception {

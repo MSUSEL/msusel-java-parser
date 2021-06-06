@@ -26,49 +26,43 @@
  */
 package edu.montana.gsoc.msusel.datamodel.parsers;
 
-import org.junit.After;
-import org.junit.Before;
+import edu.isu.isuese.datamodel.Accessibility;
+import edu.isu.isuese.datamodel.Type;
 import org.junit.Test;
 
 public class BasicTypesTest extends BaseTestClass {
 
-//    @Before
-//    public void setUp() throws Exception {
-//        JavaModelBuilder builder = new JavaModelBuilder();
-//        tree = builder.build("Test", "./data/java-test-project/BasicTypes");
-//    }
-//
-//    @After
-//    public void tearDown() throws Exception {
-//    }
-//
-//    @Test
-//    public void testAbstractClass() {
-//        retrieveType("AbstractClass", Accessibility.PUBLIC, Class.class, Modifier.ABSTRACT);
-//    }
-//
-//    @Test
-//    public void testBasicClass() {
-//        retrieveType("BasicClass", Accessibility.PUBLIC, Class.class);
-//    }
-//
-//    @Test
-//    public void testBasicEnum() {
-//        retrieveType("BasicEnum", Accessibility.PUBLIC, Enum.class);
-//    }
-//
-//    @Test
-//    public void testBasicInterface() {
-//        retrieveType("BasicInterface", Accessibility.PUBLIC, Interface.class);
-//    }
-//
-//    @Test
-//    public void testFinalClass() {
-//        retrieveType("FinalClass", Accessibility.PUBLIC, Class.class, Modifier.FINAL);
-//    }
-//
-//    @Test
-//    public void testFinalStaticClass() {
-//        retrieveType("FinalStaticClass", Accessibility.PUBLIC, Class.class, Modifier.FINAL, Modifier.STATIC);
-//    }
+    public String getBasePath() {
+        return "data/java-example-project/BasicTypes";
+    }
+
+    @Test
+    public void testAbstractClass() {
+        retrieveType("AbstractClass", Accessibility.PUBLIC, Type.CLASS, "ABSTRACT");
+    }
+
+    @Test
+    public void testBasicClass() {
+        retrieveType("BasicClass", Accessibility.PUBLIC, Type.CLASS);
+    }
+
+    @Test
+    public void testBasicEnum() {
+        retrieveType("BasicEnum", Accessibility.PUBLIC, Type.ENUM);
+    }
+
+    @Test
+    public void testBasicInterface() {
+        retrieveType("BasicInterface", Accessibility.PUBLIC, Type.INTERFACE);
+    }
+
+    @Test
+    public void testFinalClass() {
+        retrieveType("FinalClass", Accessibility.PUBLIC, Type.CLASS, "FINAL");
+    }
+
+    @Test
+    public void testFinalStaticClass() {
+        retrieveType("FinalStaticClass", Accessibility.PUBLIC, Type.CLASS, "FINAL", "STATIC");
+    }
 }

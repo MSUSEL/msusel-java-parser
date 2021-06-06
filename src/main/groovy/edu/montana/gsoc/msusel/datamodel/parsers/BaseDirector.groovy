@@ -48,6 +48,7 @@ abstract class BaseDirector {
     protected Project proj
     ArtifactIdentifier identifier
     DBCredentials credentials
+    BaseModelBuilder builder
 
     BaseDirector(Project proj, ArtifactIdentifier identifier, DBCredentials creds, boolean statements = false, boolean useSinglePass = true) {
         this.proj = proj

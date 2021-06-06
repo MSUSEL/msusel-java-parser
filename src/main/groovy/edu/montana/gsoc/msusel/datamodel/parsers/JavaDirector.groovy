@@ -53,7 +53,7 @@ class JavaDirector extends BaseDirector {
     }
 
     void gatherAllInfoAtOnce(File file) {
-        BaseModelBuilder builder = new JavaModelBuilder(proj, file, credentials)
+        builder = new JavaModelBuilder(proj, file, credentials)
         utilizeParser(file, new Java8SinglePassExtractor(builder))
     }
 
@@ -66,7 +66,7 @@ class JavaDirector extends BaseDirector {
         if (stage >= 1)
             return
 
-        BaseModelBuilder builder = new JavaModelBuilder(proj, file, credentials)
+        builder = new JavaModelBuilder(proj, file, credentials)
         utilizeParser(file, new Java8FileAndTypeExtractor(builder))
 
         DBManager.instance.open(credentials)

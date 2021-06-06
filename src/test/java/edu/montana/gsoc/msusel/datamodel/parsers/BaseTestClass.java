@@ -30,60 +30,107 @@ import java.util.Arrays;
 import java.util.List;
 
 import edu.isu.isuese.datamodel.*;
+import edu.isu.isuese.datamodel.Module;
+import edu.isu.isuese.datamodel.System;
+import edu.isu.isuese.datamodel.util.DBCredentials;
+import edu.isu.isuese.datamodel.util.DBManager;
+import org.junit.After;
+import org.junit.Before;
 
 import static org.junit.Assert.*;
 
-public class BaseTestClass {
+public abstract class BaseTestClass {
 
     BaseModelBuilder tree;
+    DBCredentials credentials;
+    BaseDirector builder;
+    Project proj;
 
-    public Type retrieveType(String typeName, Accessibility access, int typeType, Modifier... mods) {
+    public abstract String getBasePath();
+
+    @Before
+    public void setUp() throws Exception {
+        credentials = DBCredentials.builder().type("sqlite").user("dev1").pass("passwd").url("jdbc:sqlite:data/test.db").driver("org.sqlite.JDBC").create();
+        DBManager.instance.createDatabase(credentials);
+
+        DBManager.instance.open(credentials);
+        System sys   = System.builder().name("Test").key("test" ).basePath(getBasePath()).create();
+        proj  = Project.builder().name("test").projKey("test").relPath("").create();
+        Module mod   = Module.builder().name("default").moduleKey("default").relPath("").create();
+        proj.addModule(mod);
+        sys.addProject(proj);
+        DBManager.instance.close();
+
+        builder = new JavaDirector(proj, credentials, true, true);
+        builder.build(getBasePath());
+        this.tree = builder.getBuilder();
+    }
+
+    @After
+    public void tearDown() throws Exception {
+        DBManager.instance.open(credentials);
+        DBManager.instance.rollback();
+        DBManager.instance.close();
+    }
+
+    public Type retrieveType(String typeName, Accessibility access, int typeType, String... mods) {
         Type type = tree.findType(typeName);
+        DBManager.getInstance().open(credentials);
         assertNotNull(type);
         assertEquals(typeType, type.getType());
         assertEquals(access, type.getAccessibility());
-        List<Modifier> modList = Arrays.asList(mods);
+        List<String> modList = Arrays.asList(mods);
         modList.forEach(mod -> assertTrue(type.hasModifier(mod)));
+        DBManager.getInstance().close();
 
         return type;
     }
 
-    public Field retrieveField(Type type, String fieldName, String typeName, Accessibility access, Modifier... mods) {
+    public Field retrieveField(Type type, String fieldName, String typeName, Accessibility access, String... mods) {
+        DBManager.getInstance().open(credentials);
         Field field = type.getFieldWithName(fieldName);
         assertNotNull(field);
         assertEquals(typeName, field.getType().getTypeName());
         assertEquals(access, field.getAccessibility());
-        List<Modifier> modList = Arrays.asList(mods);
+        List<String> modList = Arrays.asList(mods);
         modList.forEach(mod -> assertTrue(field.hasModifier(mod)));
+        DBManager.getInstance().close();
 
         return field;
     }
 
-    public Method retrieveMethod(Type type, String methodSig, String returnType, Accessibility access, Modifier... mods) {
+    public Method retrieveMethod(Type type, String methodSig, String returnType, Accessibility access, String... mods) {
+        DBManager.getInstance().open(credentials);
+        type.getAllMethods().forEach(x -> {java.lang.System.out.println("Method Sig: " + x.signature()); });
         Method method = type.findMethodBySignature(methodSig);
         if (!returnType.isEmpty())
             assertEquals(returnType, method.getType().getTypeName());
         assertEquals(access, method.getAccessibility());
-        List<Modifier> modList = Arrays.asList(mods);
+        List<String> modList = Arrays.asList(mods);
         modList.forEach(mod -> assertTrue(method.hasModifier(mod)));
+        DBManager.getInstance().close();
 
         return method;
     }
 
     public Parameter retrieveMethodParameter(Method method, String paramName, String paramType, Modifier... mods) {
+        DBManager.getInstance().open(credentials);
         Parameter param = method.getParameterByName(paramName);
         assertEquals(paramName, param.getName());
         assertEquals(paramType, param.getType().getTypeName());
         List<Modifier> modList = Arrays.asList(mods);
         modList.forEach(mod -> assertTrue(param.hasModifier(mod)));
+        DBManager.getInstance().close();
 
         return param;
     }
 
     public MethodException retrieveMethodException(Method method, String exception) {
+        DBManager.getInstance().open(credentials);
         MethodException ref = method.getExceptionByName(exception);
         assertNotNull(ref);
         assertEquals(exception, ref.getTypeRef().getTypeName());
+        DBManager.getInstance().close();
 
         return ref;
     }

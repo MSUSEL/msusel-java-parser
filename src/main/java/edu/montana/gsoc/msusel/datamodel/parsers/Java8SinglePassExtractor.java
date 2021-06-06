@@ -238,9 +238,9 @@ public class Java8SinglePassExtractor extends JavaParserBaseListener {
     ////////////////////////////
     public void enterClassOrInterfaceModifier(JavaParser.ClassOrInterfaceModifierContext ctx) {
 //        log.atInfo().log(treeBuilder.getFile().getName() + " Entering Class or Interface Modifier");
-        if (inMember && ctx.annotation() == null) {
+//        if (inMember && ctx.annotation() == null) {
             modifiers.add(ctx.getText());
-        }
+//        }
 
         super.enterClassOrInterfaceModifier(ctx);
     }
@@ -433,7 +433,7 @@ public class Java8SinglePassExtractor extends JavaParserBaseListener {
         modifiers.clear();
         startMethod();
 
-        //super.enterMethodDeclaration(ctx);
+        super.enterMethodDeclaration(ctx);
     }
 
     @Override
@@ -453,7 +453,7 @@ public class Java8SinglePassExtractor extends JavaParserBaseListener {
         modifiers.clear();
         startMethod();
 
-        //super.enterInterfaceMethodDeclaration(ctx);
+        super.enterInterfaceMethodDeclaration(ctx);
     }
 
     @Override
@@ -476,7 +476,7 @@ public class Java8SinglePassExtractor extends JavaParserBaseListener {
         modifiers.clear();
         startMethod();
 
-        //super.enterConstructorDeclaration(ctx);
+        super.enterConstructorDeclaration(ctx);
     }
 
     @Override
@@ -619,18 +619,18 @@ public class Java8SinglePassExtractor extends JavaParserBaseListener {
     ///////////////////
     @Override
     public void enterModifier(JavaParser.ModifierContext ctx) {
-        if (inMember && ctx.classOrInterfaceModifier() == null) {
-            modifiers.add(ctx.getText());
-        }
+//        if ((inField || inMethod || inMember) && ctx.classOrInterfaceModifier() == null) {
+        modifiers.add(ctx.getText());
+//        }
 
         super.enterModifier(ctx);
     }
 
     @Override
     public void enterInterfaceMethodModifier(JavaParser.InterfaceMethodModifierContext ctx) {
-        if (inMember && ctx.annotation() == null) {
+//        if (inMember && ctx.annotation() == null) {
             modifiers.add(ctx.getText());
-        }
+//        }
 
         super.enterInterfaceMethodModifier(ctx);
     }

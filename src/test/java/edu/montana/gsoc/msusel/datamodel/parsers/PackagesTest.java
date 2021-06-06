@@ -26,13 +26,11 @@
  */
 package edu.montana.gsoc.msusel.datamodel.parsers;
 
-//import edu.montana.gsoc.msusel.codetree.CodeTree;
-//import edu.montana.gsoc.msusel.codetree.node.structural.File;
-//import edu.montana.gsoc.msusel.codetree.node.structural.Namespace;
-//import edu.montana.gsoc.msusel.codetree.node.type.Type;
-//import edu.montana.gsoc.msusel.datamodel.DataModelMediator;
-//import edu.montana.gsoc.msusel.datamodel.structural.File;
-//import edu.montana.gsoc.msusel.datamodel.structural.Namespace;
+import edu.isu.isuese.datamodel.*;
+import edu.isu.isuese.datamodel.Module;
+import edu.isu.isuese.datamodel.System;
+import edu.isu.isuese.datamodel.util.DBCredentials;
+import edu.isu.isuese.datamodel.util.DBManager;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
@@ -42,40 +40,38 @@ import java.util.List;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 
-public class PackagesTest {
+public class PackagesTest extends BaseTestClass {
 
-//    DataModelMediator tree;
-//
-//    @Before
-//    public void setUp() throws Exception {
-//        JavaModelBuilder builder = new JavaModelBuilder();
-//        tree = builder.build("Test", "./data/java-test-project/Packages");
-//    }
-//
-//    @After
-//    public void tearDown() throws Exception {
-//    }
-//
-//    @Test
-//    public void testPackages() {
-//        List<Namespace> namespaces = tree.getNamespaces();
-//
-//        assertEquals(2, namespaces.size());
-//        for (Namespace n : namespaces) {
-//            assertEquals(2, ((List<Type>) n.types()).size());
-//            assertEquals(2, ((List<File>) n.files()).size());
-//        }
-//    }
-//
-//    @Test
-//    public void testPackageOuter() {
-//        Namespace outer = (Namespace) tree.findNamespace("outer");
-//        assertNotNull(outer);
-//        assertEquals(1, ((List<Namespace>) outer.namespaces()).size());
-//    }
-//
-//    @Test
-//    public void testPackageInner() {
-//
-//    }
+    public String getBasePath() {
+        return "data/java-example-project/Packages";
+    }
+
+    @Test
+    public void testPackages() {
+        DBManager.getInstance().open(credentials);
+        List<Namespace> namespaces = proj.getNamespaces();
+
+        assertEquals(3, namespaces.size());
+        for (Namespace n : namespaces) {
+            if (n.getName().isEmpty())
+                continue;
+            assertEquals(2, n.getAllTypes().size());
+            assertEquals(2, n.getFiles().size());
+        }
+        DBManager.getInstance().close();
+    }
+
+    @Test
+    public void testPackageOuter() {
+        DBManager.getInstance().open(credentials);
+        Namespace outer = proj.findNamespace("outer");
+        assertNotNull(outer);
+        assertEquals(1, outer.getNamespaces().size());
+        DBManager.getInstance().close();
+    }
+
+    @Test
+    public void testPackageInner() {
+
+    }
 }

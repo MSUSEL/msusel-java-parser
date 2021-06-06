@@ -28,7 +28,11 @@ package edu.montana.gsoc.msusel.datamodel.parsers;
 
 import com.google.common.collect.Lists;
 import edu.isu.isuese.datamodel.*;
+import edu.isu.isuese.datamodel.Module;
+import edu.isu.isuese.datamodel.System;
 import edu.isu.isuese.datamodel.cfg.ControlFlowGraph;
+import edu.isu.isuese.datamodel.util.DBCredentials;
+import edu.isu.isuese.datamodel.util.DBManager;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
@@ -39,15 +43,7 @@ import static org.junit.Assert.assertTrue;
 
 public class CFGTest extends BaseTestClass {
 
-    @Before
-    public void setUp() throws Exception {
-        JavaModelBuilder builder = new JavaModelBuilder();
-        tree = builder.build("Test", "./data/java-test-project/CFG");
-    }
-
-    @After
-    public void tearDown() throws Exception {
-    }
+    public String getBasePath() { return "data/java-example-project/CFG"; }
 
     @Test
     public void testAssert() {
@@ -57,9 +53,9 @@ public class CFGTest extends BaseTestClass {
         ControlFlowGraph cfg = method.getCfg();
 
         String dot = cfg.toDOT();
-        assertTrue(dot.contains("METHOD_START_0 -> VAR_DECL_1"));
-        assertTrue(dot.contains("VAR_DECL_1 -> ASSERT_2"));
-        assertTrue(dot.contains("ASSERT_2 -> METHOD_END_0"));
+        assertTrue(dot.contains("METHSTRT_0 -> VARDECL_1"));
+        assertTrue(dot.contains("VARDECL_1 -> ASSERT_2"));
+        assertTrue(dot.contains("ASSERT_2 -> METHEND_0"));
     }
 
     @Test
@@ -70,8 +66,8 @@ public class CFGTest extends BaseTestClass {
         ControlFlowGraph cfg = method.getCfg();
 
         String dot = cfg.toDOT();
-        assertTrue(dot.contains("METHOD_START_0 -> VAR_DECL_1"));
-        assertTrue(dot.contains("VAR_DECL_1 -> METHOD_END_0"));
+        assertTrue(dot.contains("METHSTRT_0 -> VARDECL_1"));
+        assertTrue(dot.contains("VARDECL_1 -> METHEND_0"));
     }
 
     @Test
@@ -83,17 +79,21 @@ public class CFGTest extends BaseTestClass {
 
         String dot = cfg.toDOT();
 
-        String[] contents = {"  METHOD_START_0 -> FOR_1",
-                "  FOR_1 -> IF_4",
+        String[] contents = {"  METHSTRT_0 -> FOR_1",
                 "  FOR_1 -> END_3",
-                "  END_3 -> METHOD_END_0",
+                "  FOR_1 -> VARDECL_4",
+                "  END_3 -> METHEND_0",
+                "  VARDECL_4 -> EXPRESSION_5",
                 "  END_2 -> FOR_1",
-                "  IF_4 -> END_5",
-                "  IF_4 -> EMPTY_6",
-                "  END_5 -> EXPRESSION_7",
-                "  EMPTY_6 -> END_5",
-                "  EXPRESSION_7 -> END_2"};
+                "  EXPRESSION_5 -> IF_6",
+                "  IF_6 -> END_7",
+                "  IF_6 -> EXPRESSION_8",
+                "  END_7 -> EMPTY_10",
+                "  EXPRESSION_8 -> EMPTY_9",
+                "  EMPTY_10 -> END_2",
+                "  EMPTY_9 -> END_7"};
 
+        java.lang.System.out.println(dot);
         compareDOT(contents, dot);
     }
 
@@ -106,19 +106,23 @@ public class CFGTest extends BaseTestClass {
 
         String dot = cfg.toDOT();
 
-        String[] contents = {"  METHOD_START_0 -> VAR_DECL_1",
-                "  VAR_DECL_1 -> WHILE_2",
+        String[] contents = {"  METHSTRT_0 -> VARDECL_1",
+                "  VARDECL_1 -> WHILE_2",
+                "  WHILE_2 -> EXPRESSION_5",
                 "  WHILE_2 -> END_4",
-                "  WHILE_2 -> IF_5",
-                "  END_4 -> METHOD_END_0",
+                "  EXPRESSION_5 -> IF_6",
+                "  END_4 -> METHEND_0",
                 "  END_3 -> WHILE_2",
-                "  IF_5 -> EXPRESSION_9",
-                "  IF_5 -> EXPRESSION_7",
-                "  END_6 -> END_3",
-                "  EXPRESSION_7 -> CONTINUE_8",
-                "  CONTINUE_8 -> WHILE_2",
-                "  EXPRESSION_9 -> END_6"};
+                "  IF_6 -> END_7",
+                "  IF_6 -> EXPRESSION_8",
+                "  END_7 -> END_3",
+                "  EXPRESSION_8 -> EMPTY_9",
+                "  EMPTY_9 -> CONTINUE_10",
+                "  EMPTY_9 -> EMPTY_11",
+                "  CONTINUE_10 -> WHILE_2",
+                "  EMPTY_11 -> END_7"};
 
+        java.lang.System.out.println(dot);
         compareDOT(contents, dot);
     }
 
@@ -131,12 +135,15 @@ public class CFGTest extends BaseTestClass {
 
         String dot = cfg.toDOT();
 
-        String[] contents = {"  METHOD_START_0 -> VAR_DECL_1",
-                "  VAR_DECL_1 -> DO_2",
-                "  DO_2 -> EMPTY_5",
+        String[] contents = {"  METHSTRT_0 -> VARDECL_1",
+                "  VARDECL_1 -> DO_2",
+                "  DO_2 -> EXPRESSION_5",
+                "  EXPRESSION_5 -> EMPTY_6",
+                "  END_3 -> METHEND_0",
                 "  END_3 -> DO_2",
-                "  END_3 -> METHOD_END_0",
-                "  EMPTY_5 -> END_3"};
+                "  EMPTY_6 -> END_3"};
+
+        java.lang.System.out.println(dot);
         compareDOT(contents, dot);
     }
 
@@ -149,8 +156,8 @@ public class CFGTest extends BaseTestClass {
 
         String dot = cfg.toDOT();
 
-        String[] contents = {"  METHOD_START_0 -> EMPTY_1",
-                "  EMPTY_1 -> METHOD_END_0"};
+        String[] contents = {"  METHSTRT_0 -> EMPTY_1",
+                "  EMPTY_1 -> METHEND_0"};
         compareDOT(contents, dot);
     }
 
@@ -163,9 +170,11 @@ public class CFGTest extends BaseTestClass {
 
         String dot = cfg.toDOT();
 
-        String[] contents = {"  METHOD_START_0 -> VAR_DECL_1",
-                "  VAR_DECL_1 -> EXPRESSION_2",
-                "  EXPRESSION_2 -> METHOD_END_0"};
+        String[] contents = {"  METHSTRT_0 -> VARDECL_1",
+                "  VARDECL_1 -> EMPTY_2",
+                "  EMPTY_2 -> METHEND_0"};
+
+        java.lang.System.out.println(dot);
         compareDOT(contents, dot);
     }
 
@@ -178,12 +187,14 @@ public class CFGTest extends BaseTestClass {
 
         String dot = cfg.toDOT();
 
-        String[] contents = {"  METHOD_START_0 -> FOR_1",
+        String[] contents = {"  METHSTRT_0 -> FOR_1",
                 "  FOR_1 -> END_3",
-                "  FOR_1 -> EXPRESSION_4",
-                "  END_3 -> METHOD_END_0",
+                "  FOR_1 -> VARDECL_4",
+                "  END_3 -> METHEND_0",
+                "  VARDECL_4 -> EXPRESSION_5",
                 "  END_2 -> FOR_1",
-                "  EXPRESSION_4 -> END_2"};
+                "  EXPRESSION_5 -> EMPTY_6",
+                "  EMPTY_6 -> END_2"};
 
         compareDOT(contents, dot);
     }
@@ -197,13 +208,14 @@ public class CFGTest extends BaseTestClass {
 
         String dot = cfg.toDOT();
 
-        String[] contents = {"  METHOD_START_0 -> VAR_DECL_1",
-                "  VAR_DECL_1 -> IF_2",
+        String[] contents = {"  METHSTRT_0 -> VARDECL_1",
+                "  VARDECL_1 -> IF_2",
                 "  IF_2 -> END_3",
                 "  IF_2 -> EXPRESSION_4",
-                "  END_3 -> EXPRESSION_5",
-                "  EXPRESSION_4 -> END_3",
-                "  EXPRESSION_5 -> METHOD_END_0"};
+                "  END_3 -> EMPTY_6",
+                "  EXPRESSION_4 -> EMPTY_5",
+                "  EMPTY_6 -> METHEND_0",
+                "  EMPTY_5 -> END_3"};
 
         compareDOT(contents, dot);
     }
@@ -216,13 +228,15 @@ public class CFGTest extends BaseTestClass {
         ControlFlowGraph cfg = method.getCfg();
 
         String dot = cfg.toDOT();
-        String[] contents = {"  METHOD_START_0 -> VAR_DECL_1",
-                "  VAR_DECL_1 -> IF_2",
+        String[] contents = {"  METHSTRT_0 -> VARDECL_1",
+                "  VARDECL_1 -> IF_2",
+                "  IF_2 -> END_3",
                 "  IF_2 -> EXPRESSION_4",
-                "  IF_2 -> EMPTY_5",
-                "  END_3 -> METHOD_END_0",
-                "  EXPRESSION_4 -> END_3",
-                "  EMPTY_5 -> END_3"};
+                "  END_3 -> METHEND_0",
+                "  EXPRESSION_4 -> EMPTY_5",
+                "  EMPTY_5 -> EXPRESSION_6",
+                "  EXPRESSION_6 -> EMPTY_7",
+                "  EMPTY_7 -> END_3"};
 
         compareDOT(contents, dot);
     }
@@ -236,12 +250,14 @@ public class CFGTest extends BaseTestClass {
 
         String dot = cfg.toDOT();
 
-        String[] contents = {"  METHOD_START_0 -> VAR_DECL_1",
-                "  VAR_DECL_1 -> IF_2",
+        String[] contents = {"  METHSTRT_0 -> VARDECL_1",
+                "  VARDECL_1 -> IF_2",
                 "  IF_2 -> RETURN_4",
                 "  IF_2 -> END_3",
-                "  END_3 -> METHOD_END_0",
-                "  RETURN_4 -> METHOD_END_0"};
+                "  END_3 -> METHEND_0",
+                "  RETURN_4 -> METHEND_0"};
+
+        java.lang.System.out.println(dot);
         compareDOT(contents, dot);
     }
 
@@ -254,17 +270,19 @@ public class CFGTest extends BaseTestClass {
 
         String dot = cfg.toDOT();
 
-        String[] contents = {"  METHOD_START_0 -> VAR_DECL_1",
-                "  VAR_DECL_1 -> VAR_DECL_2",
-                "  VAR_DECL_2 -> SWITCH_3",
-                "  SWITCH_3 -> EXPRESSION_7",
-                "  SWITCH_3 -> EXPRESSION_5",
-                "  END_4 -> EXPRESSION_9",
-                "  EXPRESSION_5 -> BREAK_6",
+        String[] contents = {"  METHSTRT_0 -> VARDECL_1",
+                "  VARDECL_1 -> VARDECL_2",
+                "  VARDECL_2 -> SWITCH_3",
+                "  SWITCH_3 -> EMPTY_7",
+                "  SWITCH_3 -> EMPTY_5",
+                "  EMPTY_7 -> BREAK_8",
+                "  EMPTY_5 -> BREAK_6",
+                "  END_4 -> EMPTY_9",
+                "  EMPTY_9 -> METHEND_0",
                 "  BREAK_6 -> END_4",
-                "  EXPRESSION_7 -> BREAK_8",
-                "  BREAK_8 -> END_4",
-                "  EXPRESSION_9 -> METHOD_END_0"};
+                "  BREAK_8 -> END_4"};
+
+        java.lang.System.out.println(dot);
         compareDOT(contents, dot);
     }
 
@@ -277,12 +295,13 @@ public class CFGTest extends BaseTestClass {
 
         String dot = cfg.toDOT();
 
-        String[] contents = {"  METHOD_START_0 -> VAR_DECL_1",
-                "  VAR_DECL_1 -> SYNCHRONIZED_2",
-                "  SYNCHRONIZED_2 -> EXPRESSION_4",
-                "  EXPRESSION_4 -> END_3",
-                "  END_3 -> METHOD_END_0"};
+        String[] contents = {"  METHSTRT_0 -> VARDECL_1",
+                "  VARDECL_1 -> SYNCHRONIZED_2",
+                "  SYNCHRONIZED_2 -> EMPTY_4",
+                "  EMPTY_4 -> END_3",
+                "  END_3 -> METHEND_0"};
 
+        java.lang.System.out.println(dot);
         compareDOT(contents, dot);
     }
 
@@ -295,8 +314,8 @@ public class CFGTest extends BaseTestClass {
 
         String dot = cfg.toDOT();
 
-        String[] contents = {"  METHOD_START_0 -> THROW_1",
-                "  THROW_1 -> METHOD_END_0"};
+        String[] contents = {"  METHSTRT_0 -> THROW_1",
+                "  THROW_1 -> METHEND_0"};
         compareDOT(contents, dot);
     }
 
@@ -309,9 +328,9 @@ public class CFGTest extends BaseTestClass {
 
         String dot = cfg.toDOT();
 
-        String[] contents = {"  METHOD_START_0 -> TRY_1",
+        String[] contents = {"  METHSTRT_0 -> TRY_1",
                 "  TRY_1 -> EMPTY_3",
-                "  END_2 -> METHOD_END_0",
+                "  END_2 -> METHEND_0",
                 "  EMPTY_3 -> CATCH_4",
                 "  CATCH_4 -> END_5",
                 "  END_5 -> END_2"};
@@ -327,15 +346,15 @@ public class CFGTest extends BaseTestClass {
 
         String dot = cfg.toDOT();
 
-        String[] contents = {"  METHOD_START_0 -> TRY_1",
-                "  TRY_1 -> TRY_3",
-                "  END_2 -> METHOD_END_0",
-                "  TRY_3 -> EMPTY_5",
-                "  END_4 -> END_2",
-                "  EMPTY_5 -> CATCH_6",
-                "  CATCH_6 -> EMPTY_8",
-                "  END_7 -> END_4",
-                "  EMPTY_8 -> END_7"};
+        String[] contents = {"  METHSTRT_0 -> TRY_1",
+                "  TRY_1 -> EMPTY_3",
+                "  EMPTY_3 -> CATCH_4",
+                "  END_2 -> METHEND_0",
+                "  CATCH_4 -> EMPTY_6",
+                "  EMPTY_6 -> END_5",
+                "  END_5 -> END_2"};
+
+        java.lang.System.out.println(dot);
         compareDOT(contents, dot);
     }
 
@@ -348,9 +367,9 @@ public class CFGTest extends BaseTestClass {
 
         String dot = cfg.toDOT();
 
-        String[] contents = {"  METHOD_START_0 -> TRY_1",
+        String[] contents = {"  METHSTRT_0 -> TRY_1",
                 "  TRY_1 -> EMPTY_3",
-                "  END_2 -> METHOD_END_0",
+                "  END_2 -> METHEND_0",
                 "  EMPTY_3 -> CATCH_4",
                 "  CATCH_4 -> EMPTY_6",
                 "  END_5 -> FINALLY_7",
@@ -370,9 +389,9 @@ public class CFGTest extends BaseTestClass {
 
         String dot = cfg.toDOT();
 
-        String[] contents = {"  METHOD_START_0 -> VAR_DECL_1",
-                    "  VAR_DECL_1 -> VAR_DECL_2",
-                    "  VAR_DECL_2 -> METHOD_END_0"};
+        String[] contents = {"  METHSTRT_0 -> VARDECL_1",
+                    "  VARDECL_1 -> VARDECL_2",
+                    "  VARDECL_2 -> METHEND_0"};
         compareDOT(contents, dot);
     }
 
@@ -385,13 +404,16 @@ public class CFGTest extends BaseTestClass {
 
         String dot = cfg.toDOT();
 
-        String[] contents = {"  METHOD_START_0 -> VAR_DECL_1",
-                "  VAR_DECL_1 -> WHILE_2",
-                "  WHILE_2 -> EMPTY_5",
+        String[] contents = {"  METHSTRT_0 -> VARDECL_1",
+                "  VARDECL_1 -> WHILE_2",
+                "  WHILE_2 -> EXPRESSION_5",
                 "  WHILE_2 -> END_4",
-                "  END_4 -> METHOD_END_0",
+                "  EXPRESSION_5 -> EMPTY_6",
+                "  END_4 -> METHEND_0",
                 "  END_3 -> WHILE_2",
-                "  EMPTY_5 -> END_3"};
+                "  EMPTY_6 -> END_3"};
+
+        java.lang.System.out.println(dot);
         compareDOT(contents, dot);
     }
 
@@ -404,8 +426,11 @@ public class CFGTest extends BaseTestClass {
 
         String dot = cfg.toDOT();
 
-        String[] contents = {"  METHOD_START_0 -> EMPTY_1",
-                "  EMPTY_1 -> METHOD_END_0"};
+        String[] contents = {"  METHSTRT_0 -> EXPRESSION_1",
+                "  EXPRESSION_1 -> EMPTY_2",
+                "  EMPTY_2 -> METHEND_0"};
+
+        java.lang.System.out.println(dot);
         compareDOT(contents, dot);
     }
 
@@ -418,23 +443,30 @@ public class CFGTest extends BaseTestClass {
 
         String dot = cfg.toDOT();
 
-        String[] contents = {"  METHOD_START_0 -> VAR_DECL_1",
-                "  VAR_DECL_1 -> LABELED_2",
-                "  LABELED_2 -> FOR_3",
-                "  FOR_3 -> END_5",
-                "  FOR_3 -> FOR_6",
-                "  END_5 -> METHOD_END_0",
-                "  END_4 -> FOR_3",
-                "  FOR_6 -> EXPRESSION_12",
-                "  FOR_6 -> END_8",
-                "  FOR_6 -> IF_9",
-                "  END_8 -> END_4",
-                "  END_7 -> FOR_6",
-                "  IF_9 -> BREAK_11",
-                "  IF_9 -> END_10",
-                "  END_10 -> END_7",
-                "  BREAK_11 -> LABELED_2",
-                "  EXPRESSION_12 -> END_4"};
+        String[] contents = {"  METHSTRT_0 -> VARDECL_1",
+                "  VARDECL_1 -> LABELED_2",
+                "  LABELED_2 -> EXPRESSION_3",
+                "  EXPRESSION_3 -> FOR_4",
+                "  FOR_4 -> VARDECL_7",
+                "  FOR_4 -> END_6",
+                "  VARDECL_7 -> EXPRESSION_8",
+                "  END_6 -> METHEND_0",
+                "  END_5 -> FOR_4",
+                "  EXPRESSION_8 -> FOR_9",
+                "  FOR_9 -> EMPTY_17",
+                "  FOR_9 -> END_11",
+                "  FOR_9 -> VARDECL_12",
+                "  EMPTY_17 -> END_5",
+                "  END_11 -> END_5",
+                "  VARDECL_12 -> EXPRESSION_13",
+                "  END_10 -> FOR_9",
+                "  EXPRESSION_13 -> IF_14",
+                "  IF_14 -> END_15",
+                "  IF_14 -> BREAK_16",
+                "  END_15 -> END_10",
+                "  BREAK_16 -> LABELED_2"};
+
+        java.lang.System.out.println(dot);
         compareDOT(contents, dot);
     }
 
@@ -447,24 +479,31 @@ public class CFGTest extends BaseTestClass {
 
         String dot = cfg.toDOT();
 
-        String[] contents = {"  METHOD_START_0 -> LABELED_1",
-                "  LABELED_1 -> FOR_2",
-                "  FOR_2 -> END_4",
-                "  FOR_2 -> EXPRESSION_5",
-                "  END_4 -> METHOD_END_0",
-                "  END_3 -> FOR_2",
-                "  EXPRESSION_5 -> FOR_6",
-                "  FOR_6 -> EXPRESSION_13",
-                "  FOR_6 -> END_8",
-                "  FOR_6 -> EXPRESSION_9",
-                "  END_8 -> END_3",
-                "  END_7 -> FOR_6",
-                "  EXPRESSION_9 -> IF_10",
-                "  IF_10 -> CONTINUE_12",
-                "  IF_10 -> END_11",
-                "  END_11 -> END_7",
-                "  CONTINUE_12 -> FOR_6",
-                "  EXPRESSION_13 -> END_3"};
+        String[] contents = {"  METHSTRT_0 -> LABELED_1",
+                "  LABELED_1 -> EXPRESSION_2",
+                "  EXPRESSION_2 -> FOR_3",
+                "  FOR_3 -> END_5",
+                "  FOR_3 -> VARDECL_6",
+                "  END_5 -> METHEND_0",
+                "  VARDECL_6 -> EXPRESSION_7",
+                "  END_4 -> FOR_3",
+                "  EXPRESSION_7 -> EMPTY_8",
+                "  EMPTY_8 -> FOR_9",
+                "  FOR_9 -> END_11",
+                "  FOR_9 -> EMPTY_18",
+                "  FOR_9 -> VARDECL_12",
+                "  END_11 -> END_4",
+                "  EMPTY_18 -> END_4",
+                "  VARDECL_12 -> EXPRESSION_13",
+                "  END_10 -> FOR_9",
+                "  EXPRESSION_13 -> EMPTY_14",
+                "  EMPTY_14 -> IF_15",
+                "  IF_15 -> CONTINUE_17",
+                "  IF_15 -> END_16",
+                "  CONTINUE_17 -> FOR_9",
+                "  END_16 -> END_10"};
+
+        java.lang.System.out.println(dot);
         compareDOT(contents, dot);
     }
 

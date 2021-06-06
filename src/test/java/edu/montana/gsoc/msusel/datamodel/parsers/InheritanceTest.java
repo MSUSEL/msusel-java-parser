@@ -40,7 +40,7 @@ import java.util.List;
 
 import static org.junit.Assert.*;
 
-public class InheritanceTest extends BaseTestClass {
+public class InheritanceTest /*extends BaseTestClass*/ {
 
 //    @Before
 //    public void setUp() throws Exception {
