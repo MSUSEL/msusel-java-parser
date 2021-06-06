@@ -39,7 +39,6 @@ import org.junit.After
 import org.junit.Before
 import org.junit.Test
 
-@Log4j2
 class JavaDirectorTest {
 
     JavaDirector fixture
@@ -63,7 +62,7 @@ class JavaDirectorTest {
         files << File.builder().name("$basePath/AllInOne8.java").fileKey("$basePath/AllInOne8.java").relPath("AllInOne8.java").create()
         DBManager.instance.close()
 
-        fixture = new JavaDirector(proj, log, creds)
+        fixture = new JavaDirector(proj, creds)
     }
 
     @After

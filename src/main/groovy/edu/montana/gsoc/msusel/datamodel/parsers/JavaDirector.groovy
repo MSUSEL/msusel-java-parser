@@ -33,6 +33,7 @@ import edu.isu.isuese.datamodel.util.DBCredentials
 import edu.isu.isuese.datamodel.util.DBManager
 import edu.montana.gsoc.msusel.datamodel.parsers.java2.JavaLexer
 import edu.montana.gsoc.msusel.datamodel.parsers.java2.JavaParser
+import groovy.util.logging.Log4j2
 import org.antlr.v4.runtime.CharStreams
 import org.antlr.v4.runtime.CommonTokenStream
 import org.antlr.v4.runtime.tree.ParseTreeListener
@@ -44,10 +45,11 @@ import org.jetbrains.annotations.NotNull
  * @author Isaac Griffith
  * @version 1.3.0
  */
+@Log4j2
 class JavaDirector extends BaseDirector {
 
-    JavaDirector(Project proj, Logger logger, DBCredentials credentials, boolean statements = false) {
-        super(proj, new JavaArtifactIdentifier(logger, credentials), logger, credentials, statements)
+    JavaDirector(Project proj, DBCredentials credentials, boolean statements = false, boolean useSinglePass = true) {
+        super(proj, new JavaArtifactIdentifier(credentials), credentials, statements, useSinglePass)
     }
 
     void gatherAllInfoAtOnce(File file) {
@@ -134,7 +136,7 @@ class JavaDirector extends BaseDirector {
         String path = file.getName()
         DBManager.instance.close()
 
-        logger.atInfo().log("Parsing... " + path)
+        log.info "Parsing... $path"
         try {
             final JavaParserConstructor pt = new JavaParserConstructor()
             final JavaParser parser = pt.loadFile(path)
@@ -142,7 +144,7 @@ class JavaDirector extends BaseDirector {
             final ParseTreeWalker walker = new ParseTreeWalker()
             walker.walk(listener, cuContext)
         } catch (final IOException e) {
-            logger.atError().withThrowable(e).log(e.getMessage())
+            log.atError().withThrowable(e).log(e.getMessage())
         }
     }
 

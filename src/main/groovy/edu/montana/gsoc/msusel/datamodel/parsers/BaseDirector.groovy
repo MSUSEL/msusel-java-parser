@@ -31,6 +31,7 @@ import edu.isu.isuese.datamodel.FileType
 import edu.isu.isuese.datamodel.Project
 import edu.isu.isuese.datamodel.util.DBCredentials
 import edu.isu.isuese.datamodel.util.DBManager
+import groovy.util.logging.Log4j2
 import groovyx.gpars.GParsExecutorsPool
 import groovyx.gpars.GParsPool
 import org.apache.logging.log4j.Logger
@@ -39,20 +40,21 @@ import org.apache.logging.log4j.Logger
  * @author Isaac Griffith
  * @version 1.3.0
  */
+@Log4j2
 abstract class BaseDirector {
 
-    Logger logger
     boolean statements
+    boolean useSinglePass
     protected Project proj
     ArtifactIdentifier identifier
     DBCredentials credentials
 
-    BaseDirector(Project proj, ArtifactIdentifier identifier, Logger logger, DBCredentials creds, boolean statements = false) {
+    BaseDirector(Project proj, ArtifactIdentifier identifier, DBCredentials creds, boolean statements = false, boolean useSinglePass = true) {
         this.proj = proj
         this.identifier = identifier
-        this.logger = logger
         this.statements = statements
         this.credentials = creds
+        this.useSinglePass = useSinglePass
     }
 
     void build(String path) {
@@ -68,38 +70,44 @@ abstract class BaseDirector {
     }
 
     void identify(Project proj, String path) {
-        logger.atInfo().log("Setting up the artifact identifier")
+        log.info "Setting up the artifact identifier"
         identifier.setProj(proj)
 
-        logger.atInfo().log("Traversing the project and gathering artifact info")
+        log.info "Traversing the project and gathering artifact info"
         identifier.identify(path)
 
-        logger.atInfo().log("Artifact info gathering complete")
+        log.info "Artifact info gathering complete"
     }
 
     void process(final List<File> files) {
-        logger.atInfo().log("Processing files and their contained info")
+        log.info "Processing files and their contained info"
 
-//        logger.atInfo().log("Gathering File and Type Info into Model")
-//        files.each { File file -> println("File: $file"); if (includeFile(file)) gatherFileAndTypeInfo(file) }
-//
-//        logger.atInfo().log("Gathering Type Members and Basic Relation Info into Model")
-//        files.each { File file -> if (includeFile(file)) gatherMembersAndBasicRelationInfo(file) }
-//
-//        logger.atInfo().log("Gathering Member Usage Info into Model")
-//        files.each { File file -> if (includeFile(file)) gatherMemberUsageInfo(file) }
-//
-//        if (statements) {
-//            logger.atInfo().log("Gathering Statement Info and CFG into Model")
-//            files.each { File file -> if (includeFile(file)) gatherStatementInfo(file) }
-//        }
+        if (useSinglePass) {
+            log.info "Parsing and extracting file info"
+            files.each { File file ->
+                if (includeFile(file)) {
+                    gatherAllInfoAtOnce(file)
+                }
+            }
+        } else {
+            log.info "Gathering File and Type Info into Model"
+            files.each { File file -> log.info "File: $file"; if (includeFile(file)) gatherFileAndTypeInfo(file) }
 
-        logger.atInfo().log("Parsing and extracting file info")
-        files.each {File file -> if (includeFile(file)) gatherAllInfoAtOnce(file) }
+            log.info "Gathering Type Members and Basic Relation Info into Model"
+            files.each { File file -> if (includeFile(file)) gatherMembersAndBasicRelationInfo(file) }
 
-        logger.atInfo().log("Gathering Type Associations into Model")
+            log.info "Gathering Member Usage Info into Model"
+            files.each { File file -> if (includeFile(file)) gatherMemberUsageInfo(file) }
+
+            if (statements) {
+                log.info "Gathering Statement Info and CFG into Model"
+                files.each { File file -> if (includeFile(file)) gatherStatementInfo(file) }
+            }
+        }
+
+        log.info "Gathering Type Associations into Model"
         gatherTypeAssociations()
-        logger.atInfo().log("File processing complete")
+        log.info "File processing complete"
     }
 
     abstract void gatherFileAndTypeInfo(File file)

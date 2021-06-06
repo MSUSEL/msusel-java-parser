@@ -204,7 +204,6 @@ abstract class BaseModelBuilder {
     }
 
     void createType(String typeName, int typeType, int start, int stop) {
-        println "CreateType: TypeName = $typeName"
         Type type = findType(typeName)
         DBManager.instance.open(credentials)
         if (type) {
@@ -653,7 +652,6 @@ abstract class BaseModelBuilder {
 
         Type type
         list.each { str ->
-//            println "\n$str"
             String[] components = str.split(/\./)
             components.eachWithIndex { comp, index ->
                 if (comp.find(/\(.*\)/)) {
@@ -944,7 +942,6 @@ abstract class BaseModelBuilder {
 
     private Type findOrCreateUnknownType(String typeName) {
         Type candidate = Type.findFirst("name = ? and type = ?", typeName, Type.UNKNOWN)
-        println "TypeName: $typeName"
         if (!candidate) {
             candidate = Type.builder()
                     .name(typeName)

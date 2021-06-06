@@ -33,6 +33,7 @@ import edu.isu.isuese.datamodel.FileType
 import edu.isu.isuese.datamodel.Project
 import edu.isu.isuese.datamodel.util.DBCredentials
 import edu.isu.isuese.datamodel.util.DBManager
+import groovy.util.logging.Log4j2
 import org.apache.logging.log4j.Logger
 
 import java.nio.file.*
@@ -42,33 +43,32 @@ import java.nio.file.attribute.BasicFileAttributes
  * @author Isaac Griffith
  * @version 1.3.0
  */
+@Log4j2
 class JavaArtifactIdentifier implements ArtifactIdentifier {
 
     final List<String> buildFileTypes = ImmutableList.of("pom.xml", "build.gradle")
     Project project
-    Logger log
 
     List<File> files = Lists.newArrayList()
     int binCount = 0
     DBCredentials credentials
 
-    JavaArtifactIdentifier(Logger log, DBCredentials credentials) {
-        this.log = log
+    JavaArtifactIdentifier(DBCredentials credentials) {
         this.credentials = credentials
     }
 
     @Override
     void identify(String root) {
         Path rootPath = Paths.get(root)
-        this.log.atInfo().log("Root Path: " + rootPath)
-        this.log.atInfo().log("Absolute Path: " + rootPath.toAbsolutePath())
+        log.info "Root Path: $rootPath"
+        log.info "Absolute Path: ${rootPath.toAbsolutePath()}"
         try {
             Files.walkFileTree(rootPath.toAbsolutePath(), new JavaFileVisitor())
         } catch (IOException e) {
-            log.atWarn().log("Could not walk the file tree")
+            log.warn "Could not walk the file tree"
         }
-        this.log.atInfo().log("Binary File Count: " + binCount)
-        this.log.atInfo().log("File Found: " + files.size())
+        log.info "Binary File Count: $binCount"
+        log.info "File Found: ${files.size()}"
     }
 
     @Override
