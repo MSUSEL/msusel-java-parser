@@ -239,7 +239,7 @@ public class Java8SinglePassExtractor extends JavaParserBaseListener {
     public void enterClassOrInterfaceModifier(JavaParser.ClassOrInterfaceModifierContext ctx) {
 //        log.atInfo().log(treeBuilder.getFile().getName() + " Entering Class or Interface Modifier");
 //        if (inMember && ctx.annotation() == null) {
-            modifiers.add(ctx.getText());
+        modifiers.add(ctx.getText());
 //        }
 
         super.enterClassOrInterfaceModifier(ctx);
@@ -638,7 +638,7 @@ public class Java8SinglePassExtractor extends JavaParserBaseListener {
     @Override
     public void enterInterfaceMethodModifier(JavaParser.InterfaceMethodModifierContext ctx) {
 //        if (inMember && ctx.annotation() == null) {
-            modifiers.add(ctx.getText());
+        modifiers.add(ctx.getText());
 //        }
 
         super.enterInterfaceMethodModifier(ctx);
@@ -973,7 +973,9 @@ public class Java8SinglePassExtractor extends JavaParserBaseListener {
     }
 
     protected void handleInitializer(JavaParser.ClassBodyDeclarationContext ctx) {
+//        initializerCount.push(initializerCount.pop() + 1);
+//        treeBuilder.findInitializer(String.format("<init-%d>", initializerCount.peek()), ctx.STATIC() != null);
         initializerCount.push(initializerCount.pop() + 1);
-        treeBuilder.findInitializer(String.format("<init-%d>", initializerCount.peek()), ctx.STATIC() != null);
+        treeBuilder.createInitializer(String.format("<init-%d>", initializerCount.peek()), ctx.STATIC() != null, ctx.getStart().getLine(), ctx.getStop().getLine());
     }
 }
