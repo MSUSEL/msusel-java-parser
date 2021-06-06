@@ -204,8 +204,8 @@ abstract class BaseModelBuilder {
     }
 
     void createType(String typeName, int typeType, int start, int stop) {
-        DBManager.instance.open(credentials)
         Type type = findType(typeName)
+        DBManager.instance.open(credentials)
         if (type) {
             type.setStart(start)
             type.setEnd(stop)
@@ -941,6 +941,7 @@ abstract class BaseModelBuilder {
 
     private Type findOrCreateUnknownType(String typeName) {
         Type candidate = Type.findFirst("name = ? and type = ?", typeName, Type.UNKNOWN)
+        println "TypeName: $typeName"
         if (!candidate) {
             candidate = Type.builder()
                     .name(typeName)

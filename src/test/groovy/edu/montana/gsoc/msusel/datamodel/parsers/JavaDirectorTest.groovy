@@ -84,7 +84,9 @@ class JavaDirectorTest {
 
     @Test
     void process() {
+//        DBManager.instance.open(creds)
         fixture.process(files)
+//        DBManager.instance.close()
     }
 
     @Test
