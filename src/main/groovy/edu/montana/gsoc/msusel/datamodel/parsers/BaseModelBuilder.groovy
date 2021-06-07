@@ -211,6 +211,7 @@ abstract class BaseModelBuilder {
             type.setEnd(stop)
             type.setType(typeType)
             type.save()
+            type.refresh()
 
             if (typeType != Type.UNKNOWN) {
                 if (types) {
