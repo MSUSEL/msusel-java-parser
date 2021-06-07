@@ -281,6 +281,7 @@ abstract class BaseModelBuilder {
                     types.peek().addTemplateParam(currentTypeParam)
                 }
             }
+            currentTypeParam = null
             DBManager.instance.close()
         }
 
@@ -443,6 +444,13 @@ abstract class BaseModelBuilder {
         if (methods && methods.peek() instanceof Method) {
             ((Method) methods.peek()).addTemplateParam(currentTypeParam)
         }
+        currentTypeParam = null
+        DBManager.instance.close()
+    }
+
+    void createFieldTypeParameter(String name) {
+        DBManager.instance.open(credentials)
+        currentTypeParam = TemplateParam.builder().name(name).create()
         DBManager.instance.close()
     }
 
@@ -537,6 +545,8 @@ abstract class BaseModelBuilder {
                 f.setStart(start)
                 f.save()
                 setModifiers(modifiers, f)
+                if (currentTypeParam)
+                    f.addTemplateParam(currentTypeParam)
                 DBManager.instance.close()
             } else {
                 DBManager.instance.open(credentials)
@@ -558,6 +568,8 @@ abstract class BaseModelBuilder {
                     field.addModifier("FINAL")
                 }
                 types.peek().addMember(field)
+                if (currentTypeParam)
+                    field.addTemplateParam(currentTypeParam)
                 field.refresh()
                 DBManager.instance.close()
 
@@ -933,6 +945,7 @@ abstract class BaseModelBuilder {
     Type findType(String name, boolean createUnknown = false) {
         Type candidate = null
 
+        name.replaceAll(/<.*>/, "")
         DBManager.instance.open(credentials)
         if (notFullySpecified(name)) {
             candidate = findTypeInNamespace(name)
@@ -941,7 +954,7 @@ abstract class BaseModelBuilder {
             if (candidate == null) candidate = findTypeInDefaultNamespace(name)
             if (candidate == null) candidate = findUnknownType(name)
         }
-        if (candidate == null) {
+        if (!candidate) {
             candidate = findTypeByQualifiedName(name)
         }
 

@@ -40,7 +40,7 @@ import static org.junit.Assert.assertTrue;
 public class UseDepsTest extends BaseTestClass {
 
     public String getBasePath() {
-        return "data/java-example-project/Inheritance";
+        return "data/java-example-project/UseDeps";
     }
 
     @Test

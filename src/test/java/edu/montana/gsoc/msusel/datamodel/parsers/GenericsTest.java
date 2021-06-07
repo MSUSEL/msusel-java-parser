@@ -27,6 +27,7 @@
 package edu.montana.gsoc.msusel.datamodel.parsers;
 
 import edu.isu.isuese.datamodel.*;
+import edu.isu.isuese.datamodel.util.DBManager;
 import org.junit.Assert;
 import org.junit.Test;
 
@@ -38,11 +39,12 @@ import static org.junit.Assert.assertNotNull;
 public class GenericsTest extends BaseTestClass {
 
     public String getBasePath() {
-        return "data/java-example-project/Methods";
+        return "data/java-example-project/Generics";
     }
 
     @Test
     public void testClassMultiTypeParam() {
+        DBManager.getInstance().open(credentials);
         Type type = proj.findTypeByQualifiedName("ClassMultiTypeParam");
         assertNotNull(type);
         assertEquals(Type.CLASS, type.getType());
@@ -64,11 +66,13 @@ public class GenericsTest extends BaseTestClass {
         field = type.getFieldWithName("field2");
         assertNotNull(field);
         assertEquals("Y", field.getType().getTypeName());
+        DBManager.getInstance().close();
     }
 
     @Test
     public void testClassSingleTypeParam() {
-        Type type = tree.findType("ClassSingleTypeParam");
+        DBManager.getInstance().open(credentials);
+        Type type = proj.findTypeByQualifiedName("ClassSingleTypeParam");
         assertNotNull(type);
         assertEquals(Type.CLASS, type.getType());
 
@@ -83,6 +87,7 @@ public class GenericsTest extends BaseTestClass {
         method = type.getMethodWithName("method2");
         assertNotNull(method);
         assertEquals("K", method.getType().getTypeName());
+        assertNotNull(method.getTemplateParam("K"));
         assertEquals("K", method.getTemplateParams().get(0).getTypeRefs().get(0).getTypeName());
 
         method = type.getMethodWithName("method3");
@@ -105,20 +110,24 @@ public class GenericsTest extends BaseTestClass {
 
         typeParam = method.getTemplateParam("X");
         assertNotNull(typeParam);
+        DBManager.getInstance().close();
     }
 
     @Test
     public void testClassSingleTypeParamMultiBound() {
-        Type type = tree.findType("ClassSingleTypeParamMultiBound");
+        DBManager.getInstance().open(credentials);
+        Type type = proj.findTypeByQualifiedName("ClassSingleTypeParamMultiBound");
         assertNotNull(type);
         assertEquals(Type.CLASS, type.getType());
 
         TemplateParam typeParam = type.getTemplateParam("X");
         assertNotNull(typeParam);
+        DBManager.getInstance().close();
     }
 
     @Test
     public void testClassWithCollections() {
+        DBManager.getInstance().open(credentials);
         Type type = proj.findTypeByQualifiedName("ClassWithCollections");
         assertNotNull(type);
         assertEquals(Type.CLASS, type.getType());
@@ -156,5 +165,6 @@ public class GenericsTest extends BaseTestClass {
         assertNotNull(field);
         assertEquals("List", field.getType().getTypeName());
         assertEquals("?", field.getType().getTypeArgs().get(0).getTypeName());
+        DBManager.getInstance().close();
     }
 }

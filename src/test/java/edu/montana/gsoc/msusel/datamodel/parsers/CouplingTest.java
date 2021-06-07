@@ -62,7 +62,7 @@ public class CouplingTest extends BaseTestClass {
     @Test
     public void testContainedClasses() {
         Type type = retrieveType("ContainedClasses", Accessibility.PUBLIC, Type.CLASS);
-        Type cont = retrieveType("ContainedClasses.ContainedClass", Accessibility.PRIVATE, Type.CLASS, "STATIC");
+        Type cont = retrieveType("ContainedClass", Accessibility.PRIVATE, Type.CLASS, "STATIC");
 
         DBManager.getInstance().open(credentials);
         assertTrue(type.doesContain(cont));
@@ -72,7 +72,7 @@ public class CouplingTest extends BaseTestClass {
     @Test
     public void testContainedClass_ContainedClass() {
         Type type = retrieveType("ContainedClasses", Accessibility.PUBLIC, Type.CLASS);
-        Type cont = retrieveType("ContainedClasses.ContainedClass", Accessibility.PRIVATE, Type.CLASS, "STATIC");
+        Type cont = retrieveType("ContainedClass", Accessibility.PRIVATE, Type.CLASS, "STATIC");
 
         DBManager.getInstance().open(credentials);
         assertTrue(type.isContainedBy(cont));

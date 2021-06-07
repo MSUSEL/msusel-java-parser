@@ -265,10 +265,17 @@ public class Java8SinglePassExtractor extends JavaParserBaseListener {
     }
 
     public void enterTypeParameter(JavaParser.TypeParameterContext ctx) {
-        if (inTypeDecl) {
-            treeBuilder.createTypeTypeParameter(ctx.IDENTIFIER().getText());
-        } else {
+        if (inMethod && inParameters) {
+
+        }
+        else if (inMethod) {
             treeBuilder.createMethodTypeParameter(ctx.IDENTIFIER().getText());
+        }
+        else if (inField) {
+            treeBuilder.createFieldTypeParameter(ctx.IDENTIFIER().getText());
+        }
+        else if (inTypeDecl) {
+            treeBuilder.createTypeTypeParameter(ctx.IDENTIFIER().getText());
         }
 
         super.enterTypeParameter(ctx);
