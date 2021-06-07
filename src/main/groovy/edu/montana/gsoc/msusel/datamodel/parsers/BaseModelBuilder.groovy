@@ -930,8 +930,8 @@ abstract class BaseModelBuilder {
      * @param name The name of the type
      * @return The Type corresponding to the provided type name.
      */
-    Type findType(String name, boolean createUnknown = false) { // FIXME
-        Type candidate
+    Type findType(String name, boolean createUnknown = false) {
+        Type candidate = null
 
         DBManager.instance.open(credentials)
         if (notFullySpecified(name)) {
@@ -940,7 +940,8 @@ abstract class BaseModelBuilder {
             if (candidate == null) candidate = findTypeUsingGeneralImports(name)
             if (candidate == null) candidate = findTypeInDefaultNamespace(name)
             if (candidate == null) candidate = findUnknownType(name)
-        } else {
+        }
+        if (candidate == null) {
             candidate = findTypeByQualifiedName(name)
         }
 
@@ -952,7 +953,7 @@ abstract class BaseModelBuilder {
     }
 
     private Type findTypeByQualifiedName(String name) {
-        return proj.findType("qualified_name", name)
+        return proj.findTypeByQualifiedName(name)
     }
 
     private Type createUnknownType(String name) {

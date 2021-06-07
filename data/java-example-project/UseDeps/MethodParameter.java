@@ -1,5 +1,3 @@
-package test;
-
 public class MethodParameter {
 
   public void testMethodKnown(A a) {

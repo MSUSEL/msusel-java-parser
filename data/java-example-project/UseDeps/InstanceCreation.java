@@ -1,5 +1,3 @@
-package test;
-
 public class InstanceCreation {
 
   public void testMethodKnown() {
