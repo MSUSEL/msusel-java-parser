@@ -938,6 +938,7 @@ abstract class BaseModelBuilder {
             if (candidate == null) candidate = findTypeUsingSpecificImports(name)
             if (candidate == null) candidate = findTypeUsingGeneralImports(name)
             if (candidate == null) candidate = findTypeInDefaultNamespace(name)
+            if (candidate == null) candidate = findUnknownType(name)
         } else {
             candidate = findTypeByQualifiedName(name)
         }
@@ -959,7 +960,7 @@ abstract class BaseModelBuilder {
     }
 
     private Type findOrCreateUnknownType(String typeName) {
-        Type candidate = Type.findFirst("name = ? and type = ?", typeName, Type.UNKNOWN)
+        Type candidate = findUnknownType(typeName)
         if (!candidate) {
             candidate = Type.builder()
                     .name(typeName)
@@ -970,6 +971,10 @@ abstract class BaseModelBuilder {
             candidate.updateKey()
         }
         candidate
+    }
+
+    private Type findUnknownType(String typeName) {
+        return Type.findFirst("name = ? and type = ?", typeName, Type.UNKNOWN)
     }
 
     private String determineTypeName(String name) {
@@ -991,7 +996,10 @@ abstract class BaseModelBuilder {
     }
 
     private Type findTypeInDefaultNamespace(String name) {
-        return findTypeByQualifiedName("java.lang." + name)
+        Type type = proj.getDefaultNamespace().getTypeByName(name)
+        if (!type) type = findTypeByQualifiedName("java.lang." + name)
+
+        return type
     }
 
     private Type findTypeUsingGeneralImports(String name) {

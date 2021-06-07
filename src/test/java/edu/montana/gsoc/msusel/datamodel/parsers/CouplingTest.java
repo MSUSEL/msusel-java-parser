@@ -28,6 +28,7 @@ package edu.montana.gsoc.msusel.datamodel.parsers;
 
 import edu.isu.isuese.datamodel.Accessibility;
 import edu.isu.isuese.datamodel.Type;
+import edu.isu.isuese.datamodel.util.DBManager;
 import org.junit.Test;
 
 import static org.junit.Assert.assertTrue;
@@ -42,16 +43,20 @@ public class CouplingTest extends BaseTestClass {
     public void testBiDirectionalAssociation() {
         Type type = retrieveType("BiDirectionalAssociation", Accessibility.PUBLIC, Type.CLASS);
 
-        assertTrue(type.isAssociatedTo(proj.findTypeByQualifiedName("B")));
-        assertTrue(type.isAssociatedFrom(proj.findTypeByQualifiedName("B")));
+        DBManager.getInstance().open(credentials);
+        assertTrue(type.isAssociatedTo(proj.findTypeByQualifiedName("test.B")));
+        assertTrue(type.isAssociatedFrom(proj.findTypeByQualifiedName("test.B")));
+        DBManager.getInstance().close();
     }
 
     @Test
     public void testTypeB() {
         Type type = retrieveType("B", Accessibility.PUBLIC, Type.CLASS);
 
-        assertTrue(type.isAssociatedTo(proj.findTypeByQualifiedName("BiDirectionalAssociation")));
-        assertTrue(type.isAssociatedFrom(proj.findTypeByQualifiedName("BiDirectionalAssociation")));
+        DBManager.getInstance().open(credentials);
+        assertTrue(type.isAssociatedTo(proj.findTypeByQualifiedName("test.BiDirectionalAssociation")));
+        assertTrue(type.isAssociatedFrom(proj.findTypeByQualifiedName("test.BiDirectionalAssociation")));
+        DBManager.getInstance().close();
     }
 
     @Test
@@ -59,7 +64,9 @@ public class CouplingTest extends BaseTestClass {
         Type type = retrieveType("ContainedClasses", Accessibility.PUBLIC, Type.CLASS);
         Type cont = retrieveType("ContainedClasses.ContainedClass", Accessibility.PRIVATE, Type.CLASS, "STATIC");
 
+        DBManager.getInstance().open(credentials);
         assertTrue(type.doesContain(cont));
+        DBManager.getInstance().close();
     }
 
     @Test
@@ -67,34 +74,44 @@ public class CouplingTest extends BaseTestClass {
         Type type = retrieveType("ContainedClasses", Accessibility.PUBLIC, Type.CLASS);
         Type cont = retrieveType("ContainedClasses.ContainedClass", Accessibility.PRIVATE, Type.CLASS, "STATIC");
 
+        DBManager.getInstance().open(credentials);
         assertTrue(type.isContainedBy(cont));
+        DBManager.getInstance().close();
     }
 
     @Test
     public void testUniDirectionalAssociation() {
         Type type = retrieveType("UniDirectionalAssociation", Accessibility.PUBLIC, Type.CLASS);
 
-        assertTrue(type.isAssociatedTo(proj.findTypeByQualifiedName("C")));
+        DBManager.getInstance().open(credentials);
+        assertTrue(type.isAssociatedTo(proj.findTypeByQualifiedName("test.C")));
+        DBManager.getInstance().close();
     }
 
     @Test
     public void testTypeC() {
         Type type = retrieveType("C", Accessibility.PUBLIC, Type.CLASS);
 
-        assertTrue(type.isAssociatedFrom(proj.findTypeByQualifiedName("UniDirectionalAssociation")));
+        DBManager.getInstance().open(credentials);
+        assertTrue(type.isAssociatedFrom(proj.findTypeByQualifiedName("test.UniDirectionalAssociation")));
+        DBManager.getInstance().close();
     }
 
     @Test
     public void testUseDependency() {
         Type type = retrieveType("UseDependency", Accessibility.PUBLIC, Type.CLASS);
 
-        assertTrue(type.hasUseTo(proj.findTypeByQualifiedName("D")));
+        DBManager.getInstance().open(credentials);
+        assertTrue(type.hasUseTo(proj.findTypeByQualifiedName("test.D")));
+        DBManager.getInstance().close();
     }
 
     @Test
     public void testTypeD() {
         Type type = retrieveType("D", Accessibility.PUBLIC, Type.CLASS);
 
-        assertTrue(type.hasUseFrom(tree.findType("UseDependency")));
+        DBManager.getInstance().open(credentials);
+        assertTrue(type.hasUseFrom(proj.findTypeByQualifiedName("test.UseDependency")));
+        DBManager.getInstance().close();
     }
 }

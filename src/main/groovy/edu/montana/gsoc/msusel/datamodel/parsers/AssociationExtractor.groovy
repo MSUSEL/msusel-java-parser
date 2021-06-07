@@ -57,29 +57,21 @@ class AssociationExtractor {
         types.addAll(project.getAllTypes())
         DBManager.instance.close()
 
-//        GParsExecutorsPool.withPool(8) { ExecutorService srvc ->
-//            types.eachParallel { Type type ->
-            types.each { Type type ->
-                DBManager.instance.open(credentials)
-                handleTypeAssociation(type)
-                DBManager.instance.close()
-            }
-//        }
+
+        types.each { Type type ->
+            DBManager.instance.open(credentials)
+            handleTypeAssociation(type)
+            DBManager.instance.close()
+        }
     }
 
-    private void handleTypeAssociation(Type type/*, ExecutorService pool*/) {
-//        DBManager.instance.open(credentials)
+    private void handleTypeAssociation(Type type) {
         List<Field> fields = type.getFields()
-//        DBManager.instance.close()
 
-//        GParsExecutorsPool.withExistingPool(pool) {
-            fields.each { Field f ->
-//                DBManager.instance.open(credentials)
-                if (f.getType() != null && f.getType().getReference() != null)
-                    createAssociation(type, f.getType())
-//                DBManager.instance.close()
-            }
-//        }
+        fields.each { Field f ->
+            if (f.getType() != null && f.getType().getReference() != null)
+                createAssociation(type, f.getType())
+        }
     }
 
     private void createAssociation(Type type, TypeRef ref) {

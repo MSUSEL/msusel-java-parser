@@ -1,3 +1,5 @@
+package test;
+
 public class FieldAccess {
 
   public void testMethodKnown() {

@@ -27,14 +27,13 @@
 package edu.montana.gsoc.msusel.datamodel.parsers;
 
 import edu.isu.isuese.datamodel.*;
-import org.junit.After;
 import org.junit.Assert;
-import org.junit.Before;
 import org.junit.Test;
 
 import java.util.List;
 
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
 
 public class GenericsTest extends BaseTestClass {
 
@@ -120,45 +119,42 @@ public class GenericsTest extends BaseTestClass {
 
     @Test
     public void testClassWithCollections() {
-        Type type = tree.findType("ClassWithCollections");
+        Type type = proj.findTypeByQualifiedName("ClassWithCollections");
         assertNotNull(type);
         assertEquals(Type.CLASS, type.getType());
 
-        Field field = (Field) type.getFieldWithName("field1");
+        Field field = type.getFieldWithName("field1");
         assertNotNull(field);
         assertEquals("List", field.getType().getTypeName());
-        Assert.assertEquals("String", ((List<TypeReference>)((TypeRef) field.getType()).getTypeArgs()).get(0).getName());
+        Assert.assertEquals("String", field.getType().getTypeArgs().get(0).getTypeName());
 
-        field = (Field) type.getFieldWithName("field2");
+        field = type.getFieldWithName("field2");
         assertNotNull(field);
         assertEquals("Map", field.getType().getTypeName());
-        assertEquals("String", ((List<TypeReference>)((TypeRef) field.getType()).getTypeArgs()).get(0).getName());
-        assertEquals("Integer", ((List<TypeReference>)((TypeRef) field.getType()).getTypeArgs()).get(1).getName());
+        assertEquals("String", field.getType().getTypeArgs().get(0).getTypeName());
+        assertEquals("Integer", field.getType().getTypeArgs().get(1).getTypeName());
 
-        field = (Field) type.getFieldWithName("field3");
+        field = type.getFieldWithName("field3");
         assertNotNull(field);
         assertEquals("List", field.getType().getTypeName());
-        TypeReference typeRef = ((List<TypeReference>)((TypeRef) field.getType()).getTypeArgs()).get(0);
-        assertEquals("?", typeRef.getName());
-        assertTrue(typeRef instanceof WildCardTypeRef);
-        WildCardTypeRef wildRef = (WildCardTypeRef) typeRef;
-        List<TypeReference> bounds = wildRef.getBounds();
-        assertEquals("Number", bounds.get(0).getName());
+        TypeRef typeRef = field.getType().getTypeArgs().get(0);
+        assertEquals("?", typeRef.getTypeName());
+        assertEquals(TypeRefType.WildCard, typeRef.getType());
+        List<TypeRef> bounds = typeRef.getBounds();
+        assertEquals("Number", bounds.get(0).getTypeName());
 
-        field = (Field) type.getFieldWithName("field4");
+        field = type.getFieldWithName("field4");
         assertNotNull(field);
         assertEquals("List", field.getType().getTypeName());
-        typeRef = ((List<TypeReference>)((TypeRef) field.getType()).getTypeArgs()).get(0);
-        assertEquals("List", typeRef.getName());
-        assertTrue(typeRef instanceof TypeRef);
-        TypeRef typed = (TypeRef) typeRef;
-        assertNotNull(typed.getTypeArgs());
-        System.out.println("Typed Size: " + ((List<TypeReference>) typed.getTypeArgs()).size());
-        assertEquals("String", ((List<TypeReference>)((TypeRef)((List<TypeReference>)((TypeRef) field.getType()).getTypeArgs()).get(0)).getTypeArgs()).get(0).getName());
+        typeRef = field.getType().getTypeArgs().get(0);
+        assertEquals("List", typeRef.getTypeName());
+        assertNotNull(typeRef.getTypeArgs());
+        java.lang.System.out.println("Typed Size: " + typeRef.getTypeArgs().size());
+        assertEquals("String", field.getType().getTypeArgs().get(0).getTypeArgs().get(0).getTypeName());
 
-        field = (Field) type.getFieldWithName("field5");
+        field = type.getFieldWithName("field5");
         assertNotNull(field);
         assertEquals("List", field.getType().getTypeName());
-        assertEquals("?", ((List<TypeReference>)((TypeRef) field.getType()).getTypeArgs()).get(0).getName());
+        assertEquals("?", field.getType().getTypeArgs().get(0).getTypeName());
     }
 }

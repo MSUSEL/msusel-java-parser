@@ -1,3 +1,5 @@
+package test;
+
 public class BiDirectionalAssociation {
 
   private B assoc;
