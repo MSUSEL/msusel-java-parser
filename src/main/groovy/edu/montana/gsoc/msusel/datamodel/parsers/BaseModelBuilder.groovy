@@ -298,13 +298,14 @@ abstract class BaseModelBuilder {
         scopes.push(Sets.newHashSet())
     }
 
-    void createInitializer(String name, boolean instance, int start, int end) {
+    void createInitializer(String name, int number, boolean instance, int start, int end) {
         if (types) {
             DBManager.instance.open(credentials)
             if (types.peek().hasInitializerWithName(name)) {
                 Initializer i = types.peek().getInitializerWithName(name)
                 i.setEnd(end)
                 i.setStart(start)
+                i.setInteger("number", number)
                 i.save()
                 methods.push(i)
             } else {
@@ -316,6 +317,7 @@ abstract class BaseModelBuilder {
                         .end(end)
                         .instance(instance)
                         .create()
+                init.setInteger("number", number)
                 types.peek().addMember(init)
                 init.updateKey()
                 methods.push(init)

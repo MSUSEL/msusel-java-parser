@@ -139,8 +139,6 @@ public abstract class BaseTestClass {
 
     protected Initializer retrieveStaticInitializer(Type type, final int i) {
         DBManager.getInstance().open(credentials);
-        type.getInitializers().forEach(x -> java.lang.System.out.println("Init: " + x.getName()));
-        java.lang.System.out.println("i: " + i);
         Initializer init = type.getStaticInitializer(i);
         assertFalse(init.isInstance());
         assertEquals("<init-" + i + ">", init.getName());
@@ -150,9 +148,11 @@ public abstract class BaseTestClass {
     }
 
     protected Initializer retrieveInstanceInitializer(Type type, final int i) {
+        DBManager.getInstance().open(credentials);
         Initializer init = type.getInstanceInitializer(i);
         assertTrue(init.isInstance());
         assertEquals("<init-" + i + ">", init.getName());
+        DBManager.getInstance().close();
 
         return init;
     }

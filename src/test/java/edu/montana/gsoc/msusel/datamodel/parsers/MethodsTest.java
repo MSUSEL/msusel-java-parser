@@ -133,4 +133,10 @@ public class MethodsTest extends BaseTestClass {
         Type type = retrieveType("StaticInit", Accessibility.PUBLIC, Type.CLASS);
         retrieveStaticInitializer(type, 1);
     }
+
+    @Test
+    public void testInitializer() {
+        Type type = retrieveType("Initializer", Accessibility.PUBLIC, Type.CLASS);
+        retrieveInstanceInitializer(type, 1);
+    }
 }

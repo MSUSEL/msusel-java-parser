@@ -102,7 +102,7 @@ public class Java8MemberAndGenRealUseRelsExtractor extends Java8AbstractExtracto
         if (ctx.block() != null) {
             inMethod = true;
             initializerCount.push(initializerCount.pop() + 1);
-            treeBuilder.createInitializer(String.format("<init-%d>", initializerCount.peek()), ctx.STATIC() != null, ctx.getStart().getLine(), ctx.getStop().getLine());
+            treeBuilder.createInitializer(String.format("<init-%d>", initializerCount.peek()), initializerCount.peek(), ctx.STATIC() != null, ctx.getStart().getLine(), ctx.getStop().getLine());
             inMethod = false;
         }
 

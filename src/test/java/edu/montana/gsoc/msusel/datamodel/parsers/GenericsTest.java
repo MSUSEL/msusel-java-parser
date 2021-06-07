@@ -26,21 +26,7 @@
  */
 package edu.montana.gsoc.msusel.datamodel.parsers;
 
-//import edu.montana.gsoc.msusel.codetree.AbstractTypeRef;
-//import edu.montana.gsoc.msusel.codetree.CodeTree;
-//import edu.montana.gsoc.msusel.codetree.node.member.Field;
-//import edu.montana.gsoc.msusel.codetree.node.member.Method;
-//import edu.montana.gsoc.msusel.codetree.node.member.Parameter;
-//import edu.montana.gsoc.msusel.codetree.node.type.Class;
-//import edu.montana.gsoc.msusel.codetree.node.type.Type;
-//import edu.montana.gsoc.msusel.codetree.typeref.TypeRef;
-//import edu.montana.gsoc.msusel.codetree.typeref.TypeVarTypeRef;
-//import edu.montana.gsoc.msusel.codetree.typeref.WildCardTypeRef;
-//import edu.montana.gsoc.msusel.datamodel.DataModelMediator;
-//import edu.montana.gsoc.msusel.datamodel.TypeReference;
-//import edu.montana.gsoc.msusel.datamodel.member.Field;
-//import edu.montana.gsoc.msusel.datamodel.member.Method;
-//import edu.montana.gsoc.msusel.datamodel.member.Parameter;
+import edu.isu.isuese.datamodel.*;
 import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
@@ -50,137 +36,129 @@ import java.util.List;
 
 import static org.junit.Assert.*;
 
-public class GenericsTest {
+public class GenericsTest extends BaseTestClass {
 
-//    DataModelMediator tree;
-//
-//    @Before
-//    public void setUp() throws Exception {
-//        JavaModelBuilder builder = new JavaModelBuilder();
-//        tree = builder.build("Test", "./data/java-test-project/Generics");
-//    }
-//
-//    @After
-//    public void tearDown() throws Exception {
-//    }
-//
-//    @Test
-//    public void testClassMultiTypeParam() {
-//        Type type = tree.findType("ClassMultiTypeParam");
-//        assertNotNull(type);
-//        assertTrue(type instanceof Class);
-//
-//        System.out.println("Number of Template Params: " + type.getTemplateParams().size());
-//        for (TypeVarTypeRef node : type.getTemplateParams())
-//            System.out.println("\tName: " + node.name());
-//
-//        TypeVarTypeRef typeParam = type.getTypeParamByName("X");
-//        assertNotNull(typeParam);
-//
-//        typeParam = type.getTypeParamByName("Y");
-//        assertNotNull(typeParam);
-//
-//        Field field = (Field) type.getField("field1");
-//        assertNotNull(field);
-//        assertEquals("X", field.getType().name());
-//
-//        field = (Field) type.getField("field2");
-//        assertNotNull(field);
-//        assertEquals("Y", field.getType().name());
-//    }
-//
-//    @Test
-//    public void testClassSingleTypeParam() {
-//        Type type = tree.findType("ClassSingleTypeParam");
-//        assertNotNull(type);
-//        assertTrue(type instanceof Class);
-//
-//        Field field = (Field) type.getField("field");
-//        assertNotNull(field);
-//        assertEquals("T", field.getType().name());
-//
-//        Method method = (Method) type.getMethod("method1");
-//        assertNotNull(method);
-//        assertEquals("T", method.getType().name());
-//
-//        method = (Method) type.getMethod("method2");
-//        assertNotNull(method);
-//        assertEquals("K", method.getType().name());
-//        assertEquals("K", ((List<TypeVarTypeRef>) method.getTypeParams()).get(0).name());
-//
-//        method = (Method) type.getMethod("method3");
-//        assertNotNull(method);
-//        assertEquals("X", method.getType().name());
-//
-//        TypeVarTypeRef typeParam = method.getTypeParamByName("X");
-//        assertNotNull(typeParam);
-//
-//        typeParam = method.getTypeParamByName("Y");
-//        assertNotNull(typeParam);
-//
-//        Parameter param = (Parameter) method.getParameterByName("param");
-//        assertNotNull(param);
-//        assertEquals("Y", param.getType().name());
-//
-//        method = (Method) type.getMethod("method4");
-//        assertNotNull(method);
-//        assertEquals("X", method.getType().name());
-//
-//        typeParam = method.getTypeParamByName("X");
-//        assertNotNull(typeParam);
-//    }
-//
-//    @Test
-//    public void testClassSingleTypeParamMultiBound() {
-//        Type type = tree.findType("ClassSingleTypeParamMultiBound");
-//        assertNotNull(type);
-//        assertTrue(type instanceof Class);
-//
-//        TypeVarTypeRef typeParam = type.getTypeParamByName("X");
-//        assertNotNull(typeParam);
-//    }
-//
-//    @Test
-//    public void testClassWithCollections() {
-//        Type type = tree.findType("ClassWithCollections");
-//        assertNotNull(type);
-//        assertTrue(type instanceof Class);
-//
-//        Field field = (Field) type.getField("field1");
-//        assertNotNull(field);
-//        assertEquals("List", field.getType().name());
-//        Assert.assertEquals("String", ((List<TypeReference>)((TypeRef) field.getType()).getTypeArgs()).get(0).name());
-//
-//        field = (Field) type.getField("field2");
-//        assertNotNull(field);
-//        assertEquals("Map", field.getType().name());
-//        assertEquals("String", ((List<TypeReference>)((TypeRef) field.getType()).getTypeArgs()).get(0).name());
-//        assertEquals("Integer", ((List<TypeReference>)((TypeRef) field.getType()).getTypeArgs()).get(1).name());
-//
-//        field = (Field) type.getField("field3");
-//        assertNotNull(field);
-//        assertEquals("List", field.getType().name());
-//        TypeReference typeRef = ((List<TypeReference>)((TypeRef) field.getType()).getTypeArgs()).get(0);
-//        assertEquals("?", typeRef.name());
-//        assertTrue(typeRef instanceof WildCardTypeRef);
-//        WildCardTypeRef wildRef = (WildCardTypeRef) typeRef;
-//        List<TypeReference> bounds = wildRef.getBounds();
-//        assertEquals("Number", bounds.get(0).name());
-//
-//        field = (Field) type.getField("field4");
-//        assertNotNull(field);
-//        assertEquals("List", field.getType().name());
-//        typeRef = ((List<TypeReference>)((TypeRef) field.getType()).getTypeArgs()).get(0);
-//        assertEquals("List", typeRef.name());
-//        assertTrue(typeRef instanceof TypeRef);
-//        TypeRef typed = (TypeRef) typeRef;
-//        assertNotNull(typed.getTypeArgs());
-//        System.out.println("Typed Size: " + ((List<TypeReference>) typed.getTypeArgs()).size());
-//        assertEquals("String", ((List<TypeReference>)((TypeRef)((List<TypeReference>)((TypeRef) field.getType()).getTypeArgs()).get(0)).getTypeArgs()).get(0).name());
-//
-//        field = (Field) type.getField("field5");
-//        assertNotNull(field);
-//        assertEquals("List", field.getType().name());
-//        assertEquals("?", ((List<TypeReference>)((TypeRef) field.getType()).getTypeArgs()).get(0).name());
-//    }
+    public String getBasePath() {
+        return "data/java-example-project/Methods";
+    }
+
+    @Test
+    public void testClassMultiTypeParam() {
+        Type type = proj.findTypeByQualifiedName("ClassMultiTypeParam");
+        assertNotNull(type);
+        assertEquals(Type.CLASS, type.getType());
+
+        java.lang.System.out.println("Number of Template Params: " + type.getTemplateParams().size());
+        for (TemplateParam node : type.getTemplateParams())
+            java.lang.System.out.println("\tName: " + node.getTypeRefs().get(0).getTypeName());
+
+        TemplateParam typeParam = type.getTemplateParam("X");
+        assertNotNull(typeParam);
+
+        typeParam = type.getTemplateParam("Y");
+        assertNotNull(typeParam);
+
+        Field field = type.getFieldWithName("field1");
+        assertNotNull(field);
+        assertEquals("X", field.getType().getTypeName());
+
+        field = type.getFieldWithName("field2");
+        assertNotNull(field);
+        assertEquals("Y", field.getType().getTypeName());
+    }
+
+    @Test
+    public void testClassSingleTypeParam() {
+        Type type = tree.findType("ClassSingleTypeParam");
+        assertNotNull(type);
+        assertEquals(Type.CLASS, type.getType());
+
+        Field field = type.getFieldWithName("field");
+        assertNotNull(field);
+        assertEquals("T", field.getType().getTypeName());
+
+        Method method = type.getMethodWithName("method1");
+        assertNotNull(method);
+        assertEquals("T", method.getType().getTypeName());
+
+        method = type.getMethodWithName("method2");
+        assertNotNull(method);
+        assertEquals("K", method.getType().getTypeName());
+        assertEquals("K", method.getTemplateParams().get(0).getTypeRefs().get(0).getTypeName());
+
+        method = type.getMethodWithName("method3");
+        assertNotNull(method);
+        assertEquals("X", method.getType().getTypeName());
+
+        TemplateParam typeParam = method.getTemplateParam("X");
+        assertNotNull(typeParam);
+
+        typeParam = method.getTemplateParam("Y");
+        assertNotNull(typeParam);
+
+        Parameter param = method.getParameterByName("param");
+        assertNotNull(param);
+        assertEquals("Y", param.getType().getTypeName());
+
+        method = type.getMethodWithName("method4");
+        assertNotNull(method);
+        assertEquals("X", method.getType().getTypeName());
+
+        typeParam = method.getTemplateParam("X");
+        assertNotNull(typeParam);
+    }
+
+    @Test
+    public void testClassSingleTypeParamMultiBound() {
+        Type type = tree.findType("ClassSingleTypeParamMultiBound");
+        assertNotNull(type);
+        assertEquals(Type.CLASS, type.getType());
+
+        TemplateParam typeParam = type.getTemplateParam("X");
+        assertNotNull(typeParam);
+    }
+
+    @Test
+    public void testClassWithCollections() {
+        Type type = tree.findType("ClassWithCollections");
+        assertNotNull(type);
+        assertEquals(Type.CLASS, type.getType());
+
+        Field field = (Field) type.getFieldWithName("field1");
+        assertNotNull(field);
+        assertEquals("List", field.getType().getTypeName());
+        Assert.assertEquals("String", ((List<TypeReference>)((TypeRef) field.getType()).getTypeArgs()).get(0).getName());
+
+        field = (Field) type.getFieldWithName("field2");
+        assertNotNull(field);
+        assertEquals("Map", field.getType().getTypeName());
+        assertEquals("String", ((List<TypeReference>)((TypeRef) field.getType()).getTypeArgs()).get(0).getName());
+        assertEquals("Integer", ((List<TypeReference>)((TypeRef) field.getType()).getTypeArgs()).get(1).getName());
+
+        field = (Field) type.getFieldWithName("field3");
+        assertNotNull(field);
+        assertEquals("List", field.getType().getTypeName());
+        TypeReference typeRef = ((List<TypeReference>)((TypeRef) field.getType()).getTypeArgs()).get(0);
+        assertEquals("?", typeRef.getName());
+        assertTrue(typeRef instanceof WildCardTypeRef);
+        WildCardTypeRef wildRef = (WildCardTypeRef) typeRef;
+        List<TypeReference> bounds = wildRef.getBounds();
+        assertEquals("Number", bounds.get(0).getName());
+
+        field = (Field) type.getFieldWithName("field4");
+        assertNotNull(field);
+        assertEquals("List", field.getType().getTypeName());
+        typeRef = ((List<TypeReference>)((TypeRef) field.getType()).getTypeArgs()).get(0);
+        assertEquals("List", typeRef.getName());
+        assertTrue(typeRef instanceof TypeRef);
+        TypeRef typed = (TypeRef) typeRef;
+        assertNotNull(typed.getTypeArgs());
+        System.out.println("Typed Size: " + ((List<TypeReference>) typed.getTypeArgs()).size());
+        assertEquals("String", ((List<TypeReference>)((TypeRef)((List<TypeReference>)((TypeRef) field.getType()).getTypeArgs()).get(0)).getTypeArgs()).get(0).getName());
+
+        field = (Field) type.getFieldWithName("field5");
+        assertNotNull(field);
+        assertEquals("List", field.getType().getTypeName());
+        assertEquals("?", ((List<TypeReference>)((TypeRef) field.getType()).getTypeArgs()).get(0).getName());
+    }
 }

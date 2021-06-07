@@ -976,6 +976,6 @@ public class Java8SinglePassExtractor extends JavaParserBaseListener {
 //        initializerCount.push(initializerCount.pop() + 1);
 //        treeBuilder.findInitializer(String.format("<init-%d>", initializerCount.peek()), ctx.STATIC() != null);
         initializerCount.push(initializerCount.pop() + 1);
-        treeBuilder.createInitializer(String.format("<init-%d>", initializerCount.peek()), ctx.STATIC() != null, ctx.getStart().getLine(), ctx.getStop().getLine());
+        treeBuilder.createInitializer(String.format("<init-%d>", initializerCount.peek()), initializerCount.peek(), ctx.STATIC() == null, ctx.getStart().getLine(), ctx.getStop().getLine());
     }
 }
