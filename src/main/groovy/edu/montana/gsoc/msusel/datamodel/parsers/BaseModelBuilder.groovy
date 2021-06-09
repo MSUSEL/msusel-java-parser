@@ -50,10 +50,12 @@ abstract class BaseModelBuilder {
     Parameter currentParam
     DBCredentials credentials
 
-    void withDb(Closure cl) {
-        DBManager.instance.open(credentials)
-        cl.call()
-        DBManager.instance.close()
+    void withDb(String method, Closure cl) {
+        log.info "Opened at $method"
+        DBManager.getInstance().open(credentials)
+            cl.call()
+        DBManager.getInstance().close()
+        log.info "Closed at $method"
     }
 
     BaseModelBuilder(Project proj, File file, DBCredentials credentials) {
@@ -63,9 +65,9 @@ abstract class BaseModelBuilder {
             throw new IllegalArgumentException("Project and File must not be null")
         }
 
-        DBManager.instance.open(credentials)
-        this.system = proj.getParentSystem()
-        DBManager.instance.close()
+        withDb("BaseModelBuilder Constructor 1") {
+            this.system = proj.getParentSystem()
+        }
 
         if (this.system == null) {
             throw new IllegalArgumentException("Project must be a part of a system")
@@ -74,24 +76,24 @@ abstract class BaseModelBuilder {
         this.proj = proj
         this.file = file
 
-        DBManager.instance.open(credentials)
-        if (file.getParentNamespace() != null)
-            namespace = file.getParentNamespace()
-        else
-            namespace = proj.getDefaultNamespace()
-        DBManager.instance.close()
+        withDb("BaseModelBuilder Constructor 2") {
+            if (file.getParentNamespace() != null)
+                namespace = file.getParentNamespace()
+            else
+                namespace = proj.getDefaultNamespace()
+        }
     }
 
     //////////////////////
     // Setup Methods
     //////////////////////
     void setFile(File file) {
-        DBManager.instance.open(credentials)
-        this.file = file
-        if (file.getParentNamespace() != null) {
-            namespace = file.getParentNamespace()
+        withDb("setFile") {
+            this.file = file
+            if (file.getParentNamespace() != null) {
+                namespace = file.getParentNamespace()
+            }
         }
-        DBManager.instance.close()
 
     }
 
@@ -106,58 +108,62 @@ abstract class BaseModelBuilder {
         else
             packageNames = [name]
 
-        Namespace current = null;
+        Namespace current = null
         for (String seg : packageNames) {
-            DBManager.instance.open(credentials)
-            String n = current == null ? seg : String.join(".", current.getName(), seg)
-            String relPath = seg
 
-            boolean hasNamespace = proj.hasNamespace(n)
-            DBManager.instance.close()
+            String relPath = seg
+            boolean hasNamespace = false
+
+            String n
+            withDb("createNamespace 1") {
+                n = current == null ? seg : String.join(".", current.getName(), seg)
+
+                hasNamespace = proj.hasNamespace(n)
+            }
 
             if (!hasNamespace) {
                 log.atInfo().log("Creating Namespace: " + n)
                 Namespace parent = current
 
-                DBManager.instance.open(credentials)
-                current = Namespace.builder()
-                        .name(n)
-                        .nsKey(n)
-                        .relPath(relPath)
-                        .create()
-                if (parent != null)
-                    parent.addNamespace(current)
-                proj.addNamespace(current)
-                current.updateKey()
-                DBManager.instance.close()
+                withDb("createNamespace 2") {
+                    current = Namespace.builder()
+                            .name(n)
+                            .nsKey(n)
+                            .relPath(relPath)
+                            .create()
+                    if (parent != null)
+                        parent.addNamespace(current)
+                    proj.addNamespace(current)
+                    current.updateKey()
+                }
             } else {
-                DBManager.instance.open(credentials)
-                Namespace parent = current
-                setParentNamespace(parent, current)
-                current = proj.findNamespace(n)
-                DBManager.instance.close()
+                withDb("createNamespace 3") {
+                    Namespace parent = current
+                    setParentNamespace(parent, current)
+                    current = proj.findNamespace(n)
+                }
             }
 
-            DBManager.instance.open(credentials)
-            current.addFile(file)
-            namespace = current
+            withDb("createNamespace 4") {
+                current.addFile(file)
+                namespace = current
 
-            file.updateKey()
-            file.refresh()
-            DBManager.instance.close()
+                file.updateKey()
+                file.refresh()
+            }
         }
     }
 
     void createImport(String name, int start, int end) {
-        DBManager.instance.open(credentials)
-        Import imp = Import.findFirst("name = ?", name)
-        if (!imp) {
-            log.atInfo().log("Creating import with name: " + name)
-            imp = Import.builder().name(name).start(start).end(end).create()
-        }
+        withDb("createImport") {
+            Import imp = Import.findFirst("name = ?", name)
+            if (!imp) {
+                log.atInfo().log("Creating import with name: " + name)
+                imp = Import.builder().name(name).start(start).end(end).create()
+            }
 
-        file.addImport(imp)
-        DBManager.instance.close()
+            file.addImport(imp)
+        }
     }
 
     //////////////////////
@@ -167,20 +173,20 @@ abstract class BaseModelBuilder {
         if (types) {
             Type type = types.pop()
             if (types.isEmpty()) {
-                DBManager.instance.open(credentials)
-                if (file.getTypeByName(type.getName()) == null)
-                    file.addType(type)
-                DBManager.instance.close()
+                withDb("endType 1") {
+                    if (file.getTypeByName(type.getName()) == null)
+                        file.addType(type)
+                }
             } else {
-                DBManager.instance.open(credentials)
-                if (types.peek().getTypeByName(type.getName()) == null)
-                    types.peek().addType(type)
-                DBManager.instance.close()
+                withDb("endType 2") {
+                    if (types.peek().getTypeByName(type.getName()) == null)
+                        types.peek().addType(type)
+                }
             }
 
-            DBManager.instance.open(credentials)
-            type.updateKey()
-            DBManager.instance.close()
+            withDb("endType 3") {
+                type.updateKey()
+            }
         }
 
     }
@@ -188,13 +194,13 @@ abstract class BaseModelBuilder {
     void findOrCreateType(String typeName, int typeType, int start = 1, int stop = 1) {
         Type type
         if (types) {
-            DBManager.instance.open(credentials)
-            type = types.peek().getTypeByName(typeName)
-            DBManager.instance.close()
+            withDb("findOrCreateType 1") {
+                type = types.peek().getTypeByName(typeName)
+            }
         } else {
-            DBManager.instance.open(credentials)
-            type = namespace.getTypeByName(typeName)
-            DBManager.instance.close()
+            withDb("findOrCreateType 2") {
+                type = namespace.getTypeByName(typeName)
+            }
         }
 
         if (type != null)
@@ -205,52 +211,52 @@ abstract class BaseModelBuilder {
 
     void createType(String typeName, int typeType, int start, int stop) {
         Type type = findType(typeName)
-        DBManager.instance.open(credentials)
-        if (type) {
-            type.setStart(start)
-            type.setEnd(stop)
-            type.setType(typeType)
-            type.save()
-            type.refresh()
+        withDb("createType") {
+            if (type) {
+                type.setStart(start)
+                type.setEnd(stop)
+                type.setType(typeType)
+                type.save()
+                type.refresh()
 
-            if (typeType != Type.UNKNOWN) {
+                if (typeType != Type.UNKNOWN) {
+                    if (types) {
+                        types.peek().addType(type)
+                    }
+
+                    namespace.addType(type)
+                    file.addType(type)
+                    proj.removeUnknownType(type)
+                    type.updateKey()
+                    types.push(type)
+                }
+            } else if (types && types.peek().getTypeByName(typeName) != null)
+                types.push(types.peek().getTypeByName(typeName))
+            else if (namespace.getTypeByName(typeName) != null) {
+                type = namespace.getTypeByName(typeName)
+                type.setEnd(stop)
+                type.setStart(start)
+                type.save()
+                types.push(type)
+            } else {
+                type = Type.builder()
+                        .type(typeType)
+                        .name(typeName)
+                        .compKey(typeName)
+                        .accessibility(Accessibility.DEFAULT)
+                        .start(start)
+                        .end(stop)
+                        .create()
                 if (types) {
                     types.peek().addType(type)
                 }
 
                 namespace.addType(type)
                 file.addType(type)
-                proj.removeUnknownType(type)
                 type.updateKey()
                 types.push(type)
             }
-        } else if (types && types.peek().getTypeByName(typeName) != null)
-            types.push(types.peek().getTypeByName(typeName))
-        else if (namespace.getTypeByName(typeName) != null) {
-            type = namespace.getTypeByName(typeName)
-            type.setEnd(stop)
-            type.setStart(start)
-            type.save()
-            types.push(type)
-        } else {
-            type = Type.builder()
-                    .type(typeType)
-                    .name(typeName)
-                    .compKey(typeName)
-                    .accessibility(Accessibility.DEFAULT)
-                    .start(start)
-                    .end(stop)
-                    .create()
-            if (types) {
-                types.peek().addType(type)
-            }
-
-            namespace.addType(type)
-            file.addType(type)
-            type.updateKey()
-            types.push(type)
         }
-        DBManager.instance.close()
     }
 
     void setTypeModifiers(List<String> modifiers) {
@@ -260,29 +266,29 @@ abstract class BaseModelBuilder {
 
     void setModifiers(List<String> modifiers, Component comp) {
         modifiers.each { mod ->
-            DBManager.instance.open(credentials)
-            Accessibility access = handleAccessibility(mod)
-            Modifier modifier = handleNamedModifiers(mod)
-            if (access) comp.setAccessibility(access)
-            if (modifier) comp.addModifier(modifier)
-            DBManager.instance.close()
+            withDb("setModifiers") {
+                Accessibility access = handleAccessibility(mod)
+                Modifier modifier = handleNamedModifiers(mod)
+                if (access) comp.setAccessibility(access)
+                if (modifier) comp.addModifier(modifier)
+            }
         }
     }
 
     void createTypeTypeParameter(String name) {
         if (types) {
-            DBManager.instance.open(credentials)
-            if (types.peek().hasTemplateParam(name))
-                currentTypeParam = types.peek().getTemplateParam(name)
-            else {
-                currentTypeParam = TemplateParam.builder().name(name).create()
+            withDb("createTypeTypeParameters") {
+                if (types.peek().hasTemplateParam(name))
+                    currentTypeParam = types.peek().getTemplateParam(name)
+                else {
+                    currentTypeParam = TemplateParam.builder().name(name).create()
 
-                if (types) {
-                    types.peek().addTemplateParam(currentTypeParam)
+                    if (types) {
+                        types.peek().addTemplateParam(currentTypeParam)
+                    }
                 }
+                currentTypeParam = null
             }
-            currentTypeParam = null
-            DBManager.instance.close()
         }
 
     }
@@ -292,9 +298,10 @@ abstract class BaseModelBuilder {
     ///////////////////
 
     void findInitializer(String name, boolean instance) {
-        DBManager.instance.open(credentials)
-        Initializer init = !types.isEmpty() ? types.peek().getInitializerWithName(name) : null
-        DBManager.instance.close()
+        Initializer init
+        withDb("findInitializer") {
+            init = !types.isEmpty() ? types.peek().getInitializerWithName(name) : null
+        }
 
         if (init) methods.push(init)
         scopes.push(Sets.newHashSet())
@@ -302,38 +309,39 @@ abstract class BaseModelBuilder {
 
     void createInitializer(String name, int number, boolean instance, int start, int end) {
         if (types) {
-            DBManager.instance.open(credentials)
-            if (types.peek().hasInitializerWithName(name)) {
-                Initializer i = types.peek().getInitializerWithName(name)
-                i.setEnd(end)
-                i.setStart(start)
-                i.setInteger("number", number)
-                i.save()
-                methods.push(i)
-            } else {
-                Initializer init = Initializer.builder()
-                        .name(name)
-                        .compKey(name)
-                        .accessibility(Accessibility.PUBLIC)
-                        .start(start)
-                        .end(end)
-                        .instance(instance)
-                        .create()
-                init.setInteger("number", number)
-                types.peek().addMember(init)
-                init.updateKey()
-                methods.push(init)
+            withDb("createInitializer") {
+                if (types.peek().hasInitializerWithName(name)) {
+                    Initializer i = types.peek().getInitializerWithName(name)
+                    i.setEnd(end)
+                    i.setStart(start)
+                    i.setInteger("number", number)
+                    i.save()
+                    methods.push(i)
+                } else {
+                    Initializer init = Initializer.builder()
+                            .name(name)
+                            .compKey(name)
+                            .accessibility(Accessibility.PUBLIC)
+                            .start(start)
+                            .end(end)
+                            .instance(instance)
+                            .create()
+                    init.setInteger("number", number)
+                    types.peek().addMember(init)
+                    init.updateKey()
+                    methods.push(init)
+                }
             }
-            DBManager.instance.close()
         }
 
         scopes.push(Sets.newHashSet())
     }
 
     void findMethod(String signature) {
-        DBManager.instance.open(credentials)
-        Method meth = types ? Method.findFirst("compKey = ?", "${types.peek().getCompKey()}#$signature") : null
-        DBManager.instance.close()
+        Method meth
+        withDb("findMethod") {
+            meth = types ? (Method) Method.findFirst("compKey = ?", "${types.peek().getCompKey()}#$signature") : null
+        }
 
         scopes.push(Sets.newHashSet())
         if (meth) methods.push(meth)
@@ -341,43 +349,44 @@ abstract class BaseModelBuilder {
 
     void createMethod(String name, int start, int end) {
         if (types) {
-            DBManager.instance.open(credentials)
-            if (types.peek().hasMethodWithName(name)) {
-                Method m = types.peek().getMethodWithName(name)
-                m.setEnd(end)
-                m.setStart(start)
-                m.save()
-                methods.push(m)
-            } else {
-                Accessibility access
-                if (types.peek().getType() == Type.INTERFACE)
-                    access = Accessibility.PUBLIC
-                else
-                    access = Accessibility.DEFAULT
+            withDb("createMethod") {
+                if (types.peek().hasMethodWithName(name)) {
+                    Method m = types.peek().getMethodWithName(name)
+                    m.setEnd(end)
+                    m.setStart(start)
+                    m.save()
+                    methods.push(m)
+                } else {
+                    Accessibility access
+                    if (types.peek().getType() == Type.INTERFACE)
+                        access = Accessibility.PUBLIC
+                    else
+                        access = Accessibility.DEFAULT
 
-                Method meth = Method.builder()
-                        .name(name)
-                        .compKey(name)
-                        .accessibility(access)
-                        .start(start)
-                        .end(end)
-                        .create()
-                if (types.peek().getType() == Type.INTERFACE)
-                    meth.addModifier("ABSTRACT")
-                types.peek().addMember(meth)
-                meth.updateKey()
-                methods.push(meth)
+                    Method meth = Method.builder()
+                            .name(name)
+                            .compKey(name)
+                            .accessibility(access)
+                            .start(start)
+                            .end(end)
+                            .create()
+                    if (types.peek().getType() == Type.INTERFACE)
+                        meth.addModifier("ABSTRACT")
+                    types.peek().addMember(meth)
+                    meth.updateKey()
+                    methods.push(meth)
+                }
             }
-            DBManager.instance.close()
         }
 
         scopes.push(Sets.newHashSet())
     }
 
     void findConstructor(String signature) {
-        DBManager.instance.open(credentials)
-        Constructor cons = types ? Constructor.findFirst("compKey = ?", "${types.peek().getCompKey()}#$signature") : null as Constructor
-        DBManager.instance.close()
+        Constructor cons
+        withDb("findConstructor") {
+            cons = types ? (Constructor) Constructor.findFirst("compKey = ?", "${types.peek().getCompKey()}#$signature") : null as Constructor
+        }
 
         scopes.push(Sets.newHashSet())
         if (cons) methods.push(cons)
@@ -385,50 +394,48 @@ abstract class BaseModelBuilder {
 
     void createConstructor(String name, int start, int end) {
         if (types) {
-            DBManager.instance.open(credentials)
-
-            Constructor cons = Constructor.creator()
-                    .name(name)
-                    .compKey(name)
-                    .accessibility(Accessibility.PUBLIC)
-                    .start(start)
-                    .end(end)
-                    .create()
-            types.peek().addMember(cons)
-            cons.updateKey()
-            methods.push(cons)
-
-            DBManager.instance.close()
+            withDb("createConstructor") {
+                Constructor cons = Constructor.creator()
+                        .name(name)
+                        .compKey(name)
+                        .accessibility(Accessibility.PUBLIC)
+                        .start(start)
+                        .end(end)
+                        .create()
+                types.peek().addMember(cons)
+                cons.updateKey()
+                methods.push(cons)
+            }
         }
         scopes.push(Sets.newHashSet())
     }
 
     void createMethodParameter() {
-        DBManager.instance.open(credentials)
-        currentParam = Parameter.builder().varg(false).create()
-        if (methods && methods.peek() != null)
-            ((Method) methods.peek()).addParameter(currentParam)
-        DBManager.instance.close()
+        withDb("createMethodParameter") {
+            currentParam = Parameter.builder().varg(false).create()
+            if (methods && methods.peek() != null)
+                ((Method) methods.peek()).addParameter(currentParam)
+        }
     }
 
     void setVariableParameter(boolean varg) {
-        DBManager.instance.open(credentials)
-        currentParam.setVarg(varg)
-        currentParam.save()
-        DBManager.instance.close()
+        withDb("setVariableParameter") {
+            currentParam.setVarg(varg)
+            currentParam.save()
+        }
     }
 
     void setParameterName(String name) {
-        DBManager.instance.open(credentials)
-        currentParam.setName(name)
-        currentParam.save()
-        DBManager.instance.close()
+        withDb("setParameterName") {
+            currentParam.setName(name)
+            currentParam.save()
+        }
     }
 
     void addParameterModifier(String mod) {
-        DBManager.instance.open(credentials)
-        currentParam?.addModifier(mod)
-        DBManager.instance.close()
+        withDb("addParameterModifier") {
+            currentParam?.addModifier(mod)
+        }
     }
 
     void setMethodModifiers(List<String> mods) {
@@ -439,60 +446,60 @@ abstract class BaseModelBuilder {
     }
 
     void createMethodTypeParameter(String name) {
-        DBManager.instance.open(credentials)
-        currentTypeParam = TemplateParam.builder().name(name).create()
-        if (methods && methods.peek() instanceof Method) {
-            ((Method) methods.peek()).addTemplateParam(currentTypeParam)
+        withDb("createMethodTypeParameter") {
+            currentTypeParam = TemplateParam.builder().name(name).create()
+            if (methods && methods.peek() instanceof Method) {
+                ((Method) methods.peek()).addTemplateParam(currentTypeParam)
+            }
+            currentTypeParam = null
         }
-        currentTypeParam = null
-        DBManager.instance.close()
     }
 
     void createFieldTypeParameter(String name) {
-        DBManager.instance.open(credentials)
-        currentTypeParam = TemplateParam.builder().name(name).create()
-        DBManager.instance.close()
+        withDb("createFieldTypeParameter") {
+            currentTypeParam = TemplateParam.builder().name(name).create()
+        }
     }
 
     void setParameterType(String type) {
         Type t = findType(type, true)
 
-        DBManager.instance.open(credentials)
-        currentParam.setType(t.createTypeRef())
-        DBManager.instance.close()
+        withDb("setParameterType") {
+            currentParam.setType(t.createTypeRef())
+        }
     }
 
     void setParameterPrimitiveType(String type) {
-        DBManager.instance.open(credentials)
-        currentParam.setType(TypeRef.createPrimitiveTypeRef(type))
-        DBManager.instance.close()
+        withDb("setParameterPrimitiveType") {
+            currentParam.setType(TypeRef.createPrimitiveTypeRef(type))
+        }
     }
 
     void setMethodReturnType(String type) {
         Type t = findType(type, true)
 
         if (t && methods && methods.peek() instanceof Method) {
-            DBManager.instance.open(credentials)
-            ((Method) methods.peek()).setReturnType(t.createTypeRef())
-            DBManager.instance.close()
+            withDb("setMethodReturnType") {
+                ((Method) methods.peek()).setReturnType(t.createTypeRef())
+            }
         }
 
     }
 
     void setMethodReturnTypeVoid() {
         if (methods && methods.peek() instanceof Method) {
-            DBManager.instance.open(credentials)
-            ((Method) methods.peek()).setReturnType(TypeRef.createPrimitiveTypeRef("void"))
-            DBManager.instance.close()
+            withDb("setMethodReturnTypeVoid") {
+                ((Method) methods.peek()).setReturnType(TypeRef.createPrimitiveTypeRef("void"))
+            }
         }
 
     }
 
     void setMethodReturnPrimitiveType(String type) {
         if (methods && methods.peek() instanceof Method) {
-            DBManager.instance.open(credentials)
-            ((Method) methods.peek()).setReturnType(TypeRef.createPrimitiveTypeRef(type))
-            DBManager.instance.close()
+            withDb("setMethodReturnPrimitiveType") {
+                ((Method) methods.peek()).setReturnType(TypeRef.createPrimitiveTypeRef(type))
+            }
         }
 
     }
@@ -501,9 +508,9 @@ abstract class BaseModelBuilder {
         Type t = findType(type, true)
 
         if (t && methods && methods.peek() instanceof Method) {
-            DBManager.instance.open(credentials)
-            ((Method) methods.peek()).addException(t.createTypeRef())
-            DBManager.instance.close()
+            withDb("addMethodException") {
+                ((Method) methods.peek()).addException(t.createTypeRef())
+            }
         }
 
     }
@@ -514,15 +521,15 @@ abstract class BaseModelBuilder {
             if (member instanceof Method) {
                 Set<String> localVars = scopes.pop()
 
-                DBManager.instance.open(credentials)
-                ((Method) member).setLocalVarCount(localVars.size())
-                DBManager.instance.close()
+                withDb("finishMethod 1") {
+                    ((Method) member).setLocalVarCount(localVars.size())
+                }
             } else if (member instanceof Initializer) {
                 Set<String> localVars = scopes.pop()
 
-                DBManager.instance.open(credentials)
-                ((Initializer) member).setLocalVarCount(localVars.size())
-                DBManager.instance.close()
+                withDb("finishMethod 2") {
+                    ((Initializer) member).setLocalVarCount(localVars.size())
+                }
             }
 
         }
@@ -534,56 +541,58 @@ abstract class BaseModelBuilder {
     ///////////////////
     void createField(String name, String fieldType, boolean primitive, int start, int end, List<String> modifiers) {
         if (types) {
-            DBManager.instance.open(credentials)
-            boolean hasField = types.peek().hasFieldWithName(name) || Field.findFirst("compKey = ?", "${types.peek().getCompKey()}#${name}") != null
-            DBManager.instance.close()
+            boolean hasField = false
+            withDb("createField 1") {
+                hasField = types.peek().hasFieldWithName(name) || Field.findFirst("compKey = ?", "${types.peek().getCompKey()}#${name}") != null
+            }
 
             if (hasField) {
-                DBManager.instance.open(credentials)
-                Field f = types.peek().getFieldWithName(name)
-                f.setEnd(end)
-                f.setStart(start)
-                f.save()
-                setModifiers(modifiers, f)
-                if (currentTypeParam)
-                    f.addTemplateParam(currentTypeParam)
-                DBManager.instance.close()
-            } else {
-                DBManager.instance.open(credentials)
-                Accessibility access
-                if (types.peek().getType() == Type.INTERFACE)
-                    access = Accessibility.PUBLIC
-                else
-                    access = Accessibility.DEFAULT
-                String typeKey = types.peek().getCompKey()
-                Field field = Field.builder()
-                        .name(name)
-                        .compKey("${typeKey}#${name}")
-                        .accessibility(access)
-                        .start(start)
-                        .end(end)
-                        .create()
-                if (types.peek().getType() == Type.INTERFACE) {
-                    field.addModifier("STATIC")
-                    field.addModifier("FINAL")
+                withDb("createField 2") {
+                    Field f = types.peek().getFieldWithName(name)
+                    f.setEnd(end)
+                    f.setStart(start)
+                    f.save()
+                    setModifiers(modifiers, f)
+                    if (currentTypeParam)
+                        f.addTemplateParam(currentTypeParam)
                 }
-                types.peek().addMember(field)
-                if (currentTypeParam)
-                    field.addTemplateParam(currentTypeParam)
-                field.refresh()
-                DBManager.instance.close()
+            } else {
+                Field field
+                withDb("createField 3") {
+                    Accessibility access
+                    if (types.peek().getType() == Type.INTERFACE)
+                        access = Accessibility.PUBLIC
+                    else
+                        access = Accessibility.DEFAULT
+                    String typeKey = types.peek().getCompKey()
+                    field = Field.builder()
+                            .name(name)
+                            .compKey("${typeKey}#${name}")
+                            .accessibility(access)
+                            .start(start)
+                            .end(end)
+                            .create()
+                    if (types.peek().getType() == Type.INTERFACE) {
+                        field.addModifier("STATIC")
+                        field.addModifier("FINAL")
+                    }
+                    types.peek().addMember(field)
+                    if (currentTypeParam)
+                        field.addTemplateParam(currentTypeParam)
+                    field.refresh()
+                }
 
                 if (primitive) {
-                    DBManager.instance.open(credentials)
-                    field.setType(TypeRef.createPrimitiveTypeRef(fieldType))
-                    DBManager.instance.close()
+                    withDb("createField 4") {
+                        field.setType(TypeRef.createPrimitiveTypeRef(fieldType))
+                    }
                 } else {
                     Type t = findType(fieldType, true)
 
                     if (t) {
-                        DBManager.instance.open(credentials)
-                        field.setType(t.createTypeRef())
-                        DBManager.instance.close()
+                        withDb("createField 5") {
+                            field.setType(t.createTypeRef())
+                        }
                     }
                 }
                 setModifiers(modifiers, field)
@@ -595,24 +604,24 @@ abstract class BaseModelBuilder {
         if (types && types.peek().getType() == Type.ENUM) {
             Type enm = types.peek()
 
-            DBManager.instance.open(credentials)
-            if (enm.hasLiteralWithName(name)) {
-                Literal l = enm.getLiteralWithName(name)
-                l.setEnd(end)
-                l.setStart(start)
-                l.save()
-            } else {
-                String typeName = types.peek().getCompKey()
-                Literal lit = Literal.builder()
-                        .name(name)
-                        .compKey("${typeName}#${name}")
-                        .start(start)
-                        .end(end)
-                        .create()
-                enm.addMember(lit)
-                lit.updateKey()
+            withDb("createEnumLiteral") {
+                if (enm.hasLiteralWithName(name)) {
+                    Literal l = enm.getLiteralWithName(name)
+                    l.setEnd(end)
+                    l.setStart(start)
+                    l.save()
+                } else {
+                    String typeName = types.peek().getCompKey()
+                    Literal lit = Literal.builder()
+                            .name(name)
+                            .compKey("${typeName}#${name}")
+                            .start(start)
+                            .end(end)
+                            .create()
+                    enm.addMember(lit)
+                    lit.updateKey()
+                }
             }
-            DBManager.instance.close()
         }
     }
 
@@ -624,9 +633,9 @@ abstract class BaseModelBuilder {
             Type t = findType(typeName, true)
 
             if (t) {
-                DBManager.instance.open(credentials)
-                types.peek().realizes(t)
-                DBManager.instance.close()
+                withDb("addRealization") {
+                    types.peek().realizes(t)
+                }
             }
         }
     }
@@ -636,26 +645,26 @@ abstract class BaseModelBuilder {
             Type t = findType(typeName, true)
 
             if (t) {
-                DBManager.instance.open(credentials)
-                types.peek().generalizedBy(t)
-                DBManager.instance.close()
+                withDb("addGeneralization") {
+                    types.peek().generalizedBy(t)
+                }
             }
         }
     }
 
     void addAssociation(Type type) {
         if (types) {
-            DBManager.instance.open(credentials)
-            types.peek().associatedTo(type)
-            DBManager.instance.close()
+            withDb("addAssociation") {
+                types.peek().associatedTo(type)
+            }
         }
     }
 
     void addUseDependency(Type type) {
         if (types) {
-            DBManager.instance.open(credentials)
-            types.peek().useTo(type)
-            DBManager.instance.close()
+            withDb("addUseDependency") {
+                types.peek().useTo(type)
+            }
         }
     }
 
@@ -664,9 +673,9 @@ abstract class BaseModelBuilder {
             Type t = findType(type, true)
 
             if (t) {
-                DBManager.instance.open(credentials)
-                types.peek().useTo(t)
-                DBManager.instance.close()
+                withDb("addUseDependency") {
+                    types.peek().useTo(t)
+                }
             }
         }
     }
@@ -745,52 +754,52 @@ abstract class BaseModelBuilder {
 
     Type handleIdentifier(Type type, String comp) {
         Type t = null
-        DBManager.instance.open(credentials)
-        if (type) {
-            if (type.hasFieldWithName(comp)) {
-                t = createFieldUse(type, comp)
+        withDb("handleIdentifier") {
+            if (type) {
+                if (type.hasFieldWithName(comp)) {
+                    t = createFieldUse(type, comp)
+                } else {
+                    t = type.getTypeByName(comp)
+                }
             } else {
-                t = type.getTypeByName(comp)
-            }
-        } else {
-            if (checkIsLocalVar(comp)) {
-                // TODO Finish me
-                // set type
-            } else if (types.peek().hasFieldWithName(comp)) {
-                t = createFieldUse(types.peek(), comp)
-            } else if (types.peek().hasTypeWithName(comp)) {
-                t = types.peek().getTypeByName(comp)
+                if (checkIsLocalVar(comp)) {
+                    // TODO Finish me
+                    // set type
+                } else if (types.peek().hasFieldWithName(comp)) {
+                    t = createFieldUse(types.peek(), comp)
+                } else if (types.peek().hasTypeWithName(comp)) {
+                    t = types.peek().getTypeByName(comp)
+                }
             }
         }
-        DBManager.instance.close()
 
         return t
     }
 
-    private boolean checkIsLocalVar(String name) {
+    protected boolean checkIsLocalVar(String name) {
         !scopes.isEmpty() && scopes.peek().contains(name)
     }
 
     Type createMethodCall(Type current, String comp, int numParams) {
         Type type = current
 
-        DBManager.instance.open(credentials)
-        Method called = findMethodCalled(type, comp, numParams)
+        withDb("createMethodCall") {
+            Method called = findMethodCalled(type, comp, numParams)
 
-        if (type && called) {
-            def m
-            if (((Stack<Member>) methods).peek() instanceof Method) {
-                m = (Method) ((Stack<Member>) methods).peek()
-                if (((Method) m).getType().getType() == TypeRefType.Type)
-                    type = m.getType().getType(proj.getProjectKey())
-            } else if (((Stack<Member>) methods).peek() instanceof Initializer) {
-                m = (Initializer) ((Stack<Member>) methods).peek()
+            if (type && called) {
+                def m
+                if (((Stack<Member>) methods).peek() instanceof Method) {
+                    m = (Method) ((Stack<Member>) methods).peek()
+                    if (((Method) m).getType().getType() == TypeRefType.Type)
+                        type = m.getType().getType(proj.getProjectKey())
+                } else if (((Stack<Member>) methods).peek() instanceof Initializer) {
+                    m = (Initializer) ((Stack<Member>) methods).peek()
+                }
+
+                if (m)
+                    m.callsMethod(called)
             }
-
-            if (m)
-                m.callsMethod(called)
         }
-        DBManager.instance.close()
 
         return type
     }
@@ -823,25 +832,25 @@ abstract class BaseModelBuilder {
                 m = (Initializer) ((Stack<Member>) methods).peek()
             }
 
-            DBManager.instance.open(credentials)
-            Constructor cons = type.getConstructorWithNParams(numParams)
-            if (m && cons)
-                m.callsMethod(cons)
-            DBManager.instance.close()
+            withDb("createConstructorCall") {
+                Constructor cons = type.getConstructorWithNParams(numParams)
+                if (m && cons)
+                    m.callsMethod(cons)
+            }
         }
     }
 
     Type findSuperTypeWithNParamConstructor(Type type, int numParams) {
         if (type) {
             Type ancestor = null
-            DBManager.instance.open(credentials)
-            for (Type anc : type.getAncestorTypes()) {
-                if (anc.hasConstructorWithNParams(numParams)) {
-                    ancestor = anc
-                    break
+            withDb("findSuperTypeWithNParamConstructor") {
+                for (Type anc : type.getAncestorTypes()) {
+                    if (anc.hasConstructorWithNParams(numParams)) {
+                        ancestor = anc
+                        break
+                    }
                 }
             }
-            DBManager.instance.close()
 
             if (ancestor)
                 return ancestor
@@ -855,14 +864,14 @@ abstract class BaseModelBuilder {
 
         if (type) {
             Type ancestor = null
-            DBManager.instance.open(credentials)
-            for (Type anc : type.getAncestorTypes()) {
-                if (anc.hasTypeWithName(name) || anc.hasFieldWithName(name) || anc.hasMethodWithName(name)) {
-                    ancestor = anc
-                    break
+            withDb("findSuperTypeWithTypeFieldOrMethodNamed") {
+                for (Type anc : type.getAncestorTypes()) {
+                    if (anc.hasTypeWithName(name) || anc.hasFieldWithName(name) || anc.hasMethodWithName(name)) {
+                        ancestor = anc
+                        break
+                    }
                 }
             }
-            DBManager.instance.close()
 
             if (ancestor)
                 return ancestor
@@ -875,7 +884,7 @@ abstract class BaseModelBuilder {
         Type type = current
 
         if (type) {
-            Method m
+            Member m
 
             if (!methods.isEmpty()) {
                 if (((Stack<Member>) methods).peek() instanceof Method) {
@@ -885,16 +894,16 @@ abstract class BaseModelBuilder {
                 }
             }
 
-//            DBManager.instance.open(credentials)
+//            withDb("createFieldUse") {
             Field f = type.getFieldWithName(comp)
-            if (f && m) {
-                m.usesField(f)
+            if (f && m && m instanceof Method) {
+                (m as Method).usesField(f)
                 if (f.getType().getType() == TypeRefType.Type) {
                     log.atInfo().log("Field Name: ${f.getName()}")
                     type = (Type) f.getType().getType(proj.getProjectKey())
                 }
             }
-//            DBManager.instance.close()
+//            }
         }
 
         return type
@@ -946,35 +955,35 @@ abstract class BaseModelBuilder {
         Type candidate = null
 
         name.replaceAll(/<.*>/, "")
-        DBManager.instance.open(credentials)
-        if (notFullySpecified(name)) {
-            candidate = findTypeInNamespace(name)
-            if (candidate == null) candidate = findTypeUsingSpecificImports(name)
-            if (candidate == null) candidate = findTypeUsingGeneralImports(name)
-            if (candidate == null) candidate = findTypeInDefaultNamespace(name)
-            if (candidate == null) candidate = findUnknownType(name)
-        }
-        if (!candidate) {
-            candidate = findTypeByQualifiedName(name)
-        }
+        withDb("findType") {
+            if (notFullySpecified(name)) {
+                candidate = this.findTypeInNamespace(name)
+                if (candidate == null) candidate = this.findTypeUsingSpecificImports(name)
+                if (candidate == null) candidate = this.findTypeUsingGeneralImports(name)
+                if (candidate == null) candidate = this.findTypeInDefaultNamespace(name)
+                if (candidate == null) candidate = this.findUnknownType(name)
+            }
+            if (!candidate) {
+                candidate = this.findTypeByQualifiedName(name)
+            }
 
-        // In the event that no valid candidate was found, then it is an unknown type
-        if (candidate == null && createUnknown) candidate = createUnknownType(name)
-        DBManager.instance.close()
+            // In the event that no valid candidate was found, then it is an unknown type
+            if (candidate == null && createUnknown) candidate = this.createUnknownType(name)
+        }
 
         candidate
     }
 
-    private Type findTypeByQualifiedName(String name) {
+    protected Type findTypeByQualifiedName(String name) {
         return proj.findTypeByQualifiedName(name)
     }
 
-    private Type createUnknownType(String name) {
+    protected Type createUnknownType(String name) {
         String typeName = determineTypeName(name)
         findOrCreateUnknownType(typeName)
     }
 
-    private Type findOrCreateUnknownType(String typeName) {
+    protected Type findOrCreateUnknownType(String typeName) {
         Type candidate = findUnknownType(typeName)
         if (!candidate) {
             candidate = Type.builder()
@@ -988,11 +997,11 @@ abstract class BaseModelBuilder {
         candidate
     }
 
-    private Type findUnknownType(String typeName) {
+    protected Type findUnknownType(String typeName) {
         return Type.findFirst("name = ? and type = ?", typeName, Type.UNKNOWN)
     }
 
-    private String determineTypeName(String name) {
+    protected String determineTypeName(String name) {
         String specific = file.getImports()*.getName().find { !it.endsWith(name) }
         String general = file.getImports()*.getName().find { it.endsWith("*") }
 
@@ -1010,14 +1019,14 @@ abstract class BaseModelBuilder {
         typeName
     }
 
-    private Type findTypeInDefaultNamespace(String name) {
+    protected Type findTypeInDefaultNamespace(String name) {
         Type type = proj.getDefaultNamespace().getTypeByName(name)
         if (!type) type = findTypeByQualifiedName("java.lang." + name)
 
         return type
     }
 
-    private Type findTypeUsingGeneralImports(String name) {
+    protected Type findTypeUsingGeneralImports(String name) {
         List<String> general = file.getImports()*.getName().findAll { it.endsWith("*") }
         Type candidate = null
         for (String gen : general) {
@@ -1031,7 +1040,7 @@ abstract class BaseModelBuilder {
         candidate
     }
 
-    private Type findTypeUsingSpecificImports(String name) {
+    protected Type findTypeUsingSpecificImports(String name) {
         String specific = file.getImports()*.getName().find { it.endsWith(name) }
         Type candidate = null
 
@@ -1042,7 +1051,7 @@ abstract class BaseModelBuilder {
         candidate
     }
 
-    private Type findTypeInNamespace(String name) {
+    protected Type findTypeInNamespace(String name) {
         Type candidate = null
 
         if (namespace != null) {
@@ -1080,15 +1089,15 @@ abstract class BaseModelBuilder {
     }
 
     void reconcileUnknownTypes() {
-        DBManager.instance.open(credentials)
-        proj.getUnknownTypes().each {
-            String typeName = it.name
-            if (typeName.count(".") < 1) {
-                typeName = "java.lang." + typeName
-                it.setName(typeName)
-                it.updateKey()
+        withDb("reconcileUnknownTypes") {
+            proj.getUnknownTypes().each {
+                String typeName = it.name
+                if (typeName.count(".") < 1) {
+                    typeName = "java.lang." + typeName
+                    it.setName(typeName)
+                    it.updateKey()
+                }
             }
         }
-        DBManager.instance.close()
     }
 }

@@ -68,6 +68,8 @@ public abstract class BaseTestClass {
 
     @After
     public void tearDown() throws Exception {
+        if (DBManager.instance.isOpen())
+            DBManager.instance.close();
         DBManager.instance.open(credentials);
         DBManager.instance.rollback();
         DBManager.instance.close();
