@@ -51,11 +51,11 @@ abstract class BaseModelBuilder {
     DBCredentials credentials
 
     void withDb(String method, Closure cl) {
-        log.info "Opened at $method"
+//        log.info "Opened at $method"
         DBManager.getInstance().open(credentials)
             cl.call()
         DBManager.getInstance().close()
-        log.info "Closed at $method"
+//        log.info "Closed at $method"
     }
 
     BaseModelBuilder(Project proj, File file, DBCredentials credentials) {
