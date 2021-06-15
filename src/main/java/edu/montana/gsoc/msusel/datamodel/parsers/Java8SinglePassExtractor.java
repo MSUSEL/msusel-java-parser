@@ -203,12 +203,14 @@ public class Java8SinglePassExtractor extends JavaParserBaseListener {
 
     public void enterEnumDeclaration(JavaParser.EnumDeclarationContext ctx) {
 //        log.atInfo().log(treeBuilder.getFile().getName() + " Entering Enum Declaration");
-        treeBuilder.findOrCreateType(ctx.IDENTIFIER().getText(), Type.ENUM, ctx.getStart().getLine(), ctx.getStop().getLine());
-        treeBuilder.setTypeModifiers(modifiers);
-        inType = true;
-        inEnum = true;
+        if (ctx.IDENTIFIER() != null) {
+            treeBuilder.findOrCreateType(ctx.IDENTIFIER().getText(), Type.ENUM, ctx.getStart().getLine(), ctx.getStop().getLine());
+            treeBuilder.setTypeModifiers(modifiers);
+            inType = true;
+            inEnum = true;
 
-        super.enterEnumDeclaration(ctx);
+            super.enterEnumDeclaration(ctx);
+        }
     }
 
     public void enterInterfaceDeclaration(JavaParser.InterfaceDeclarationContext ctx) {
