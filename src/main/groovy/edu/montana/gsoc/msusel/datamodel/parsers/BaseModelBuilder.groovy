@@ -1100,4 +1100,40 @@ abstract class BaseModelBuilder {
             }
         }
     }
+
+    void incrementMethodVariableCount() {
+        Member member = methods.peek()
+        if (member instanceof Method) {
+            (member as Method).incrementLocalVarCount()
+        } else if (member instanceof Initializer) {
+            (member as Initializer).incrementLocalVarCount()
+        }
+    }
+
+    void incrementMethodDecisionCount() {
+        Member member = methods.peek()
+        if (member instanceof Method) {
+            (member as Method).incrementNumDecisionPoints()
+        } else if (member instanceof Initializer) {
+            (member as Initializer).incrementNumDecisionPoints()
+        }
+    }
+
+    void incrementMethodReturnCount() {
+        Member member = methods.peek()
+        if (member instanceof Method) {
+            (member as Method).incrementReturnStmts()
+        } else if (member instanceof Initializer) {
+            (member as Initializer).incrementReturnStmts()
+        }
+    }
+
+    void incrementMethodStatementCount() {
+        Member member = methods.peek()
+        if (member instanceof Method) {
+            (member as Method).incrementNumberOfStmts()
+        } else if (member instanceof Initializer) {
+            (member as Initializer).incrementNumberOfStmts()
+        }
+    }
 }
