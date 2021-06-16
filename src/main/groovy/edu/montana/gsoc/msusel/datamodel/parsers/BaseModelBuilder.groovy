@@ -340,7 +340,7 @@ abstract class BaseModelBuilder {
     void findMethod(String signature) {
         Method meth
         withDb("findMethod") {
-            meth = types ? (Method) Method.findFirst("compKey = ?", "${types.peek().getCompKey()}#$signature") : null
+            meth = types ? (Method) Method.findFirst("compKey = ?", (String) "${types.peek().getCompKey()}#$signature") : null
         }
 
         scopes.push(Sets.newHashSet())
@@ -385,7 +385,7 @@ abstract class BaseModelBuilder {
     void findConstructor(String signature) {
         Constructor cons
         withDb("findConstructor") {
-            cons = types ? (Constructor) Constructor.findFirst("compKey = ?", "${types.peek().getCompKey()}#$signature") : null as Constructor
+            cons = types ? (Constructor) Constructor.findFirst("compKey = ?", (String) "${types.peek().getCompKey()}#$signature") : null as Constructor
         }
 
         scopes.push(Sets.newHashSet())
@@ -543,7 +543,7 @@ abstract class BaseModelBuilder {
         if (types) {
             boolean hasField = false
             withDb("createField 1") {
-                hasField = types.peek().hasFieldWithName(name) || Field.findFirst("compKey = ?", "${types.peek().getCompKey()}#${name}") != null
+                hasField = types.peek().hasFieldWithName(name) || Field.findFirst("compKey = ?", (String) "${types.peek().getCompKey()}#${name}") != null
             }
 
             if (hasField) {
