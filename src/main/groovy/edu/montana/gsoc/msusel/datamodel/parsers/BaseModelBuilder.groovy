@@ -210,6 +210,7 @@ abstract class BaseModelBuilder {
     }
 
     void createType(String typeName, int typeType, int start, int stop) {
+        log.info "Creating Type with name: $typeName"
         Type type = findType(typeName)
         withDb("createType") {
             if (type) {
@@ -348,6 +349,7 @@ abstract class BaseModelBuilder {
     }
 
     void createMethod(String name, int start, int end) {
+        log.info "Creating Method with name: $name"
         if (types) {
             withDb("createMethod") {
                 if (types.peek().hasMethodWithName(name)) {
@@ -540,6 +542,7 @@ abstract class BaseModelBuilder {
     // Fields
     ///////////////////
     void createField(String name, String fieldType, boolean primitive, int start, int end, List<String> modifiers) {
+        log.info "Creating Field with Name: $name"
         if (types) {
             boolean hasField = false
             withDb("createField 1") {
@@ -899,7 +902,6 @@ abstract class BaseModelBuilder {
             if (f && m && m instanceof Method) {
                 (m as Method).usesField(f)
                 if (f.getType().getType() == TypeRefType.Type) {
-                    log.atInfo().log("Field Name: ${f.getName()}")
                     type = (Type) f.getType().getType(proj.getProjectKey())
                 }
             }
