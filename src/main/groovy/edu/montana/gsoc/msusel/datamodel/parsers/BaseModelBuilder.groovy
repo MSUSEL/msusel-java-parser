@@ -58,8 +58,8 @@ abstract class BaseModelBuilder {
 
     void withDb(String method, Closure cl) {
 //        log.info "Opened at $method"
-        if (!DBManager.getInstance().isOpen())
-            DBManager.getInstance().open(credentials)
+//        if (!DBManager.getInstance().isOpen())
+        DBManager.getInstance().open(credentials)
         cl.call()
         DBManager.getInstance().close()
 //        log.info "Closed at $method"
@@ -273,8 +273,8 @@ abstract class BaseModelBuilder {
     }
 
     void setModifiers(List<String> modifiers, Component comp) {
-        modifiers.each { mod ->
-            withDb("setModifiers") {
+        withDb("setModifiers") {
+            modifiers.each { mod ->
                 Accessibility access = handleAccessibility(mod)
                 Modifier modifier = handleNamedModifiers(mod)
                 if (access) comp.setAccessibility(access)
