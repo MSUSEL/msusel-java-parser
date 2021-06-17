@@ -354,13 +354,16 @@ abstract class BaseModelBuilder {
     void createMethod(String name, int start, int end) {
         log.info "Creating Method with name: $name"
         if (types) {
+            Method method = null
+            withDb("createMethod 1") {
+                method = Method.findFirst("compKey = ?", (String) "${types.peek().getCompKey()}#${name}")
+            }
             withDb("createMethod") {
-                if (types.peek().hasMethodWithName(name)) {
-                    Method m = types.peek().getMethodWithName(name)
-                    m.setEnd(end)
-                    m.setStart(start)
-                    m.save()
-                    methods.push(m)
+                if (method) {
+                    method.setEnd(end)
+                    method.setStart(start)
+                    method.save()
+                    methods.push(method)
                 } else {
                     Accessibility access
                     if (types.peek().getType() == Type.INTERFACE)
@@ -368,7 +371,7 @@ abstract class BaseModelBuilder {
                     else
                         access = Accessibility.DEFAULT
 
-                    Method meth = Method.builder()
+                    method = Method.builder()
                             .name(name)
                             .compKey(name)
                             .accessibility(access)
@@ -376,10 +379,10 @@ abstract class BaseModelBuilder {
                             .end(end)
                             .create()
                     if (types.peek().getType() == Type.INTERFACE)
-                        meth.addModifier("ABSTRACT")
-                    types.peek().addMember(meth)
-                    meth.updateKey()
-                    methods.push(meth)
+                        method.addModifier("ABSTRACT")
+                    types.peek().addMember(method)
+                    method.updateKey()
+                    methods.push(method)
                 }
             }
         }
@@ -547,23 +550,21 @@ abstract class BaseModelBuilder {
     void createField(String name, String fieldType, boolean primitive, int start, int end, List<String> modifiers) {
         log.info "Creating Field with Name: $name"
         if (types) {
-            boolean hasField = false
+            Field field = null
             withDb("createField 1") {
-                hasField = types.peek().hasFieldWithName(name) || Field.findFirst("compKey = ?", (String) "${types.peek().getCompKey()}#${name}") != null
+                field = Field.findFirst("compKey = ?", (String) "${types.peek().getCompKey()}#${name}")
             }
 
-            if (hasField) {
+            if (field) {
                 withDb("createField 2") {
-                    Field f = types.peek().getFieldWithName(name)
-                    f.setEnd(end)
-                    f.setStart(start)
-                    f.save()
-                    setModifiers(modifiers, f)
+                    field.setEnd(end)
+                    field.setStart(start)
+                    field.save()
+                    setModifiers(modifiers, field)
                     if (currentTypeParam)
-                        f.addTemplateParam(currentTypeParam)
+                        field.addTemplateParam(currentTypeParam)
                 }
             } else {
-                Field field
                 withDb("createField 3") {
                     Accessibility access
                     if (types.peek().getType() == Type.INTERFACE)
@@ -980,9 +981,10 @@ abstract class BaseModelBuilder {
     }
 
     protected Type findTypeByQualifiedName(String name) {
-        Type candidate = typeMap[name]
-        if (!candidate) candidate = proj.findTypeByQualifiedName(name)
-        return candidate
+//        Type candidate = typeMap[name]
+//        if (!candidate) candidate = proj.findTypeByQualifiedName(name)
+//        return candidate
+        return proj.findTypeByQualifiedName(name)
     }
 
     protected Type createUnknownType(String name) {
@@ -1062,7 +1064,8 @@ abstract class BaseModelBuilder {
         Type candidate = null
 
         if (namespace != null) {
-            candidate = typeMap["${namespace.getFullName()}.${name}"]
+            // candidate = typeMap["${namespace.getFullName()}.${name}"]
+            candidate = namespace.getTypeByName(name);
             if (!candidate) candidate = findTypeByQualifiedName(namespace.getName() + "." + name)
         }
 
