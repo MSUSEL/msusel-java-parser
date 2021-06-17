@@ -31,6 +31,7 @@ import edu.isu.isuese.datamodel.*
 import edu.isu.isuese.datamodel.util.DBCredentials
 import edu.isu.isuese.datamodel.util.DBManager
 import groovy.util.logging.Log4j2
+import org.javalite.activejdbc.annotations.Table
 
 /**
  * @author Isaac Griffith
@@ -49,6 +50,8 @@ abstract class BaseModelBuilder {
     TemplateParam currentTypeParam
     Parameter currentParam
     DBCredentials credentials
+
+    Map<String, Type> typeMap = [:]
 
     void withDb(String method, Closure cl) {
 //        log.info "Opened at $method"
@@ -977,7 +980,9 @@ abstract class BaseModelBuilder {
     }
 
     protected Type findTypeByQualifiedName(String name) {
-        return proj.findTypeByQualifiedName(name)
+        Type candidate = typeMap[name]
+        if (!candidate) candidate = proj.findTypeByQualifiedName(name)
+        return candidate
     }
 
     protected Type createUnknownType(String name) {
@@ -1057,7 +1062,8 @@ abstract class BaseModelBuilder {
         Type candidate = null
 
         if (namespace != null) {
-            candidate = findTypeByQualifiedName(namespace.getName() + "." + name)
+            candidate = typeMap["${namespace.getFullName()}.${name}"]
+            if (!candidate) candidate = findTypeByQualifiedName(namespace.getName() + "." + name)
         }
 
         candidate
