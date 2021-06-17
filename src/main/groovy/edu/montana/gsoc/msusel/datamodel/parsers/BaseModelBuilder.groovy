@@ -57,7 +57,7 @@ abstract class BaseModelBuilder {
     Map<String, Type> typeMap = [:]
 
     void withDb(String method, Closure cl) {
-        log.info "Opened at $method"
+//        log.info "Opened at $method"
         if (!DBManager.getInstance().isOpen())
             DBManager.getInstance().open(credentials)
         cl.call()
