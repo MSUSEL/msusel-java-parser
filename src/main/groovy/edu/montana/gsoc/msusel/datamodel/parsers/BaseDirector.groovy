@@ -46,18 +46,20 @@ abstract class BaseDirector {
     boolean statements
     boolean useSinglePass
     boolean createCFG
+    boolean useExpressions
     protected Project proj
     ArtifactIdentifier identifier
     DBCredentials credentials
     BaseModelBuilder builder
 
-    BaseDirector(Project proj, ArtifactIdentifier identifier, DBCredentials creds, boolean statements = false, boolean useSinglePass = true, boolean createCFG = false) {
+    BaseDirector(Project proj, ArtifactIdentifier identifier, DBCredentials creds, boolean statements = false, boolean useSinglePass = true, boolean createCFG = false, boolean useExpressions) {
         this.proj = proj
         this.identifier = identifier
         this.statements = statements
         this.credentials = creds
         this.useSinglePass = useSinglePass
         this.createCFG = createCFG
+        this.useExpressions = useExpressions
     }
 
     void build(String path) {

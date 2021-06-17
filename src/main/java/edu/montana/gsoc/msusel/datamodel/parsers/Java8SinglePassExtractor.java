@@ -74,8 +74,9 @@ public class Java8SinglePassExtractor extends JavaParserBaseListener {
     DBCredentials credentials;
     Stack<Integer> initializerCount = new Stack<>();
     boolean cfg = false;
+    boolean expressions = false;
 
-    public Java8SinglePassExtractor(BaseModelBuilder builder, boolean cfg) {
+    public Java8SinglePassExtractor(BaseModelBuilder builder, boolean cfg, boolean expressions) {
         treeBuilder = builder;
         inPackage = false;
         inImport = false;
@@ -84,6 +85,7 @@ public class Java8SinglePassExtractor extends JavaParserBaseListener {
         inTypeParams = false;
         credentials = builder.getCredentials();
         this.cfg = cfg;
+        this.expressions = expressions;
     }
 
     ////////////////////////////
@@ -794,7 +796,7 @@ public class Java8SinglePassExtractor extends JavaParserBaseListener {
     //////////////////
     @Override
     public void enterExpression(JavaParser.ExpressionContext ctx) {
-        if (inMethodBody && ctx.lambdaExpression() == null && !inField && ctx.getParent() instanceof JavaParser.StatementContext) {
+        if (inMethodBody && ctx.lambdaExpression() == null && !inField && ctx.getParent() instanceof JavaParser.StatementContext && expressions) {
             treeBuilder.processExpression(ctx.getText());
         }
 

@@ -48,13 +48,13 @@ import org.jetbrains.annotations.NotNull
 @Log4j2
 class JavaDirector extends BaseDirector {
 
-    JavaDirector(Project proj, DBCredentials credentials, boolean statements = false, boolean useSinglePass = true, boolean createCFG = false) {
-        super(proj, new JavaArtifactIdentifier(credentials), credentials, statements, useSinglePass, createCFG)
+    JavaDirector(Project proj, DBCredentials credentials, boolean statements = false, boolean useSinglePass = true, boolean createCFG = false, boolean useExpressions = false) {
+        super(proj, new JavaArtifactIdentifier(credentials), credentials, statements, useSinglePass, createCFG, useExpressions)
     }
 
     void gatherAllInfoAtOnce(File file) {
         builder = new JavaModelBuilder(proj, file, credentials)
-        utilizeParser(file, new Java8SinglePassExtractor(builder, createCFG))
+        utilizeParser(file, new Java8SinglePassExtractor(builder, createCFG, useExpressions))
     }
 
     @Override

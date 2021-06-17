@@ -49,10 +49,10 @@ abstract class BaseModelBuilder {
     TemplateParam currentTypeParam
     Parameter currentParam
     DBCredentials credentials
-    Stack<Integer> decisionCounts = new Stack()
-    Stack<Integer> returnCounts = new Stack()
-    Stack<Integer> stmtCounts = new Stack()
-    Stack<Integer> variableCounts = new Stack()
+    Stack<Integer> decisionCounts = new Stack<>()
+    Stack<Integer> returnCounts = new Stack<>()
+    Stack<Integer> stmtCounts = new Stack<>()
+    Stack<Integer> variableCounts = new Stack<>()
 
     Map<String, Type> typeMap = [:]
 
