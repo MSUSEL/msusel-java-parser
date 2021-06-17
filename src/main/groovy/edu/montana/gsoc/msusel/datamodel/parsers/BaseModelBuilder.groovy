@@ -31,7 +31,6 @@ import edu.isu.isuese.datamodel.*
 import edu.isu.isuese.datamodel.util.DBCredentials
 import edu.isu.isuese.datamodel.util.DBManager
 import groovy.util.logging.Log4j2
-import org.javalite.activejdbc.annotations.Table
 
 /**
  * @author Isaac Griffith
@@ -50,13 +49,18 @@ abstract class BaseModelBuilder {
     TemplateParam currentTypeParam
     Parameter currentParam
     DBCredentials credentials
+    Stack<Integer> decisionCounts = new Stack()
+    Stack<Integer> returnCounts = new Stack()
+    Stack<Integer> stmtCounts = new Stack()
+    Stack<Integer> variableCounts = new Stack()
 
     Map<String, Type> typeMap = [:]
 
     void withDb(String method, Closure cl) {
-//        log.info "Opened at $method"
-        DBManager.getInstance().open(credentials)
-            cl.call()
+        log.info "Opened at $method"
+        if (!DBManager.getInstance().isOpen())
+            DBManager.getInstance().open(credentials)
+        cl.call()
         DBManager.getInstance().close()
 //        log.info "Closed at $method"
     }
@@ -307,8 +311,10 @@ abstract class BaseModelBuilder {
             init = !types.isEmpty() ? types.peek().getInitializerWithName(name) : null
         }
 
-        if (init) methods.push(init)
-        scopes.push(Sets.newHashSet())
+        if (init) {
+            methods.push(init)
+            scopes.push(Sets.newHashSet())
+        }
     }
 
     void createInitializer(String name, int number, boolean instance, int start, int end) {
@@ -339,6 +345,10 @@ abstract class BaseModelBuilder {
         }
 
         scopes.push(Sets.newHashSet())
+        decisionCounts.push(0)
+        returnCounts.push(0)
+        stmtCounts.push(0)
+        variableCounts.push(0)
     }
 
     void findMethod(String signature) {
@@ -347,8 +357,10 @@ abstract class BaseModelBuilder {
             meth = types ? (Method) Method.findFirst("compKey = ?", (String) "${types.peek().getCompKey()}#$signature") : null
         }
 
-        scopes.push(Sets.newHashSet())
-        if (meth) methods.push(meth)
+        if (meth) {
+            methods.push(meth)
+            scopes.push(Sets.newHashSet())
+        }
     }
 
     void createMethod(String name, int start, int end) {
@@ -388,6 +400,10 @@ abstract class BaseModelBuilder {
         }
 
         scopes.push(Sets.newHashSet())
+        decisionCounts.push(0)
+        returnCounts.push(0)
+        stmtCounts.push(0)
+        variableCounts.push(0)
     }
 
     void findConstructor(String signature) {
@@ -396,8 +412,10 @@ abstract class BaseModelBuilder {
             cons = types ? (Constructor) Constructor.findFirst("compKey = ?", (String) "${types.peek().getCompKey()}#$signature") : null as Constructor
         }
 
-        scopes.push(Sets.newHashSet())
-        if (cons) methods.push(cons)
+        if (cons) {
+            methods.push(cons)
+            scopes.push(Sets.newHashSet())
+        }
     }
 
     void createConstructor(String name, int start, int end) {
@@ -416,6 +434,10 @@ abstract class BaseModelBuilder {
             }
         }
         scopes.push(Sets.newHashSet())
+        decisionCounts.push(0)
+        returnCounts.push(0)
+        stmtCounts.push(0)
+        variableCounts.push(0)
     }
 
     void createMethodParameter() {
@@ -527,16 +549,12 @@ abstract class BaseModelBuilder {
         if (!methods.isEmpty()) {
             Member member = methods.pop()
             if (member instanceof Method) {
-                Set<String> localVars = scopes.pop()
-
                 withDb("finishMethod 1") {
-                    ((Method) member).setLocalVarCount(localVars.size())
+                    ((Method) member).setCounts(variableCounts.pop(), returnCounts.pop(), stmtCounts.pop(), decisionCounts.pop())
                 }
             } else if (member instanceof Initializer) {
-                Set<String> localVars = scopes.pop()
-
                 withDb("finishMethod 2") {
-                    ((Initializer) member).setLocalVarCount(localVars.size())
+                    ((Initializer) member).setCounts(variableCounts.pop(), returnCounts.pop(), stmtCounts.pop(), decisionCounts.pop())
                 }
             }
 
@@ -1113,46 +1131,26 @@ abstract class BaseModelBuilder {
     }
 
     void incrementMethodVariableCount() {
-        withDb("") {
-            Member member = methods.peek()
-            if (member instanceof Method) {
-                (member as Method).incrementLocalVarCount()
-            } else if (member instanceof Initializer) {
-                (member as Initializer).incrementLocalVarCount()
-            }
+        if (variableCounts) {
+            variableCounts.push(variableCounts.pop() + 1)
         }
     }
 
     void incrementMethodDecisionCount() {
-        withDb("") {
-            Member member = methods.peek()
-            if (member instanceof Method) {
-                (member as Method).incrementNumDecisionPoints()
-            } else if (member instanceof Initializer) {
-                (member as Initializer).incrementNumDecisionPoints()
-            }
+        if (decisionCounts) {
+            decisionCounts.push(decisionCounts.pop() + 1)
         }
     }
 
     void incrementMethodReturnCount() {
-        withDb("") {
-            Member member = methods.peek()
-            if (member instanceof Method) {
-                (member as Method).incrementReturnStmts()
-            } else if (member instanceof Initializer) {
-                (member as Initializer).incrementReturnStmts()
-            }
+        if (returnCounts) {
+            returnCounts.push(returnCounts.pop() + 1)
         }
     }
 
     void incrementMethodStatementCount() {
-        withDb("") {
-            Member member = methods.peek()
-            if (member instanceof Method) {
-                (member as Method).incrementNumberOfStmts()
-            } else if (member instanceof Initializer) {
-                (member as Initializer).incrementNumberOfStmts()
-            }
+        if (stmtCounts) {
+            stmtCounts.push(stmtCounts.pop() + 1)
         }
     }
 }

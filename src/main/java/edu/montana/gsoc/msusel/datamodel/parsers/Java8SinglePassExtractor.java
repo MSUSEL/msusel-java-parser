@@ -271,14 +271,11 @@ public class Java8SinglePassExtractor extends JavaParserBaseListener {
     public void enterTypeParameter(JavaParser.TypeParameterContext ctx) {
         if (inMethod && inParameters) {
 
-        }
-        else if (inMethod) {
+        } else if (inMethod) {
             treeBuilder.createMethodTypeParameter(ctx.IDENTIFIER().getText());
-        }
-        else if (inField) {
+        } else if (inField) {
             treeBuilder.createFieldTypeParameter(ctx.IDENTIFIER().getText());
-        }
-        else if (inTypeDecl) {
+        } else if (inTypeDecl) {
             treeBuilder.createTypeTypeParameter(ctx.IDENTIFIER().getText());
         }
 
@@ -814,15 +811,15 @@ public class Java8SinglePassExtractor extends JavaParserBaseListener {
     }
 
     private void endMethod() {
-        if (!treeBuilder.getMethods().isEmpty()) {
-            if (treeBuilder.getMethods().peek() instanceof Method)
-                if (cfg) builder.endMethod((Method) treeBuilder.getMethods().peek());
-            else if (treeBuilder.getMethods().peek() instanceof Initializer) {
-                if (cfg) builder.endMethod((Initializer) treeBuilder.getMethods().peek());
-            }
-        }
-
         if (cfg) {
+            if (!treeBuilder.getMethods().isEmpty()) {
+                if (treeBuilder.getMethods().peek() instanceof Method)
+                    builder.endMethod((Method) treeBuilder.getMethods().peek());
+                else if (treeBuilder.getMethods().peek() instanceof Initializer) {
+                    builder.endMethod((Initializer) treeBuilder.getMethods().peek());
+                }
+            }
+
             builderStack.pop();
             if (builderStack.empty())
                 builder = null;
@@ -856,8 +853,8 @@ public class Java8SinglePassExtractor extends JavaParserBaseListener {
     /////////////////
     @Override
     public void enterStatement(JavaParser.StatementContext ctx) {
-        if (ctx.ASSERT() != null) {
-            if (cfg) builder.createStatement(StatementType.ASSERT);
+        if (ctx.ASSERT() != null && cfg) {
+            builder.createStatement(StatementType.ASSERT);
         } else if (ctx.IF() != null) {
             if (cfg) builder.startDecision(StatementType.IF);
             treeBuilder.incrementMethodDecisionCount();
@@ -870,33 +867,33 @@ public class Java8SinglePassExtractor extends JavaParserBaseListener {
         } else if (ctx.WHILE() != null) {
             if (cfg) builder.startLoop(StatementType.WHILE);
             treeBuilder.incrementMethodDecisionCount();
-        } else if (ctx.TRY() != null) {
-            if (cfg) builder.startBlock(StatementType.TRY);
+        } else if (ctx.TRY() != null && cfg) {
+            builder.startBlock(StatementType.TRY);
         } else if (ctx.SWITCH() != null) {
             if (cfg) builder.startDecision(StatementType.SWITCH);
             treeBuilder.incrementMethodDecisionCount();
-        } else if (ctx.SYNCHRONIZED() != null) {
-            if (cfg) builder.startBlock(StatementType.SYNCHRONIZED);
+        } else if (ctx.SYNCHRONIZED() != null && cfg) {
+            builder.startBlock(StatementType.SYNCHRONIZED);
         } else if (ctx.RETURN() != null) {
             if (cfg) builder.createReturnStatement();
             treeBuilder.incrementMethodReturnCount();
-        } else if (ctx.BREAK() != null) {
+        } else if (ctx.BREAK() != null && cfg) {
+                String identifier = ctx.IDENTIFIER() != null ? ctx.IDENTIFIER().getText() : null;
+                if (identifier != null)
+                    builder.createStatement(StatementType.BREAK, identifier, true, JumpTo.LABEL);
+                else
+                    builder.createStatement(StatementType.BREAK, null, true, JumpTo.LOOP_END);
+        } else if (ctx.CONTINUE() != null && cfg) {
             String identifier = ctx.IDENTIFIER() != null ? ctx.IDENTIFIER().getText() : null;
-            if (identifier != null)
-                if (cfg) builder.createStatement(StatementType.BREAK, identifier, true, JumpTo.LABEL);
-            else
-                if (cfg) builder.createStatement(StatementType.BREAK, null, true, JumpTo.LOOP_END);
-        } else if (ctx.CONTINUE() != null) {
-            String identifier = ctx.IDENTIFIER() != null ? ctx.IDENTIFIER().getText() : null;
-            if (cfg) builder.createStatement(StatementType.CONTINUE, identifier, true, JumpTo.LOOP_START);
-        } else if (ctx.THROW() != null) {
-            if (cfg) builder.createStatement(StatementType.THROW, null, true, JumpTo.METHOD_END);
-        } else if (ctx.SEMI() != null) {
-            if (cfg) builder.createStatement(StatementType.EMPTY);
-        } else if (ctx.identifierLabel != null) {
-            if (cfg) builder.createStatement(null, ctx.IDENTIFIER().getText());
-        } else if (ctx.expression() != null) {
-            if (cfg) builder.createStatement(StatementType.EXPRESSION);
+            builder.createStatement(StatementType.CONTINUE, identifier, true, JumpTo.LOOP_START);
+        } else if (ctx.THROW() != null && cfg) {
+            builder.createStatement(StatementType.THROW, null, true, JumpTo.METHOD_END);
+        } else if (ctx.SEMI() != null && cfg) {
+            builder.createStatement(StatementType.EMPTY);
+        } else if (ctx.identifierLabel != null && cfg) {
+            builder.createStatement(null, ctx.IDENTIFIER().getText());
+        } else if (ctx.expression() != null && cfg) {
+            builder.createStatement(StatementType.EXPRESSION);
         }
         treeBuilder.incrementMethodStatementCount();
 
