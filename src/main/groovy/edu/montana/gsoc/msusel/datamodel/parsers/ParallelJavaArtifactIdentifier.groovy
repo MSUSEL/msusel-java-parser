@@ -167,7 +167,7 @@ class ParallelJavaArtifactIdentifier implements ArtifactIdentifier {
 
         @Override
         FileVisitResult preVisitDirectory(Path dir, BasicFileAttributes attrs) throws IOException {
-            return FileVisitResult.SKIP_SUBTREE
+            return FileVisitResult.CONTINUE
         }
     }
 }
