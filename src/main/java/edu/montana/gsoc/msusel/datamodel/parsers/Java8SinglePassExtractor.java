@@ -796,11 +796,11 @@ public class Java8SinglePassExtractor extends JavaParserBaseListener {
     //////////////////
     @Override
     public void enterExpression(JavaParser.ExpressionContext ctx) {
-        if (inMethodBody && ctx.lambdaExpression() == null && !inField && ctx.getParent() instanceof JavaParser.StatementContext && expressions) {
-            treeBuilder.processExpression(ctx.getText());
-        }
+//        if (inMethodBody && ctx.lambdaExpression() == null && !inField && ctx.getParent() instanceof JavaParser.StatementContext && expressions) {
+//            treeBuilder.processExpression(ctx.getText());
+//        }
 
-        super.enterExpression(ctx);
+//        super.enterExpression(ctx);
     }
 
     private void startMethod() {

@@ -52,9 +52,9 @@ class JavaDirector extends BaseDirector {
         super(proj, new JavaArtifactIdentifier(credentials), credentials, statements, useSinglePass, createCFG, useExpressions)
     }
 
-    void gatherAllInfoAtOnce(File file) {
+    void gatherAllInfoAtOnce(File file, int current, int total) {
         builder = new JavaModelBuilder(proj, file, credentials)
-        utilizeParser(file, new Java8SinglePassExtractor(builder, createCFG, useExpressions))
+        utilizeParser(file, new Java8SinglePassExtractor(builder, createCFG, useExpressions), current, total)
     }
 
     @Override
@@ -130,13 +130,13 @@ class JavaDirector extends BaseDirector {
         file.getName().endsWith(".java")
     }
 
-    void utilizeParser(File file, ParseTreeListener listener) {
+    void utilizeParser(File file, ParseTreeListener listener, int current = 0, int total = 0) {
         DBManager.instance.open(credentials)
 //        String path = file.getFullPath()
         String path = file.getName()
         DBManager.instance.close()
 
-        log.info "Parsing... $path"
+        log.info "Parsing ($current / $total)... $path"
         try {
             final JavaParserConstructor pt = new JavaParserConstructor()
             final JavaParser parser = pt.loadFile(path)

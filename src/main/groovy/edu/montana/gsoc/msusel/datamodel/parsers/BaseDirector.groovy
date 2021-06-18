@@ -89,10 +89,13 @@ abstract class BaseDirector {
 
         if (useSinglePass) {
             log.info "Parsing and extracting file info"
+            int total = files.size()
+            int current = 1
             files.each { File file ->
                 if (includeFile(file)) {
-                    gatherAllInfoAtOnce(file)
+                    gatherAllInfoAtOnce(file, current, total)
                 }
+                current++
             }
         } else {
             log.info "Gathering File and Type Info into Model"
@@ -123,7 +126,7 @@ abstract class BaseDirector {
 
     abstract void gatherStatementInfo(File file)
 
-    abstract void gatherAllInfoAtOnce(File file)
+    abstract void gatherAllInfoAtOnce(File file, int current, int total)
 
     abstract boolean includeFile(File file)
 
