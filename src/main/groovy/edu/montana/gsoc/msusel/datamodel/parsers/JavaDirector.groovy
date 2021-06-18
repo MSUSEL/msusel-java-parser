@@ -49,7 +49,7 @@ import org.jetbrains.annotations.NotNull
 class JavaDirector extends BaseDirector {
 
     JavaDirector(Project proj, DBCredentials credentials, boolean statements = false, boolean useSinglePass = true, boolean createCFG = false, boolean useExpressions = false) {
-        super(proj, new JavaArtifactIdentifier(credentials), credentials, statements, useSinglePass, createCFG, useExpressions)
+        super(proj, new ParallelJavaArtifactIdentifier(credentials), credentials, statements, useSinglePass, createCFG, useExpressions)
     }
 
     void gatherAllInfoAtOnce(File file, int current, int total) {
