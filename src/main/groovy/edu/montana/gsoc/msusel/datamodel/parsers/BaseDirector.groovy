@@ -91,11 +91,13 @@ abstract class BaseDirector {
             log.info "Parsing and extracting file info"
             int total = files.size()
             int current = 1
-            files.each { File file ->
-                if (includeFile(file)) {
-                    gatherAllInfoAtOnce(file, current, total)
+            GParsPool.withPool(8) {
+                files.eachParallel { File file ->
+                    if (includeFile(file)) {
+                        gatherAllInfoAtOnce(file, current, total)
+                    }
+                    current++
                 }
-                current++
             }
         } else {
             log.info "Gathering File and Type Info into Model"
