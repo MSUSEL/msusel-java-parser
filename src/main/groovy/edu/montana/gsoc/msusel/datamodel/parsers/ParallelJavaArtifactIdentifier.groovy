@@ -63,6 +63,13 @@ class ParallelJavaArtifactIdentifier implements ArtifactIdentifier {
 
     @Override
     void identify(String root) {
+        DBManager.instance.open(credentials)
+        boolean alreadyIdentified = !project.getAllTypes().isEmpty())
+        DBManager.instance.close()
+
+        if (alreadyIdentified)
+            return
+
         Path rootPath = Paths.get(root)
         log.info "Root Path: $rootPath"
         log.info "Absolute Path: ${rootPath.toAbsolutePath()}"
