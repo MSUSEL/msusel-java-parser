@@ -64,7 +64,7 @@ class ParallelJavaArtifactIdentifier implements ArtifactIdentifier {
     @Override
     void identify(String root) {
         DBManager.instance.open(credentials)
-        boolean alreadyIdentified = !project.getAllTypes().isEmpty())
+        boolean alreadyIdentified = !project.getAllTypes().isEmpty()
         DBManager.instance.close()
 
         if (alreadyIdentified)
