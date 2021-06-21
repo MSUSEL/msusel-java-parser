@@ -68,7 +68,7 @@ abstract class BaseDirector {
         List<File> files = []
         DBManager.instance.open(credentials)
         files.addAll(proj.getFilesByType(FileType.SOURCE))
-        files.removeIf {it.getAllTypes().size() > 0}
+        files.removeIf { it.getAllTypes().size() > 0 }
         DBManager.instance.close()
 
         process(files)
@@ -92,14 +92,15 @@ abstract class BaseDirector {
             log.info "Parsing and extracting file info"
             int total = files.size()
             int current = 1
-            GParsPool.withPool(8) {
-                files.eachParallel { File file ->
-                    if (includeFile(file)) {
-                        gatherAllInfoAtOnce(file, current, total)
-                    }
-                    current++
+//            GParsPool.withPool(8) {
+//                files.eachParallel { File file ->
+            files.each { File file ->
+                if (includeFile(file)) {
+                    gatherAllInfoAtOnce(file, current, total)
                 }
+                current++
             }
+//            }
         } else {
             log.info "Gathering File and Type Info into Model"
             files.each { File file -> log.info "File: $file"; if (includeFile(file)) gatherFileAndTypeInfo(file) }
