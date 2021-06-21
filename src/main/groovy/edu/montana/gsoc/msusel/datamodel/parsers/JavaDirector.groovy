@@ -26,7 +26,6 @@
  */
 package edu.montana.gsoc.msusel.datamodel.parsers
 
-
 import edu.isu.isuese.datamodel.File
 import edu.isu.isuese.datamodel.Project
 import edu.isu.isuese.datamodel.util.DBCredentials
@@ -34,11 +33,11 @@ import edu.isu.isuese.datamodel.util.DBManager
 import edu.montana.gsoc.msusel.datamodel.parsers.java2.JavaLexer
 import edu.montana.gsoc.msusel.datamodel.parsers.java2.JavaParser
 import groovy.util.logging.Log4j2
+import groovyjarjarantlr.RecognitionException
 import org.antlr.v4.runtime.CharStreams
 import org.antlr.v4.runtime.CommonTokenStream
 import org.antlr.v4.runtime.tree.ParseTreeListener
 import org.antlr.v4.runtime.tree.ParseTreeWalker
-import org.apache.logging.log4j.Logger
 import org.jetbrains.annotations.NotNull
 
 /**
@@ -143,8 +142,9 @@ class JavaDirector extends BaseDirector {
             final JavaParser.CompilationUnitContext cuContext = parser.compilationUnit()
             final ParseTreeWalker walker = new ParseTreeWalker()
             walker.walk(listener, cuContext)
-        } catch (final IOException e) {
+        } catch (final IOException | RecognitionException e) {
             log.atError().withThrowable(e).log(e.getMessage())
+            DBManager.instance.close()
         }
     }
 
