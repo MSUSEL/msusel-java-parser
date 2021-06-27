@@ -26,69 +26,26 @@
  */
 package edu.montana.gsoc.msusel.datamodel.parsers
 
-import com.google.common.collect.Sets
-import edu.isu.isuese.datamodel.*
+
+import edu.isu.isuese.datamodel.Project
+import edu.isu.isuese.datamodel.Type
 import edu.isu.isuese.datamodel.util.DBCredentials
-import edu.isu.isuese.datamodel.util.DBManager
 import groovyx.gpars.GParsExecutorsPool
-import groovyx.gpars.GParsPool
-import jsr166y.ForkJoinPool
 
-import java.util.concurrent.ExecutorService
+class ParallelAssociationExtractor extends AssociationExtractor {
 
-/**
- * @author Isaac Griffith
- * @version 1.3.0
- */
-class AssociationExtractor {
-
-    Project project
-
-    DBCredentials credentials
-
-    AssociationExtractor(Project proj, DBCredentials credentials) {
-        this.project = proj
-        this.credentials = credentials
+    ParallelAssociationExtractor(Project proj, DBCredentials credentials) {
+        super(proj, credentials)
     }
 
+    @Override
     void extractAssociations() {
         Set<Type> types = getTypes()
 
-        types.each { Type type ->
-            processType()
-        }
-    }
-
-    protected void processType(Type type) {
-        DBManager.instance.open(credentials)
-        handleTypeAssociation(type)
-        DBManager.instance.close()
-    }
-
-    protected Set<Type> getTypes() {
-        Set<Type> types = Sets.newHashSet()
-        DBManager.instance.open(credentials)
-        types.addAll(project.getAllTypes())
-        DBManager.instance.close()
-
-        return types
-    }
-
-    private void handleTypeAssociation(Type type) {
-        List<Field> fields = type.getFields()
-
-        fields.each { Field f ->
-            if (f.getType() != null && f.getType().getReference() != null)
-                createAssociation(type, f.getType())
-        }
-    }
-
-    private void createAssociation(Type type, TypeRef ref) {
-        Reference reference = ref.getReference()
-        if (reference && ref.getType() == TypeRefType.Type) {
-            Type dep = ref.getType(project.getProjectKey())
-            if (dep != null)
-                type.associatedTo(dep)
+        GParsExecutorsPool.withPool(8) {
+            types.eachParallel { Type type ->
+                processType(type)
+            }
         }
     }
 }
