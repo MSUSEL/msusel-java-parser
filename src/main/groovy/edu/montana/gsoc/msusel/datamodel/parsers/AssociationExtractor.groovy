@@ -26,15 +26,12 @@
  */
 package edu.montana.gsoc.msusel.datamodel.parsers
 
+import com.google.common.collect.Lists
 import com.google.common.collect.Sets
 import edu.isu.isuese.datamodel.*
 import edu.isu.isuese.datamodel.util.DBCredentials
 import edu.isu.isuese.datamodel.util.DBManager
-import groovyx.gpars.GParsExecutorsPool
 import groovyx.gpars.GParsPool
-import jsr166y.ForkJoinPool
-
-import java.util.concurrent.ExecutorService
 
 /**
  * @author Isaac Griffith
@@ -66,7 +63,7 @@ class AssociationExtractor {
     }
 
     protected Set<Type> getTypes() {
-        Set<Type> types = Sets.newHashSet()
+        Set<Type> types = Sets.newConcurrentHashSet()
         DBManager.instance.open(credentials)
         types.addAll(project.getAllTypes())
         DBManager.instance.close()
@@ -75,11 +72,13 @@ class AssociationExtractor {
     }
 
     private void handleTypeAssociation(Type type) {
-        List<Field> fields = type.getFields()
+        List<Field> fields = Lists.newArrayList(type.getFields())
 
-        fields.each { Field f ->
-            if (f.getType() != null && f.getType().getReference() != null)
-                createAssociation(type, f.getType())
+        GParsPool.withPool(8) {
+            fields.eachParallel { Field f ->
+                if (f.getType() != null && f.getType().getReference() != null)
+                    createAssociation(type, f.getType())
+            }
         }
     }
 
