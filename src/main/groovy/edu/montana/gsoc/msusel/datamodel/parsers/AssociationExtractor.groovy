@@ -26,12 +26,11 @@
  */
 package edu.montana.gsoc.msusel.datamodel.parsers
 
-import com.google.common.collect.Lists
+
 import com.google.common.collect.Sets
 import edu.isu.isuese.datamodel.*
 import edu.isu.isuese.datamodel.util.DBCredentials
 import edu.isu.isuese.datamodel.util.DBManager
-import groovyx.gpars.GParsPool
 
 /**
  * @author Isaac Griffith
@@ -57,9 +56,7 @@ class AssociationExtractor {
     }
 
     protected void processType(Type type) {
-        DBManager.instance.open(credentials)
         handleTypeAssociation(type)
-        DBManager.instance.close()
     }
 
     protected Set<Type> getTypes() {
