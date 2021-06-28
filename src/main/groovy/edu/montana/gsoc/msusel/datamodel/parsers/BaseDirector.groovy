@@ -135,8 +135,8 @@ abstract class BaseDirector {
     abstract boolean includeFile(File file)
 
     void gatherTypeAssociations() {
-//        AssociationExtractor assocXtractor = new AssociationExtractor(proj, credentials)
-        AssociationExtractor assocXtractor = new ParallelAssociationExtractor(proj, credentials)
+        AssociationExtractor assocXtractor = new AssociationExtractor(proj, credentials)
+//        AssociationExtractor assocXtractor = new ParallelAssociationExtractor(proj, credentials)
         assocXtractor.extractAssociations()
     }
 }
