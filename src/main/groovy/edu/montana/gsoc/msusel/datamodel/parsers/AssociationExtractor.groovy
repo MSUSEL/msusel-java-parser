@@ -71,18 +71,18 @@ class AssociationExtractor {
         return types
     }
 
-    private void handleTypeAssociation(Type type) {
+    protected void handleTypeAssociation(Type type) {
+        DBManager.instance.open(credentials)
         List<Field> fields = type.getFields()
 
-        GParsPool.withPool(8) {
-            fields.eachParallel { Field f ->
-                if (f.getType() != null && f.getType().getReference() != null)
-                    createAssociation(type, f.getType())
-            }
+        fields.each { Field f ->
+            if (f.getType() != null && f.getType().getReference() != null)
+                createAssociation(type, f.getType())
         }
+        DBManager.instance.close()
     }
 
-    private void createAssociation(Type type, TypeRef ref) {
+    protected void createAssociation(Type type, TypeRef ref) {
         Reference reference = ref.getReference()
         if (reference && ref.getType() == TypeRefType.Type) {
             Type dep = ref.getType(project.getProjectKey())
