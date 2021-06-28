@@ -26,14 +26,11 @@
  */
 package edu.montana.gsoc.msusel.datamodel.parsers
 
-import com.google.common.collect.Lists
-import edu.isu.isuese.datamodel.Field
+
 import edu.isu.isuese.datamodel.Project
 import edu.isu.isuese.datamodel.Type
 import edu.isu.isuese.datamodel.util.DBCredentials
-import edu.isu.isuese.datamodel.util.DBManager
 import groovyx.gpars.GParsExecutorsPool
-import groovyx.gpars.GParsPool
 
 class ParallelAssociationExtractor extends AssociationExtractor {
 
@@ -48,21 +45,6 @@ class ParallelAssociationExtractor extends AssociationExtractor {
         GParsExecutorsPool.withPool(8) {
             types.eachParallel { Type type ->
                 processType(type)
-            }
-        }
-    }
-
-    protected void handleTypeAssociation(Type type) {
-        DBManager.instance.open(credentials)
-        List<Field> fields = Lists.newArrayList(type.getFields())
-        DBManager.instance.close()
-
-        GParsPool.withPool(8) {
-            fields.eachParallel { Field f ->
-                DBManager.instance.open(credentials)
-                if (f.getType() != null && f.getType().getReference() != null)
-                    createAssociation(type, f.getType())
-                DBManager.instance.close()
             }
         }
     }
