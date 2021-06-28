@@ -52,7 +52,7 @@ class AssociationExtractor {
         Set<Type> types = getTypes()
 
         types.each { Type type ->
-            processType()
+            processType(type)
         }
     }
 
@@ -72,7 +72,7 @@ class AssociationExtractor {
     }
 
     private void handleTypeAssociation(Type type) {
-        List<Field> fields = Lists.newArrayList(type.getFields())
+        List<Field> fields = type.getFields()
 
         GParsPool.withPool(8) {
             fields.eachParallel { Field f ->
