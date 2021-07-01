@@ -35,6 +35,8 @@ import edu.isu.isuese.datamodel.Project
 import edu.isu.isuese.datamodel.util.DBCredentials
 import edu.isu.isuese.datamodel.util.DBManager
 import groovy.util.logging.Log4j2
+import groovyx.gpars.GParsExecutorsPool
+import groovyx.gpars.GParsExecutorsPoolEnhancer
 import groovyx.gpars.GParsPool
 
 import java.nio.file.FileVisitOption
@@ -75,7 +77,7 @@ class ParallelJavaArtifactIdentifier implements ArtifactIdentifier {
         log.info "Absolute Path: ${rootPath.toAbsolutePath()}"
         try {
             Files.walkFileTree(rootPath.toAbsolutePath(), new DirectoryVisitor())
-            GParsPool.withPool(8) {
+            GParsExecutorsPool.withPool(8) {
                 directories.eachParallel { dir ->
                     log.info "Checking Path: " + dir.toString()
                     Files.walkFileTree((dir as Path).toAbsolutePath(), Sets.newHashSet(), 1, new JavaFileVisitor())
