@@ -78,9 +78,9 @@ class ParallelJavaArtifactIdentifier implements ArtifactIdentifier {
         try {
             Files.walkFileTree(rootPath.toAbsolutePath(), new DirectoryVisitor())
             GParsExecutorsPool.withPool(8) {
-                directories.eachParallel { dir ->
+                directories.eachParallel { Path dir ->
                     log.info "Checking Path: " + dir.toString()
-                    Files.walkFileTree((dir as Path).toAbsolutePath(), Sets.newHashSet(), 1, new JavaFileVisitor())
+                    Files.walkFileTree(dir.toAbsolutePath(), Sets.newHashSet(), 1, new JavaFileVisitor())
                 }
             }
         } catch (IOException e) {
@@ -104,7 +104,17 @@ class ParallelJavaArtifactIdentifier implements ArtifactIdentifier {
 
         @Override
         FileVisitResult postVisitDirectory(Path dir, IOException exc) throws IOException {
-            directories << dir
+            java.io.File f = dir.toFile()
+            boolean allSeen = true
+            f.listFiles().each {
+                if (!it.isDirectory()) {
+                    DBManager.getInstance().open(credentials)
+                    allSeen = allSeen && (File.findFirst("name = ?", it.getAbsolutePath()) != null)
+                    DBManager.getInstance().close()
+                }
+            }
+            if (!allSeen)
+                directories << dir
             return FileVisitResult.CONTINUE
         }
 
