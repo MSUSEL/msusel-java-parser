@@ -120,6 +120,7 @@ class ParallelJavaArtifactIdentifier implements ArtifactIdentifier {
 
         @Override
         FileVisitResult preVisitDirectory(Path dir, BasicFileAttributes attrs) throws IOException {
+            log.info "Checking Directory: ${dir.toString()}"
             if (dir.getFileName().toString().equals(".gradle") || dir.getFileName().toString().equals(".git") ||
                     dir.getFileName().toString().equals(".m2") || dir.getFileName().toString().equals(".mvn") ||
                     dir.getFileName().toString().equals(".idea") || dir.getFileName().toString().equals("gradle"))
