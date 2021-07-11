@@ -154,7 +154,8 @@ class ParallelJavaArtifactIdentifier implements ArtifactIdentifier {
             log.info "Checking Directory: ${dir.toString()}"
             if (dir.getFileName().toString().equals(".gradle") || dir.getFileName().toString().equals(".git") ||
                     dir.getFileName().toString().equals(".m2") || dir.getFileName().toString().equals(".mvn") ||
-                    dir.getFileName().toString().equals(".idea") || dir.getFileName().toString().equals("gradle"))
+                    dir.getFileName().toString().equals(".idea") || dir.getFileName().toString().equals("gradle") ||
+                    dir.getFileName().toString().equals(".svn"))
                 return FileVisitResult.SKIP_SUBTREE
 
             return FileVisitResult.CONTINUE
@@ -183,7 +184,7 @@ class ParallelJavaArtifactIdentifier implements ArtifactIdentifier {
                 type = FileType.DOC
             }
             if (type != null) {
-                String name = file.toString()
+                String name = file.toAbsolutePath().toString()
                 String relPath = file.getFileName().toString()
                 fileTable.put(name, relPath, type)
             }
