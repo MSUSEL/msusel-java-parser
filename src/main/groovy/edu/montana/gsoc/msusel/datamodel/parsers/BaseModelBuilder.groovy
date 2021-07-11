@@ -56,7 +56,7 @@ abstract class BaseModelBuilder {
 
     Map<String, Type> typeMap = [:]
 
-    void withDb(String method, Closure cl) {
+    void withDb(Closure cl) {
 //        log.info "Opened at $method"
 //        if (!DBManager.getInstance().isOpen())
         DBManager.getInstance().open(credentials)
@@ -72,9 +72,9 @@ abstract class BaseModelBuilder {
             throw new IllegalArgumentException("Project and File must not be null")
         }
 
-        withDb("BaseModelBuilder Constructor 1") {
+//        withDb {
             this.system = proj.getParentSystem()
-        }
+//        }
 
         if (this.system == null) {
             throw new IllegalArgumentException("Project must be a part of a system")
@@ -83,24 +83,24 @@ abstract class BaseModelBuilder {
         this.proj = proj
         this.file = file
 
-        withDb("BaseModelBuilder Constructor 2") {
+//        withDb {
             if (file.getParentNamespace() != null)
                 namespace = file.getParentNamespace()
             else
                 namespace = proj.getDefaultNamespace()
-        }
+//        }
     }
 
     //////////////////////
     // Setup Methods
     //////////////////////
     void setFile(File file) {
-        withDb("setFile") {
+//        withDb {
             this.file = file
             if (file.getParentNamespace() != null) {
                 namespace = file.getParentNamespace()
             }
-        }
+//        }
 
     }
 
@@ -122,17 +122,17 @@ abstract class BaseModelBuilder {
             boolean hasNamespace = false
 
             String n
-            withDb("createNamespace 1") {
+//            withDb {
                 n = current == null ? seg : String.join(".", current.getName(), seg)
 
                 hasNamespace = proj.hasNamespace(n)
-            }
+//            }
 
             if (!hasNamespace) {
                 log.atInfo().log("Creating Namespace: " + n)
                 Namespace parent = current
 
-                withDb("createNamespace 2") {
+//                withDb {
                     current = Namespace.builder()
                             .name(n)
                             .nsKey(n)
@@ -142,27 +142,27 @@ abstract class BaseModelBuilder {
                         parent.addNamespace(current)
                     proj.addNamespace(current)
                     current.updateKey()
-                }
+//                }
             } else {
-                withDb("createNamespace 3") {
+//                withDb {
                     Namespace parent = current
                     setParentNamespace(parent, current)
                     current = proj.findNamespace(n)
-                }
+//                }
             }
 
-            withDb("createNamespace 4") {
+//            withDb {
                 current.addFile(file)
                 namespace = current
 
                 file.updateKey()
                 file.refresh()
-            }
+//            }
         }
     }
 
     void createImport(String name, int start, int end) {
-        withDb("createImport") {
+//        withDb {
             Import imp = Import.findFirst("name = ?", name)
             if (!imp) {
                 log.atInfo().log("Creating import with name: " + name)
@@ -170,7 +170,7 @@ abstract class BaseModelBuilder {
             }
 
             file.addImport(imp)
-        }
+//        }
     }
 
     //////////////////////
@@ -180,20 +180,20 @@ abstract class BaseModelBuilder {
         if (types) {
             Type type = types.pop()
             if (types.isEmpty()) {
-                withDb("endType 1") {
+//                withDb {
                     if (file.getTypeByName(type.getName()) == null)
                         file.addType(type)
-                }
+//                }
             } else {
-                withDb("endType 2") {
+//                withDb {
                     if (types.peek().getTypeByName(type.getName()) == null)
                         types.peek().addType(type)
-                }
+//                }
             }
 
-            withDb("endType 3") {
+//            withDb {
                 type.updateKey()
-            }
+//            }
         }
 
     }
@@ -201,13 +201,13 @@ abstract class BaseModelBuilder {
     void findOrCreateType(String typeName, int typeType, int start = 1, int stop = 1) {
         Type type
         if (types) {
-            withDb("findOrCreateType 1") {
+//            withDb {
                 type = types.peek().getTypeByName(typeName)
-            }
+//            }
         } else {
-            withDb("findOrCreateType 2") {
+//            withDb {
                 type = namespace.getTypeByName(typeName)
-            }
+//            }
         }
 
         if (type != null)
@@ -219,7 +219,7 @@ abstract class BaseModelBuilder {
     void createType(String typeName, int typeType, int start, int stop) {
         log.info "Creating Type with name: $typeName"
         Type type = findType(typeName)
-        withDb("createType") {
+//        withDb {
             if (type) {
                 type.setStart(start)
                 type.setEnd(stop)
@@ -264,7 +264,7 @@ abstract class BaseModelBuilder {
                 type.updateKey()
                 types.push(type)
             }
-        }
+//        }
     }
 
     void setTypeModifiers(List<String> modifiers) {
@@ -273,19 +273,19 @@ abstract class BaseModelBuilder {
     }
 
     void setModifiers(List<String> modifiers, Component comp) {
-        withDb("setModifiers") {
+//        withDb {
             modifiers.each { mod ->
                 Accessibility access = handleAccessibility(mod)
                 Modifier modifier = handleNamedModifiers(mod)
                 if (access) comp.setAccessibility(access)
                 if (modifier) comp.addModifier(modifier)
             }
-        }
+//        }
     }
 
     void createTypeTypeParameter(String name) {
         if (types) {
-            withDb("createTypeTypeParameters") {
+//            withDb {
                 if (types.peek().hasTemplateParam(name))
                     currentTypeParam = types.peek().getTemplateParam(name)
                 else {
@@ -296,7 +296,7 @@ abstract class BaseModelBuilder {
                     }
                 }
                 currentTypeParam = null
-            }
+//            }
         }
 
     }
@@ -307,9 +307,9 @@ abstract class BaseModelBuilder {
 
     void findInitializer(String name, boolean instance) {
         Initializer init
-        withDb("findInitializer") {
+//        withDb {
             init = !types.isEmpty() ? types.peek().getInitializerWithName(name) : null
-        }
+//        }
 
         if (init) {
             methods.push(init)
@@ -319,7 +319,7 @@ abstract class BaseModelBuilder {
 
     void createInitializer(String name, int number, boolean instance, int start, int end) {
         if (types) {
-            withDb("createInitializer") {
+//            withDb {
                 if (types.peek().hasInitializerWithName(name)) {
                     Initializer i = types.peek().getInitializerWithName(name)
                     i.setEnd(end)
@@ -341,7 +341,7 @@ abstract class BaseModelBuilder {
                     init.updateKey()
                     methods.push(init)
                 }
-            }
+//            }
         }
 
         scopes.push(Sets.newHashSet())
@@ -353,9 +353,9 @@ abstract class BaseModelBuilder {
 
     void findMethod(String signature) {
         Method meth
-        withDb("findMethod") {
+//        withDb {
             meth = types ? (Method) Method.findFirst("compKey = ?", (String) "${types.peek().getCompKey()}#$signature") : null
-        }
+//        }
 
         if (meth) {
             methods.push(meth)
@@ -367,10 +367,10 @@ abstract class BaseModelBuilder {
         log.info "Creating Method with name: $name"
         if (types) {
             Method method = null
-            withDb("createMethod 1") {
+//            withDb {
                 method = Method.findFirst("compKey = ?", (String) "${types.peek().getCompKey()}#${name}")
-            }
-            withDb("createMethod") {
+//            }
+//            withDb {
                 if (method) {
                     method.setEnd(end)
                     method.setStart(start)
@@ -396,7 +396,7 @@ abstract class BaseModelBuilder {
                     method.updateKey()
                     methods.push(method)
                 }
-            }
+//            }
         }
 
         scopes.push(Sets.newHashSet())
@@ -408,9 +408,9 @@ abstract class BaseModelBuilder {
 
     void findConstructor(String signature) {
         Constructor cons
-        withDb("findConstructor") {
+//        withDb {
             cons = types ? (Constructor) Constructor.findFirst("compKey = ?", (String) "${types.peek().getCompKey()}#$signature") : null as Constructor
-        }
+//        }
 
         if (cons) {
             methods.push(cons)
@@ -420,7 +420,7 @@ abstract class BaseModelBuilder {
 
     void createConstructor(String name, int start, int end) {
         if (types) {
-            withDb("createConstructor") {
+//            withDb {
                 Constructor cons = Constructor.creator()
                         .name(name)
                         .compKey(name)
@@ -431,7 +431,7 @@ abstract class BaseModelBuilder {
                 types.peek().addMember(cons)
                 cons.updateKey()
                 methods.push(cons)
-            }
+//            }
         }
         scopes.push(Sets.newHashSet())
         decisionCounts.push(0)
@@ -441,31 +441,31 @@ abstract class BaseModelBuilder {
     }
 
     void createMethodParameter() {
-        withDb("createMethodParameter") {
+//        withDb {
             currentParam = Parameter.builder().varg(false).create()
             if (methods && methods.peek() != null)
                 ((Method) methods.peek()).addParameter(currentParam)
-        }
+//        }
     }
 
     void setVariableParameter(boolean varg) {
-        withDb("setVariableParameter") {
+//        withDb {
             currentParam.setVarg(varg)
             currentParam.save()
-        }
+//        }
     }
 
     void setParameterName(String name) {
-        withDb("setParameterName") {
+//        withDb {
             currentParam.setName(name)
             currentParam.save()
-        }
+//        }
     }
 
     void addParameterModifier(String mod) {
-        withDb("addParameterModifier") {
+//        withDb {
             currentParam?.addModifier(mod)
-        }
+//        }
     }
 
     void setMethodModifiers(List<String> mods) {
@@ -476,60 +476,60 @@ abstract class BaseModelBuilder {
     }
 
     void createMethodTypeParameter(String name) {
-        withDb("createMethodTypeParameter") {
+//        withDb {
             currentTypeParam = TemplateParam.builder().name(name).create()
             if (methods && methods.peek() instanceof Method) {
                 ((Method) methods.peek()).addTemplateParam(currentTypeParam)
             }
             currentTypeParam = null
-        }
+//        }
     }
 
     void createFieldTypeParameter(String name) {
-        withDb("createFieldTypeParameter") {
+//        withDb {
             currentTypeParam = TemplateParam.builder().name(name).create()
-        }
+//        }
     }
 
     void setParameterType(String type) {
         Type t = findType(type, true)
 
-        withDb("setParameterType") {
+//        withDb {
             currentParam.setType(t.createTypeRef())
-        }
+//        }
     }
 
     void setParameterPrimitiveType(String type) {
-        withDb("setParameterPrimitiveType") {
+//        withDb {
             currentParam.setType(TypeRef.createPrimitiveTypeRef(type))
-        }
+//        }
     }
 
     void setMethodReturnType(String type) {
         Type t = findType(type, true)
 
         if (t && methods && methods.peek() instanceof Method) {
-            withDb("setMethodReturnType") {
+//            withDb {
                 ((Method) methods.peek()).setReturnType(t.createTypeRef())
-            }
+//            }
         }
 
     }
 
     void setMethodReturnTypeVoid() {
         if (methods && methods.peek() instanceof Method) {
-            withDb("setMethodReturnTypeVoid") {
+//            withDb {
                 ((Method) methods.peek()).setReturnType(TypeRef.createPrimitiveTypeRef("void"))
-            }
+//            }
         }
 
     }
 
     void setMethodReturnPrimitiveType(String type) {
         if (methods && methods.peek() instanceof Method) {
-            withDb("setMethodReturnPrimitiveType") {
+//            withDb {
                 ((Method) methods.peek()).setReturnType(TypeRef.createPrimitiveTypeRef(type))
-            }
+//            }
         }
 
     }
@@ -538,9 +538,9 @@ abstract class BaseModelBuilder {
         Type t = findType(type, true)
 
         if (t && methods && methods.peek() instanceof Method) {
-            withDb("addMethodException") {
+//            withDb {
                 ((Method) methods.peek()).addException(t.createTypeRef())
-            }
+//            }
         }
 
     }
@@ -549,13 +549,13 @@ abstract class BaseModelBuilder {
         if (!methods.isEmpty()) {
             Member member = methods.pop()
             if (member instanceof Method) {
-                withDb("finishMethod 1") {
+//                withDb {
                     ((Method) member).setCounts(variableCounts.pop(), returnCounts.pop(), stmtCounts.pop(), decisionCounts.pop())
-                }
+//                }
             } else if (member instanceof Initializer) {
-                withDb("finishMethod 2") {
+//                withDb {
                     ((Initializer) member).setCounts(variableCounts.pop(), returnCounts.pop(), stmtCounts.pop(), decisionCounts.pop())
-                }
+//                }
             }
 
         }
@@ -569,21 +569,21 @@ abstract class BaseModelBuilder {
         log.info "Creating Field with Name: $name"
         if (types) {
             Field field = null
-            withDb("createField 1") {
+//            withDb {
                 field = Field.findFirst("compKey = ?", (String) "${types.peek().getCompKey()}#${name}")
-            }
+//            }
 
             if (field) {
-                withDb("createField 2") {
+//                withDb {
                     field.setEnd(end)
                     field.setStart(start)
                     field.save()
                     setModifiers(modifiers, field)
                     if (currentTypeParam)
                         field.addTemplateParam(currentTypeParam)
-                }
+//                }
             } else {
-                withDb("createField 3") {
+//                withDb {
                     Accessibility access
                     if (types.peek().getType() == Type.INTERFACE)
                         access = Accessibility.PUBLIC
@@ -605,19 +605,19 @@ abstract class BaseModelBuilder {
                     if (currentTypeParam)
                         field.addTemplateParam(currentTypeParam)
                     field.refresh()
-                }
+//                }
 
                 if (primitive) {
-                    withDb("createField 4") {
+//                    withDb {
                         field.setType(TypeRef.createPrimitiveTypeRef(fieldType))
-                    }
+//                    }
                 } else {
                     Type t = findType(fieldType, true)
 
                     if (t) {
-                        withDb("createField 5") {
+//                        withDb {
                             field.setType(t.createTypeRef())
-                        }
+//                        }
                     }
                 }
                 setModifiers(modifiers, field)
@@ -629,7 +629,7 @@ abstract class BaseModelBuilder {
         if (types && types.peek().getType() == Type.ENUM) {
             Type enm = types.peek()
 
-            withDb("createEnumLiteral") {
+//            withDb {
                 if (enm.hasLiteralWithName(name)) {
                     Literal l = enm.getLiteralWithName(name)
                     l.setEnd(end)
@@ -646,7 +646,7 @@ abstract class BaseModelBuilder {
                     enm.addMember(lit)
                     lit.updateKey()
                 }
-            }
+//            }
         }
     }
 
@@ -658,9 +658,9 @@ abstract class BaseModelBuilder {
             Type t = findType(typeName, true)
 
             if (t) {
-                withDb("addRealization") {
+//                withDb {
                     types.peek().realizes(t)
-                }
+//                }
             }
         }
     }
@@ -670,26 +670,26 @@ abstract class BaseModelBuilder {
             Type t = findType(typeName, true)
 
             if (t) {
-                withDb("addGeneralization") {
+//                withDb {
                     types.peek().generalizedBy(t)
-                }
+//                }
             }
         }
     }
 
     void addAssociation(Type type) {
         if (types) {
-            withDb("addAssociation") {
+//            withDb {
                 types.peek().associatedTo(type)
-            }
+//            }
         }
     }
 
     void addUseDependency(Type type) {
         if (types) {
-            withDb("addUseDependency") {
+//            withDb {
                 types.peek().useTo(type)
-            }
+//            }
         }
     }
 
@@ -698,9 +698,9 @@ abstract class BaseModelBuilder {
             Type t = findType(type, true)
 
             if (t) {
-                withDb("addUseDependency") {
+//                withDb {
                     types.peek().useTo(t)
-                }
+//                }
             }
         }
     }
@@ -779,7 +779,7 @@ abstract class BaseModelBuilder {
 
     Type handleIdentifier(Type type, String comp) {
         Type t = null
-        withDb("handleIdentifier") {
+//        withDb {
             if (type) {
                 if (type.hasFieldWithName(comp)) {
                     t = createFieldUse(type, comp)
@@ -796,7 +796,7 @@ abstract class BaseModelBuilder {
                     t = types.peek().getTypeByName(comp)
                 }
             }
-        }
+//        }
 
         return t
     }
@@ -808,7 +808,7 @@ abstract class BaseModelBuilder {
     Type createMethodCall(Type current, String comp, int numParams) {
         Type type = current
 
-        withDb("createMethodCall") {
+//        withDb {
             Method called = findMethodCalled(type, comp, numParams)
 
             if (type && called) {
@@ -824,7 +824,7 @@ abstract class BaseModelBuilder {
                 if (m)
                     m.callsMethod(called)
             }
-        }
+//        }
 
         return type
     }
@@ -857,25 +857,25 @@ abstract class BaseModelBuilder {
                 m = (Initializer) ((Stack<Member>) methods).peek()
             }
 
-            withDb("createConstructorCall") {
+//            withDb {
                 Constructor cons = type.getConstructorWithNParams(numParams)
                 if (m && cons)
                     m.callsMethod(cons)
-            }
+//            }
         }
     }
 
     Type findSuperTypeWithNParamConstructor(Type type, int numParams) {
         if (type) {
             Type ancestor = null
-            withDb("findSuperTypeWithNParamConstructor") {
+//            withDb {
                 for (Type anc : type.getAncestorTypes()) {
                     if (anc.hasConstructorWithNParams(numParams)) {
                         ancestor = anc
                         break
                     }
                 }
-            }
+//            }
 
             if (ancestor)
                 return ancestor
@@ -889,14 +889,14 @@ abstract class BaseModelBuilder {
 
         if (type) {
             Type ancestor = null
-            withDb("findSuperTypeWithTypeFieldOrMethodNamed") {
+//            withDb {
                 for (Type anc : type.getAncestorTypes()) {
                     if (anc.hasTypeWithName(name) || anc.hasFieldWithName(name) || anc.hasMethodWithName(name)) {
                         ancestor = anc
                         break
                     }
                 }
-            }
+//            }
 
             if (ancestor)
                 return ancestor
@@ -979,7 +979,7 @@ abstract class BaseModelBuilder {
         Type candidate = null
 
         name.replaceAll(/<.*>/, "")
-        withDb("findType") {
+//        withDb {
             if (notFullySpecified(name)) {
                 candidate = this.findTypeInNamespace(name)
                 if (candidate == null) candidate = this.findTypeUsingSpecificImports(name)
@@ -993,7 +993,7 @@ abstract class BaseModelBuilder {
 
             // In the event that no valid candidate was found, then it is an unknown type
             if (candidate == null && createUnknown) candidate = this.createUnknownType(name)
-        }
+//        }
 
         candidate
     }
@@ -1118,7 +1118,7 @@ abstract class BaseModelBuilder {
     }
 
     void reconcileUnknownTypes() {
-        withDb("reconcileUnknownTypes") {
+//        withDb {
             proj.getUnknownTypes().each {
                 String typeName = it.name
                 if (typeName.count(".") < 1) {
@@ -1127,7 +1127,7 @@ abstract class BaseModelBuilder {
                     it.updateKey()
                 }
             }
-        }
+//        }
     }
 
     void incrementMethodVariableCount() {

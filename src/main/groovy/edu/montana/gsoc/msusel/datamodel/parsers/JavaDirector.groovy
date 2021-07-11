@@ -56,14 +56,14 @@ class JavaDirector extends BaseDirector {
 
         DBManager.instance.open(credentials)
         boolean processed = file.getParseStage() < 1 || file.getAllTypes().size() > 0
-        DBManager.instance.close()
+//        DBManager.instance.close()
 
         if (processed) {
             utilizeParser(file, new Java8SinglePassExtractor(builder, createCFG, useExpressions), current, total)
-            DBManager.instance.open(credentials)
+//            DBManager.instance.open(credentials)
             file.setParseStage(1)
-            DBManager.instance.close()
         }
+        DBManager.instance.close()
     }
 
     @Override
@@ -140,10 +140,10 @@ class JavaDirector extends BaseDirector {
     }
 
     void utilizeParser(File file, ParseTreeListener listener, int current = 0, int total = 0) {
-        DBManager.instance.open(credentials)
+//        DBManager.instance.open(credentials)
 //        String path = file.getFullPath()
         String path = file.getName()
-        DBManager.instance.close()
+//        DBManager.instance.close()
 
         log.info "Parsing ($current / $total)... $path"
         try {
@@ -154,7 +154,7 @@ class JavaDirector extends BaseDirector {
             walker.walk(listener, cuContext)
         } catch (final IOException | RecognitionException e) {
             log.atError().withThrowable(e).log(e.getMessage())
-            DBManager.instance.close()
+//            DBManager.instance.close()
         }
     }
 
