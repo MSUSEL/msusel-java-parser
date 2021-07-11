@@ -36,6 +36,8 @@ import groovyx.gpars.GParsExecutorsPool
 import groovyx.gpars.GParsPool
 import org.apache.logging.log4j.Logger
 
+import java.util.concurrent.atomic.AtomicInteger
+
 /**
  * @author Isaac Griffith
  * @version 1.3.0
@@ -91,16 +93,16 @@ abstract class BaseDirector {
         if (useSinglePass) {
             log.info "Parsing and extracting file info"
             int total = files.size()
-            int current = 1
-//            GParsPool.withPool(8) {
-//                files.eachParallel { File file ->
-            files.each { File file ->
-                if (includeFile(file)) {
-                    gatherAllInfoAtOnce(file, current, total)
+            AtomicInteger current = new AtomicInteger(1)
+            GParsPool.withPool(8) {
+                files.eachParallel { File file ->
+//            files.each { File file ->
+                    int index = current.getAndIncrement()
+                    if (includeFile(file)) {
+                        gatherAllInfoAtOnce(file, index, total)
+                    }
                 }
-                current++
             }
-//            }
         } else {
             log.info "Gathering File and Type Info into Model"
             files.each { File file -> log.info "File: $file"; if (includeFile(file)) gatherFileAndTypeInfo(file) }
