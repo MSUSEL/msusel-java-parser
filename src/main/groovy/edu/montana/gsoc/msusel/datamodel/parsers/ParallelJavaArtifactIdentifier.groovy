@@ -26,9 +26,10 @@
  */
 package edu.montana.gsoc.msusel.datamodel.parsers
 
+import com.google.common.collect.HashBasedTable
 import com.google.common.collect.ImmutableList
-import com.google.common.collect.Lists
 import com.google.common.collect.Sets
+import com.google.common.collect.Table
 import edu.isu.isuese.datamodel.File
 import edu.isu.isuese.datamodel.FileType
 import edu.isu.isuese.datamodel.Project
@@ -36,26 +37,22 @@ import edu.isu.isuese.datamodel.util.DBCredentials
 import edu.isu.isuese.datamodel.util.DBManager
 import groovy.util.logging.Log4j2
 import groovyx.gpars.GParsExecutorsPool
-import groovyx.gpars.GParsExecutorsPoolEnhancer
-import groovyx.gpars.GParsPool
 
-import java.nio.file.FileVisitOption
-import java.nio.file.FileVisitResult
-import java.nio.file.Files
-import java.nio.file.Path
-import java.nio.file.Paths
-import java.nio.file.SimpleFileVisitor
+import java.nio.file.*
 import java.nio.file.attribute.BasicFileAttributes
 
 @Log4j2
 class ParallelJavaArtifactIdentifier implements ArtifactIdentifier {
 
     final List<String> buildFileTypes = ImmutableList.of("pom.xml", "build.gradle")
+
     List<Path> directories = []
 
     Project project
 
-    List<File> files = Lists.newArrayList()
+    Table<String, String, FileType> fileTable = HashBasedTable.create()
+    Set<String> checkedDir = Sets.newHashSet()
+
     int binCount = 0
     DBCredentials credentials
 
@@ -72,6 +69,12 @@ class ParallelJavaArtifactIdentifier implements ArtifactIdentifier {
         if (alreadyIdentified)
             return
 
+        buildCheckedDirectorySet()
+        walkTree(root)
+        createFiles()
+    }
+
+    private void walkTree(String root) {
         Path rootPath = Paths.get(root)
         log.info "Root Path: $rootPath"
         log.info "Absolute Path: ${rootPath.toAbsolutePath()}"
@@ -87,12 +90,48 @@ class ParallelJavaArtifactIdentifier implements ArtifactIdentifier {
             log.warn "Could not walk the file tree"
         }
         log.info "Binary File Count: $binCount"
-        log.info "File Found: ${files.size()}"
     }
 
     @Override
     void setProj(Project proj) {
         this.project = proj
+    }
+
+    private void buildCheckedDirectorySet(Project proj) {
+        DBManager.instance.open(credentials)
+        proj.getFiles().each { File file ->
+            Path p = Paths.get(file.getName())
+            checkedDir.add(p.getParent().toAbsolutePath().toString())
+        }
+        DBManager.instance.close()
+    }
+
+    private void createFiles() {
+        DBManager.instance.open(credentials)
+        DBManager.instance.openTransaction()
+        fileTable.rowMap().each { String name, Map<String, FileType> map ->
+            map.each { String relPath, FileType type ->
+                if (!project.getFileByName(name)) {
+                    File f = File.builder()
+                            .fileKey(project.getProjectKey() + ":" + name)
+                            .name(name)
+                            .relPath(relPath)
+                    /*.language("Java")*/
+                            .type(type)
+                            .create()
+                    project.addFile(f)
+                    if (type == FileType.SOURCE) {
+                        int end = new java.io.File(name).readLines().size()
+                        int start = 1
+                        f.setStart(start)
+                        f.setEnd(end)
+                    }
+                }
+                log.atInfo().log("Identified " + type + " file: " + name)
+            }
+        }
+        DBManager.instance.commitTransaction()
+        DBManager.instance.close()
     }
 
     private class DirectoryVisitor extends SimpleFileVisitor<Path> {
@@ -104,16 +143,8 @@ class ParallelJavaArtifactIdentifier implements ArtifactIdentifier {
 
         @Override
         FileVisitResult postVisitDirectory(Path dir, IOException exc) throws IOException {
-            java.io.File f = dir.toFile()
-            boolean allSeen = true
-            f.listFiles().each {
-                if (!it.isDirectory()) {
-                    DBManager.getInstance().open(credentials)
-                    allSeen = allSeen && (File.findFirst("name = ?", it.getAbsolutePath()) != null)
-                    DBManager.getInstance().close()
-                }
-            }
-            if (!allSeen)
+            boolean checked = checkedDir.contains(dir.toAbsolutePath().toString())
+            if (!checked)
                 directories << dir
             return FileVisitResult.CONTINUE
         }
@@ -152,29 +183,9 @@ class ParallelJavaArtifactIdentifier implements ArtifactIdentifier {
                 type = FileType.DOC
             }
             if (type != null) {
-                DBManager.instance.open(credentials)
-                if (!project.getFileByName(file.toString())) {
-                    File f = File.builder()
-                            .fileKey(project.getProjectKey() + ":" + file.toString())
-                            .name(file.toString())
-                            .relPath(file.getFileName().toString())
-                    /*.language("Java")*/
-                            .type(type)
-                            .create()
-                    files.add(f)
-                    project.addFile(f)
-                    if (type == FileType.SOURCE) {
-                        int end = file.toFile().readLines().size()
-                        int start = 1
-                        f.setStart(start)
-                        f.setEnd(end)
-                    }
-                } else {
-                    File f = project.getFileByName(file.toString())
-                    files.add(f)
-                }
-                log.atInfo().log("Identified " + type + " file: " + file.getFileName())
-                DBManager.instance.close()
+                String name = file.toString()
+                String relPath = file.getFileName().toString()
+                fileTable.put(name, relPath, type)
             }
 
             return FileVisitResult.CONTINUE
