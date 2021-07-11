@@ -28,6 +28,7 @@ package edu.montana.gsoc.msusel.datamodel.parsers
 
 import com.google.common.collect.HashBasedTable
 import com.google.common.collect.ImmutableList
+import com.google.common.collect.Maps
 import com.google.common.collect.Sets
 import com.google.common.collect.Table
 import edu.isu.isuese.datamodel.File
@@ -37,6 +38,7 @@ import edu.isu.isuese.datamodel.util.DBCredentials
 import edu.isu.isuese.datamodel.util.DBManager
 import groovy.util.logging.Log4j2
 import groovyx.gpars.GParsExecutorsPool
+import org.apache.commons.lang3.tuple.Pair
 
 import java.nio.file.*
 import java.nio.file.attribute.BasicFileAttributes
@@ -50,7 +52,7 @@ class ParallelJavaArtifactIdentifier implements ArtifactIdentifier {
 
     Project project
 
-    Table<String, String, FileType> fileTable = HashBasedTable.create()
+    Map<String, Pair<String, FileType>> fileTable = Maps.newHashMap()
     Set<String> checkedDir = Sets.newHashSet()
 
     int binCount = 0
@@ -109,26 +111,27 @@ class ParallelJavaArtifactIdentifier implements ArtifactIdentifier {
     private void createFiles() {
         DBManager.instance.open(credentials)
         DBManager.instance.openTransaction()
-        fileTable.rowKeySet().each {String name ->
-            fileTable.row(name).each { String relPath, FileType type ->
-                if (!project.getFileByName(name)) {
-                    File f = File.builder()
-                            .fileKey(project.getProjectKey() + ":" + name)
-                            .name(name)
-                            .relPath(relPath)
-                    /*.language("Java")*/
-                            .type(type)
-                            .create()
-                    project.addFile(f)
-                    if (type == FileType.SOURCE) {
-                        int end = new java.io.File(name).readLines().size()
-                        int start = 1
-                        f.setStart(start)
-                        f.setEnd(end)
-                    }
+        fileTable.each { String name, Pair<String, FileType> pair ->
+            String relPath = pair.getLeft()
+            FileType type = pair.getRight()
+
+            if (!project.getFileByName(name)) {
+                File f = File.builder()
+                        .fileKey(project.getProjectKey() + ":" + name)
+                        .name(name)
+                        .relPath(relPath)
+                /*.language("Java")*/
+                        .type(type)
+                        .create()
+                project.addFile(f)
+                if (type == FileType.SOURCE) {
+                    int end = new java.io.File(name).readLines().size()
+                    int start = 1
+                    f.setStart(start)
+                    f.setEnd(end)
                 }
-                log.atInfo().log("Identified " + type + " file: " + name)
             }
+            log.info "Identified $type file: $name"
         }
         DBManager.instance.commitTransaction()
         DBManager.instance.close()
@@ -187,7 +190,7 @@ class ParallelJavaArtifactIdentifier implements ArtifactIdentifier {
             if (type != null) {
                 String name = file.toAbsolutePath().toString()
                 String relPath = file.getFileName().toString()
-                fileTable.put(name, relPath, type)
+                fileTable.put(name, Pair.of(relPath, type))
             }
 
             return FileVisitResult.CONTINUE
