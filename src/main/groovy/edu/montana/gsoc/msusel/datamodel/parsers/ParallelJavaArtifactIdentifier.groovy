@@ -186,7 +186,7 @@ class ParallelJavaArtifactIdentifier implements ArtifactIdentifier {
                     file.getFileName().toString().startsWith("CHANGELOG")) {
                 type = FileType.DOC
             }
-            log.info "Found file of type: $type"
+
             if (type != null) {
                 String name = file.toAbsolutePath().toString()
                 String relPath = file.getFileName().toString()

@@ -92,6 +92,11 @@ abstract class BaseDirector {
 
         if (useSinglePass) {
             log.info "Parsing and extracting file info"
+
+            DBManager.instance.open(credentials)
+            DBManager.instance.openTransaction()
+            DBManager.instance.close()
+
             int total = files.size()
             AtomicInteger current = new AtomicInteger(1)
             GParsPool.withPool(8) {
@@ -103,6 +108,10 @@ abstract class BaseDirector {
                     }
                 }
             }
+
+            DBManager.instance.open(credentials)
+            DBManager.instance.commitTransaction()
+            DBManager.instance.close()
         } else {
             log.info "Gathering File and Type Info into Model"
             files.each { File file -> log.info "File: $file"; if (includeFile(file)) gatherFileAndTypeInfo(file) }
