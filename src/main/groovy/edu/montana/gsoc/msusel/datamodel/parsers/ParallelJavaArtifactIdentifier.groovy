@@ -69,7 +69,7 @@ class ParallelJavaArtifactIdentifier implements ArtifactIdentifier {
         if (alreadyIdentified)
             return
 
-        buildCheckedDirectorySet()
+        buildCheckedDirectorySet(project)
         walkTree(root)
         createFiles()
     }
