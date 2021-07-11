@@ -109,8 +109,8 @@ class ParallelJavaArtifactIdentifier implements ArtifactIdentifier {
     private void createFiles() {
         DBManager.instance.open(credentials)
         DBManager.instance.openTransaction()
-        fileTable.rowMap().each { String name, Map<String, FileType> map ->
-            map.each { String relPath, FileType type ->
+        fileTable.rowKeySet().each {String name ->
+            fileTable.row(name).each { String relPath, FileType type ->
                 if (!project.getFileByName(name)) {
                     File f = File.builder()
                             .fileKey(project.getProjectKey() + ":" + name)
