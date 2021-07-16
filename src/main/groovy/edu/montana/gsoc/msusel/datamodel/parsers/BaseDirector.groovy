@@ -64,17 +64,19 @@ abstract class BaseDirector {
         this.useExpressions = useExpressions
     }
 
-    void build(String path) {
+    void build(String path, identifyAndProcess = false) {
         identify(proj, path)
 
-        List<File> files = []
-        DBManager.instance.open(credentials)
-        files.addAll(proj.getFilesByType(FileType.SOURCE))
-        files.removeIf { it.getAllTypes().size() > 0 }
-        DBManager.instance.close()
+        if (identifyAndProcess) {
+            List<File> files = []
+            DBManager.instance.open(credentials)
+            files.addAll(proj.getFilesByType(FileType.SOURCE))
+            files.removeIf { it.getAllTypes().size() > 0 }
+            DBManager.instance.close()
 
-        process(files)
-        identifier = null
+            process(files)
+            identifier = null
+        }
     }
 
     void identify(Project proj, String path) {
@@ -93,9 +95,9 @@ abstract class BaseDirector {
         if (useSinglePass) {
             log.info "Parsing and extracting file info"
 
-            DBManager.instance.open(credentials)
-            DBManager.instance.openTransaction()
-            DBManager.instance.close()
+//            DBManager.instance.open(credentials)
+//            DBManager.instance.openTransaction()
+//            DBManager.instance.close()
 
             int total = files.size()
             AtomicInteger current = new AtomicInteger(1)
@@ -109,9 +111,9 @@ abstract class BaseDirector {
                 }
             }
 
-            DBManager.instance.open(credentials)
-            DBManager.instance.commitTransaction()
-            DBManager.instance.close()
+//            DBManager.instance.open(credentials)
+//            DBManager.instance.commitTransaction()
+//            DBManager.instance.close()
         } else {
             log.info "Gathering File and Type Info into Model"
             files.each { File file -> log.info "File: $file"; if (includeFile(file)) gatherFileAndTypeInfo(file) }
