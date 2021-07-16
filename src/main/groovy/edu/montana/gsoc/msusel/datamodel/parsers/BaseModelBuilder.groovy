@@ -367,7 +367,7 @@ abstract class BaseModelBuilder {
         log.info "Creating Method with name: $name"
         if (types) {
             println "Searching for Method: ${types.peek().getCompKey()}#${name}"
-            Method method = Method.findFirst("compKey = ?", (String) "${types.peek().getCompKey()}#${name}")
+            Method method = Method.findFirst("compKey = ?", (String) "${types.peek().getCompKey()}#${name}()")
             println "Found Method: ${method?.getName()}"
 
             if (method) {
