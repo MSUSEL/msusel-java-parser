@@ -105,28 +105,28 @@ public abstract class Java8AbstractExtractor extends JavaParserBaseListener {
 
     @Override
     public void enterClassDeclaration(final JavaParser.ClassDeclarationContext ctx) {
-        treeBuilder.findOrCreateType(ctx.IDENTIFIER().getText(), Type.CLASS);
+        treeBuilder.findOrCreateType(ctx.IDENTIFIER().getText(), Type.CLASS, ctx.getStart().getLine(), ctx.getStop().getLine());
 
         super.enterClassDeclaration(ctx);
     }
 
     @Override
     public void enterInterfaceDeclaration(final JavaParser.InterfaceDeclarationContext ctx) {
-        treeBuilder.findOrCreateType(ctx.IDENTIFIER().getText(), Type.INTERFACE);
+        treeBuilder.findOrCreateType(ctx.IDENTIFIER().getText(), Type.INTERFACE, ctx.getStart().getLine(), ctx.getStop().getLine());
 
         super.enterInterfaceDeclaration(ctx);
     }
 
     @Override
     public void enterEnumDeclaration(final JavaParser.EnumDeclarationContext ctx) {
-        treeBuilder.findOrCreateType(ctx.IDENTIFIER().getText(), Type.ENUM);
+        treeBuilder.findOrCreateType(ctx.IDENTIFIER().getText(), Type.ENUM, ctx.getStart().getLine(), ctx.getStop().getLine());
 
         super.enterEnumDeclaration(ctx);
     }
 
     @Override
     public void enterAnnotationTypeDeclaration(final JavaParser.AnnotationTypeDeclarationContext ctx) {
-        treeBuilder.findOrCreateType(ctx.IDENTIFIER().getText(), Type.ANNOTATION);
+        treeBuilder.findOrCreateType(ctx.IDENTIFIER().getText(), Type.ANNOTATION, ctx.getStart().getLine(), ctx.getStop().getLine());
 
         super.enterAnnotationTypeDeclaration(ctx);
     }
