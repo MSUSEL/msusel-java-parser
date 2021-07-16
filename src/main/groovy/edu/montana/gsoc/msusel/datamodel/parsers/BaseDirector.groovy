@@ -70,7 +70,7 @@ abstract class BaseDirector {
         List<File> files = []
         DBManager.instance.open(credentials)
         files.addAll(proj.getFilesByType(FileType.SOURCE))
-        files.removeIf { it.getAllTypes().size() > 0 }
+        files.removeIf { it.getAllTypes().size() > 0 && it.parseStage > 0 }
         DBManager.instance.close()
 
         process(files)
