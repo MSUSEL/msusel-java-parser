@@ -64,19 +64,17 @@ abstract class BaseDirector {
         this.useExpressions = useExpressions
     }
 
-    void build(String path, identifyAndProcess = false) {
+    void build(String path) {
         identify(proj, path)
 
-        if (identifyAndProcess) {
-            List<File> files = []
-            DBManager.instance.open(credentials)
-            files.addAll(proj.getFilesByType(FileType.SOURCE))
-            files.removeIf { it.getAllTypes().size() > 0 }
-            DBManager.instance.close()
+        List<File> files = []
+        DBManager.instance.open(credentials)
+        files.addAll(proj.getFilesByType(FileType.SOURCE))
+        files.removeIf { it.getAllTypes().size() > 0 }
+        DBManager.instance.close()
 
-            process(files)
-            identifier = null
-        }
+        process(files)
+        identifier = null
     }
 
     void identify(Project proj, String path) {
