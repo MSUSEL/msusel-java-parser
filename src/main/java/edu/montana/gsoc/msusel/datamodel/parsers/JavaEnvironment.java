@@ -28,6 +28,7 @@ package edu.montana.gsoc.msusel.datamodel.parsers;
 
 import edu.isu.isuese.datamodel.environment.EnvironmentLoader;
 
+import java.io.File;
 import java.io.InputStream;
 
 /**
@@ -41,7 +42,7 @@ public class JavaEnvironment extends EnvironmentLoader {
     }
 
     public void find(String ns, String name) {
-        InputStream is = JavaEnvironment.class.getResourceAsStream("/environment/" + ns + ".types");
+        InputStream is = JavaEnvironment.class.getResourceAsStream(File.separator + "environment" + File.separator + ns + ".types");
         find(ns, is, name);
     }
 }
