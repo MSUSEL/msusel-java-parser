@@ -42,10 +42,11 @@ class ParallelAssociationExtractor extends AssociationExtractor {
     void extractAssociations() {
         Set<Type> types = getTypes()
 
-        GParsExecutorsPool.withPool(8) {
-            types.eachParallel { Type type ->
-                processType(type)
-            }
+//        GParsExecutorsPool.withPool(8) {
+//            types.eachParallel { Type type ->
+        types.each { type ->
+            processType(type)
         }
+//        }
     }
 }
