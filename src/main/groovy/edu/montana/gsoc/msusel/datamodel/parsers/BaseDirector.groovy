@@ -100,8 +100,8 @@ abstract class BaseDirector {
             int total = files.size()
             AtomicInteger current = new AtomicInteger(1)
             GParsPool.withPool(8) {
-                files.eachParallel { File file ->
-//            files.each { File file ->
+//                files.eachParallel { File file ->
+                files.each { File file ->
                     int index = current.getAndIncrement()
                     if (includeFile(file)) {
                         gatherAllInfoAtOnce(file, index, total)
