@@ -53,6 +53,7 @@ class JavaDirector extends BaseDirector {
 
     void gatherAllInfoAtOnce(File file, int current, int total) {
         DBManager.instance.open(credentials)
+        log.info("Parsing File: ${file.getName()}")
         builder = new JavaModelBuilder(proj, file, credentials)
         boolean processed = file.getParseStage() < 1 || file.getAllTypes().size() > 0
 //        DBManager.instance.close()
