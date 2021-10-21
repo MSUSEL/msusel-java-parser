@@ -720,7 +720,7 @@ abstract class BaseModelBuilder {
             } else if (((Stack<Member>) methods).peek() instanceof Initializer) {
                 m = (Initializer) ((Stack<Member>) methods).peek()
             }
-            if (m)
+            if (m && !m.getMethodsCalled().contains(called))
                 m.callsMethod(called)
         }
 
@@ -755,7 +755,7 @@ abstract class BaseModelBuilder {
             }
 
             Constructor cons = type.getConstructorWithNParams(numParams)
-            if (m && cons)
+            if (m && cons && !m.getMethodsCalled().contains(cons))
                 m.callsMethod(cons)
         }
     }
@@ -813,7 +813,7 @@ abstract class BaseModelBuilder {
             }
 
             Field f = type.getFieldWithName(comp)
-            if (f && m && m instanceof Method) {
+            if (f && m && m instanceof Method && !m.getFieldsUsed().contains(f)) {
                 (m as Method).usesField(f)
                 if (f.getType().getType() == TypeRefType.Type) {
                     type = (Type) f.getType().getType(proj.getProjectKey())
