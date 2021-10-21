@@ -183,8 +183,7 @@ abstract class BaseModelBuilder {
             type.setEnd(stop)
             type.save()
             types.push(type)
-        }
-        else
+        } else
             createType(typeName, typeType, start, stop)
     }
 
@@ -639,8 +638,12 @@ abstract class BaseModelBuilder {
             case "this":
                 return handleThis(type)
             case "super":
-                String name = components[index + 1]
-                return handleSuper(type, name)
+                if (components.length > index + 1) {
+                    String name = components[index + 1]
+                    return handleSuper(type, name)
+                } else {
+                    return type
+                }
             default:
                 return handleIdentifier(type, comp)
         }
