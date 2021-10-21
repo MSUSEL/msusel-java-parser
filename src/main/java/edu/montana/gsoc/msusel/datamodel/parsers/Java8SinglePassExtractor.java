@@ -69,6 +69,7 @@ public class Java8SinglePassExtractor extends JavaParserBaseListener {
     boolean inInterface = false;
     boolean inTypeList = false;
     boolean inMethodBody = false;
+    boolean inStmtExpr = false;
     private Stack<CFGBuilder> builderStack = new Stack<>();
     CFGBuilder builder;
     DBCredentials credentials;
@@ -796,11 +797,10 @@ public class Java8SinglePassExtractor extends JavaParserBaseListener {
     //////////////////
     @Override
     public void enterExpression(JavaParser.ExpressionContext ctx) {
-        if (inMethodBody && ctx.lambdaExpression() == null && !inField && ctx.getParent() instanceof JavaParser.StatementContext && expressions) {
+        if (inMethodBody && ctx.lambdaExpression() == null && !inField && ctx.getParent() instanceof JavaParser.StatementContext && inStmtExpr) {
             treeBuilder.processExpression(ctx.getText());
+            super.enterExpression(ctx);
         }
-
-        super.enterExpression(ctx);
     }
 
     private void startMethod() {
@@ -899,6 +899,9 @@ public class Java8SinglePassExtractor extends JavaParserBaseListener {
         }
         treeBuilder.incrementMethodStatementCount();
 
+        if (ctx.expression() != null)
+            inStmtExpr = true
+
         super.enterStatement(ctx);
     }
 
@@ -928,6 +931,7 @@ public class Java8SinglePassExtractor extends JavaParserBaseListener {
                 builder.endBlock();
             }
         }
+        inStmtExpr = false;
 
         super.exitStatement(ctx);
     }
@@ -1002,4 +1006,20 @@ public class Java8SinglePassExtractor extends JavaParserBaseListener {
         initializerCount.push(initializerCount.pop() + 1);
         treeBuilder.createInitializer(String.format("<init-%d>", initializerCount.peek()), initializerCount.peek(), ctx.STATIC() == null, ctx.getStart().getLine(), ctx.getStop().getLine());
     }
+
+    @Override
+    public void enterMethodCall(JavaParser.MethodCallContext ctx) {
+        ctx.IDENTIFIER();
+        ctx.SUPER();
+        ctx.THIS();
+
+        super.enterMethodCall(ctx);
+    }
+
+    @Override
+    public void exitMethodCall(JavaParser.MethodCallContext ctx) {
+        super.exitMethodCall(ctx);
+    }
+
+
 }
