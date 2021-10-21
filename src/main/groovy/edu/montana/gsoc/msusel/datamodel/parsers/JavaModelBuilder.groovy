@@ -50,9 +50,9 @@ class JavaModelBuilder extends BaseModelBuilder {
         expr = expr.replaceAll(/\btrue\b|\bfalse\b/, " ") // remove boolean literals
         expr = expr.replaceAll(/\b(0[xX][A-Fa-f\d_]+(\.[A-Fa-f\d_]+)?|0[bB][10_]+(\.[10_]+)?|[\d_]+(\.[\d_]+)?([eE][\d_]+)?)[fFdDlL]?\b/, "Number")
         // remove numeric literals
-        expr = expr.replace("  ", " ") // remove double spaces
-        expr = expr.replaceAll(/\(\s/, "(")
-        expr = expr.replaceAll(/\s\)/, ")")
+        expr = expr.replaceAll(/\s\s/, " ") // remove double spaces
+        expr = expr.replaceAll(/\(\s+/, "(")
+        expr = expr.replaceAll(/\s+\)/, ")")
         expr = expr.replaceAll(/,\s+/, ",")
 
         return expr
