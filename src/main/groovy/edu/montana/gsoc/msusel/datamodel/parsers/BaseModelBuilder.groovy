@@ -924,7 +924,7 @@ abstract class BaseModelBuilder {
     }
 
     protected Type findUnknownType(String typeName) {
-        log.info "Finding unknown type"
+        log.info "Finding unknown type with name $typeName"
         return Type.findFirst("name = ? and type = ?", typeName, Type.UNKNOWN)
     }
 
