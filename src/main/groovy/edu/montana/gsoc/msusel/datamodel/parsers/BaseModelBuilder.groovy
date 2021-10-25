@@ -873,7 +873,7 @@ abstract class BaseModelBuilder {
         log.info "Finding type with name: $name"
         Type candidate = null
 
-        name.replaceAll(/<.*>/, "")
+        name = name.replaceAll(/<.*>/, "")
 
         if (notFullySpecified(name)) {
             candidate = this.findTypeInNamespace(name)
@@ -958,6 +958,10 @@ abstract class BaseModelBuilder {
             if (candidate != null)
                 break
         }
+
+        if (candidate)
+            log.info "Found general import candidate with name: ${candidate.getName()}"
+
         candidate
     }
 
