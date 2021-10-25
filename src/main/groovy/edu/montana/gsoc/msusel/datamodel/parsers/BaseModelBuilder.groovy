@@ -870,6 +870,7 @@ abstract class BaseModelBuilder {
      * @return The Type corresponding to the provided type name.
      */
     Type findType(String name, boolean createUnknown = false) {
+        log.info "Finding type with name: $name"
         Type candidate = null
 
         name.replaceAll(/<.*>/, "")
