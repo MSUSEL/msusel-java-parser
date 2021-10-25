@@ -889,10 +889,14 @@ abstract class BaseModelBuilder {
         // In the event that no valid candidate was found, then it is an unknown type
         if (candidate == null && createUnknown) candidate = this.createUnknownType(name)
 
+        if (candidate)
+            log.info "Found type with name ${candidate.name}"
+
         candidate
     }
 
     protected Type findTypeByQualifiedName(String name) {
+        log.info "Finding type by qualified name"
 //        Type candidate = typeMap[name]
 //        if (!candidate) candidate = proj.findTypeByQualifiedName(name)
 //        return candidate
@@ -900,6 +904,7 @@ abstract class BaseModelBuilder {
     }
 
     protected Type createUnknownType(String name) {
+        log.info "Creating unknown type"
         String typeName = determineTypeName(name)
         findOrCreateUnknownType(typeName)
     }
@@ -919,6 +924,7 @@ abstract class BaseModelBuilder {
     }
 
     protected Type findUnknownType(String typeName) {
+        log.info "Finding unknown type"
         return Type.findFirst("name = ? and type = ?", typeName, Type.UNKNOWN)
     }
 
@@ -941,6 +947,7 @@ abstract class BaseModelBuilder {
     }
 
     protected Type findTypeInDefaultNamespace(String name) {
+        log.info "Finding type in default namespace"
         Type type = proj.getDefaultNamespace().getTypeByName(name)
         if (!type) type = findTypeByQualifiedName("java.lang." + name)
 
@@ -948,6 +955,7 @@ abstract class BaseModelBuilder {
     }
 
     protected Type findTypeUsingGeneralImports(String name) {
+        log.info "Finding type as general import"
         List<String> general = file.getImports()*.getName().findAll { it.endsWith("*") }
         Type candidate = null
         for (String gen : general) {
@@ -959,13 +967,11 @@ abstract class BaseModelBuilder {
                 break
         }
 
-        if (candidate)
-            log.info "Found general import candidate with name: ${candidate.getName()}"
-
         candidate
     }
 
     protected Type findTypeUsingSpecificImports(String name) {
+        log.info "Finding type as specific import"
         String specific = file.getImports()*.getName().find { it.endsWith(name) }
         Type candidate = null
 
@@ -977,6 +983,7 @@ abstract class BaseModelBuilder {
     }
 
     protected Type findTypeInNamespace(String name) {
+        log.info "Finding type in Namespace"
         Type candidate = null
 
         if (namespace != null) {
