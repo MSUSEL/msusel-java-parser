@@ -878,7 +878,7 @@ abstract class BaseModelBuilder {
         if (notFullySpecified(name)) {
             candidate = this.findTypeInNamespace(name)
             if (candidate == null) candidate = this.findTypeUsingSpecificImports(name)
-            if (candidate == null) candidate = this.findTypeUsingGeneralImports(name)
+//            if (candidate == null) candidate = this.findTypeUsingGeneralImports(name)
             if (candidate == null) candidate = this.findTypeInDefaultNamespace(name)
             if (candidate == null) candidate = this.findUnknownType(name)
         }
