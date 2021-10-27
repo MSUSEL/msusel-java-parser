@@ -393,8 +393,9 @@ abstract class BaseModelBuilder {
 
     void createMethodParameter() {
         currentParam = Parameter.builder().varg(false).create()
-        if (methods && methods.peek() != null)
+        if (methods && methods.peek() != null) {
             ((Method) methods.peek()).addParameter(currentParam)
+        }
     }
 
     void setVariableParameter(boolean varg) {
@@ -434,6 +435,8 @@ abstract class BaseModelBuilder {
         Type t = findType(type, true)
 
         currentParam.setType(t.createTypeRef())
+
+        addUseDependency(t as Type)
     }
 
     void setParameterPrimitiveType(String type) {
@@ -447,6 +450,7 @@ abstract class BaseModelBuilder {
             ((Method) methods.peek()).setReturnType(t.createTypeRef())
         }
 
+        addUseDependency(t)
     }
 
     void setMethodReturnTypeVoid() {
@@ -532,6 +536,8 @@ abstract class BaseModelBuilder {
                     if (t) {
                         field.setType(t.createTypeRef())
                     }
+
+                    addAssociation(t)
                 }
                 setModifiers(modifiers, field)
             }
@@ -585,14 +591,15 @@ abstract class BaseModelBuilder {
     }
 
     void addAssociation(Type type) {
-        if (types) {
+        if (types && type && !types.peek().isAssociatedTo(type)) {
             types.peek().associatedTo(type)
         }
     }
 
     void addUseDependency(Type type) {
-        if (types) {
-            types.peek().useTo(type)
+        if (types && type && type != types.peek()) {
+            if (!types.peek().hasUseTo(type))
+                types.peek().useTo(type)
         }
     }
 
@@ -627,6 +634,7 @@ abstract class BaseModelBuilder {
                     type = handleMethodCall(type, comp, numParams)
                 } else
                     type = handleNonMethodCall(type, comp, components, index)
+                addUseDependency(type as Type)
             }
         }
     }
