@@ -158,13 +158,13 @@ abstract class BaseModelBuilder {
     void endType() {
         if (types) {
             Type type = types.pop()
-            if (types.isEmpty()) {
-                if (file.getTypeByName(type.getName()) == null)
-                    file.addType(type)
-            } else {
-                if (types.peek().getTypeByName(type.getName()) == null)
-                    types.peek().addType(type)
-            }
+//            if (types.isEmpty()) {
+//                if (file.getTypeByName(type.getName()) == null)
+//                    file.addType(type)
+//            } else {
+//                if (types.peek().getTypeByName(type.getName()) == null)
+//                    types.peek().addType(type)
+//            }
 
             type.updateKey()
         }
