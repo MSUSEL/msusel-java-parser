@@ -932,7 +932,7 @@ abstract class BaseModelBuilder {
     protected String determineTypeName(String name) {
         log.info "Determining Type Name, starting with $name"
         String specific = file.getImports()*.getName().find { it.endsWith(name) }
-        String general = file.getImports()*.getName().find { it.endsWith("*") }
+        String general = null // file.getImports()*.getName().find { it.endsWith("*") }
 
         String typeName
         if (specific) {
