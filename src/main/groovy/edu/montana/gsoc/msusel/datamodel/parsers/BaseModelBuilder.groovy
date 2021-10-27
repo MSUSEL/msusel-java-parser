@@ -873,12 +873,13 @@ abstract class BaseModelBuilder {
         log.info "Finding type with name: $name"
         Type candidate = null
 
-        name = name.replaceAll(/<.*>/, "")
+        if (name.contains("<"))
+            name = name.split("<")[0]
 
         if (notFullySpecified(name)) {
             candidate = this.findTypeInNamespace(name)
             if (candidate == null) candidate = this.findTypeUsingSpecificImports(name)
-//            if (candidate == null) candidate = this.findTypeUsingGeneralImports(name)
+            if (candidate == null) candidate = this.findTypeUsingGeneralImports(name)
             if (candidate == null) candidate = this.findTypeInDefaultNamespace(name)
             if (candidate == null) candidate = this.findUnknownType(name)
         }
@@ -929,7 +930,8 @@ abstract class BaseModelBuilder {
     }
 
     protected String determineTypeName(String name) {
-        String specific = file.getImports()*.getName().find { !it.endsWith(name) }
+        log.info "Determining Type Name, starting with $name"
+        String specific = file.getImports()*.getName().find { it.endsWith(name) }
         String general = file.getImports()*.getName().find { it.endsWith("*") }
 
         String typeName
@@ -943,6 +945,8 @@ abstract class BaseModelBuilder {
 //            else
             typeName = name
         }
+
+        log.info "Type name determined to be: $typeName"
         typeName
     }
 
